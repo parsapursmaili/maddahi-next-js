@@ -18,7 +18,7 @@ useEffect(()=>{
 
 useEffect(()=>{
     async function fetchReason() {
-    const response = await fetch(`/api/monasebatha`);
+    const response = await fetch(`/api/terms/?s=monasebat`);
     const data=await response.json();
     setUsers(data)
     }

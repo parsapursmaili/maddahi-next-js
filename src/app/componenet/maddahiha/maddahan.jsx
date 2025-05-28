@@ -18,7 +18,7 @@ import { useState, useEffect,memo, use } from 'react';
 
 useEffect(()=>{
     async function fetchmadahan() {
-    const response = await fetch(`/api/maddahan`);
+    const response = await fetch(`/api/terms/?s=maddah`);
     const data=await response.json();
     setUsers(data)
     }

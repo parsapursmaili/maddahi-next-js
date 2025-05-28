@@ -225,11 +225,11 @@ export default function Home() {
        selectedUser={selectedUser}
        setSelectedUser={setSelectedUser}
        />
-       <Reason
+      <Reason
        control={control}
        reason={reason}
         setReason={setReason} 
-       />
+      />
        <Random 
        control={control}
        rand={rand}
