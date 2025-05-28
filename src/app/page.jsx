@@ -71,7 +71,6 @@ export default function Home() {
     if(!control.current.r)return;
     if(compare())return;
     if(control.current.squery.length==0)return;
-    if(squery==''&&selectedUser.term_id==0&&reason.term_id==0){return;}
     if(selectedUser.term_id){
       control.current.selectedUser=0;
       setSelectedUser({ term_id: 0 })
@@ -94,7 +93,7 @@ export default function Home() {
 
     if(!control.current.r)return;
     if(compare())return;
-    if(control.current.selectedUser==0&&control.current.reason==0&&control.current.rand==0)return;
+    //if(control.current.selectedUser==0&&control.current.reason==0&&control.current.rand==0)return;
     if(squery.length>0){
       control.current.squery='';
       setSQuery('')
