@@ -101,9 +101,10 @@ const MusicPlayer = ({ntf,setNTF,posts,index,setIndex,page,setPage,totalPages,ha
         }
         else{
 
-          setIndex(0)
+          control.current.index=1;
           control.current.n=1;
-          setPage(page+1>totalPages? 1 :page+1)
+          control.current.page=page+1>totalPages? 1 :page+1
+          setPage(control.current.page)
           setNTF(ntf+1)
 
         }
@@ -119,9 +120,10 @@ const MusicPlayer = ({ntf,setNTF,posts,index,setIndex,page,setPage,totalPages,ha
           if(page==1){
             return;
           }
-          setIndex(0)        
+          control.current.index=1;     
           control.current.n=1;
-          setPage(page-1)
+          control.current.page=page-1;
+          setPage(control.current.page)
           setNTF(ntf+1)
 
           }

@@ -32,6 +32,7 @@ export default function Home() {
     rand:0,
     squery:'',
     r:false,
+    index:0,
   });
     const control2=useRef({
     page:1,
@@ -84,7 +85,7 @@ export default function Home() {
     }
     set();
     setNTF(ntf+1);
-
+    
   }, [squery]);
 
 
@@ -110,6 +111,10 @@ export default function Home() {
     if(compare())return;
     equalControl();
     console.log("ntf:",ntf)
+      if(control.current.index){
+      control.current.index=0;
+      setIndex(0);
+    }
     async function fetchPosts() {
 
     try {
