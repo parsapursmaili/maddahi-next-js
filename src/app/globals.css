@@ -1,16 +1,13 @@
 @import "tailwindcss";
 
-
-:root{
+:root {
   direction: rtl;
   font-family: var(--font-vazir), sans-serif;
-
 }
 
-
- body{
-background-color: #242424;
- }
+body {
+  background-color: #181818;
+}
 /*
 :root {
   --background: #ffffff;

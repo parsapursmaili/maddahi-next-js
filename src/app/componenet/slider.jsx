@@ -5,7 +5,7 @@ import Image from "next/image";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import '../css/home2.css'
+import "../css/home2.css";
 
 const Slider = ({ slides }) => {
   return (
@@ -29,7 +29,9 @@ const Slider = ({ slides }) => {
               <div className="flex flex-col  items-center">
                 {post.thumb ? (
                   <Image
-                    src={`https://besooyeto.ir/maddahi/wp-content/uploads/${post.thumb.split(".")[0]}-150x150.${post.thumb.split(".")[1]}`}
+                    src={`https://besooyeto.ir/maddahi/wp-content/uploads/${
+                      post.thumb.split(".")[0]
+                    }-150x150.${post.thumb.split(".")[1]}`}
                     alt={post.post_title || "پست"}
                     width={100}
                     height={100}
@@ -54,7 +56,6 @@ const Slider = ({ slides }) => {
           </SwiperSlide>
         )}
       </Swiper>
-  
     </div>
   );
 };
