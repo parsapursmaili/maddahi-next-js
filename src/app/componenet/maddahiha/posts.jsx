@@ -21,7 +21,7 @@ return(
             <h2 
             onClick={() => {
               setIndex(i);
-
+              
               setHnadle(post.link); 
             }}
              className={`[line-height:50px] flex inline cursor-pointer text-white text-[10px] lg:text-[15px] font-semibold mb-2  ${index==i?'bounce':''} `}>{post.post_title}</h2>

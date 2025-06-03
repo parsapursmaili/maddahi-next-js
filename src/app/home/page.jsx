@@ -1,25 +1,15 @@
 import Slider from "../componenet/slider";
 import { db } from "@/app/lib/db/mysql";
 
-export const revalidate = 5;
+export const revalidate = 3600;
 
-async function fetchPosts(ID = "0") {
+async function fetchPosts(orderby = "date desc") {
   try {
-    const response = await fetch(
-      `${process.env.SITE_URL}/api/posts/?rand=${ID}`,
-      {
-        next: {
-          cache: "no-store",
-        },
-      }
+    const [data] = await db.query(
+      `select title,thumbnail as thumb from posts where type='post' and status='publish' order by ${orderby}  limit 20`
     );
-    const data = await response.json();
 
-    if (!response.ok) {
-      if (data.error) throw new Error(data.error);
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return data.posts2;
+    return data;
   } catch (error) {
     console.error("Fetch Error:", error);
     return [];
@@ -27,15 +17,15 @@ async function fetchPosts(ID = "0") {
 }
 export default async function Home() {
   const slides = await fetchPosts();
-  const slides2 = await fetchPosts(2);
+  const slides2 = await fetchPosts("view desc");
 
   return (
     <div className="container mx-auto p-4 w-[1350px]">
-      <h1 className="text-2xl text-white font-bold mb-4">آخرین نماهنگ ها</h1>
+      <h3 className="text-2xl text-white font-bold mb-4">آخرین نماهنگ ها</h3>
       <Slider slides={slides} />
-      <h1 className="text-2xl text-white font-bold mb-4 mt-5">
+      <h3 className="text-2xl text-white font-bold mb-4 mt-5">
         محبوب ترین نماهنگ ها
-      </h1>
+      </h3>
       <Slider slides={slides2} />
     </div>
   );

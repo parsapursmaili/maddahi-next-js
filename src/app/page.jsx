@@ -65,6 +65,10 @@ export default function Home() {
 
   useEffect(() => {
     if (!control.current.r) return;
+    if (control.current.squery.length == 0) {
+      setNTF(ntf + 1);
+      return;
+    }
     if (compare()) return;
     if (selectedUser.term_id) {
       control.current.selectedUser = 0;
@@ -85,7 +89,14 @@ export default function Home() {
   useEffect(() => {
     if (!control.current.r) return;
     if (compare()) return;
-    //if(control.current.selectedUser==0&&control.current.reason==0&&control.current.rand==0)return;
+    if (
+      control.current.selectedUser == 0 &&
+      control.current.reason == 0 &&
+      control.current.rand == 0
+    ) {
+      setNTF(ntf + 1);
+      return;
+    }
     if (squery.length > 0) {
       control.current.squery = "";
       setSQuery("");
@@ -225,6 +236,7 @@ export default function Home() {
         totalPages={totalPages}
         posts={posts}
         handle={handle}
+        setHandle={setHnadle}
       />
 
       <Posts

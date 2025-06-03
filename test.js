@@ -1,17 +1,16 @@
-import mysql from 'mysql2/promise'
+import mysql from "mysql2/promise";
 
 export const db = await mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: '',
-  database: 'test',
+  host: "localhost",
+  user: "root",
+  password: "",
+  database: "test",
   waitForConnections: true,
   connectionLimit: 100,
-}
-)
+});
 export const getData = async () => {
- let data = await db.query(
-  `SELECT 
+  let data = await db.query(
+    `SELECT 
       p.post_title, 
       p.ID,
       p.post_status,
@@ -37,49 +36,52 @@ export const getData = async () => {
     FROM wp_posts p
     LEFT JOIN wp_postmeta link ON link.post_id = p.ID AND link.meta_key = 'sib-post-pre-link'
     left join wp_postmeta view on view.post_id=p.ID and view.meta_key='entry_views'
+    where post_type='post' or post_type='page'
     `
-)
-  let data2=data[0].map((item)=>{
+  );
+  let data2 = data[0].map((item) => {
     return {
-      id:item.ID,
-      status:item.post_status,
-      title:item.post_title,
-      content:item.post_content,
-      date:item.post_date,
-      image:item.thumb,
-      link:item.link,
-       type:item.post_type,
-       name:item.post_name,
-        comment_count:item.comment_count,
-        comment_status:item.comment_status,
-        excerpt:item.post_excerpt,
-        author:item.post_author,
-        last_update:item.post_modified,
-        view:item.view
+      id: item.ID,
+      status: item.post_status,
+      title: item.post_title,
+      content: item.post_content,
+      date: item.post_date,
+      image: item.thumb,
+      link: item.link,
+      type: item.post_type,
+      name: item.post_name,
+      comment_count: item.comment_count,
+      comment_status: item.comment_status,
+      excerpt: item.post_excerpt,
+      author: item.post_author,
+      last_update: item.post_modified,
+      view: item.view,
+    };
+  });
+  await db.query("delete from posts");
+  await db.query(
+    `replace INTO posts (id, status, title, content, date, thumbnail, link, type, name, comments_count, comment_status, excerpt, author, last_update, view) VALUES ?`,
+    [
+      data2.map((item) => [
+        item.id,
+        item.status,
+        item.title,
+        item.content,
+        item.date,
+        item.image,
+        item.link,
+        item.type,
+        item.name,
+        item.comment_count,
+        item.comment_status,
+        item.excerpt,
+        item.author,
+        item.last_update,
+        item.view,
+      ]),
+    ]
+  );
+  console.log("tamoom shod");
+};
 
-    }
-
-  })
- await db.query(
-  `REPLACE INTO posts (id, status, title, content, date, thumbnail, link, type, name, comments_count, comment_status, excerpt, author, last_update, view) VALUES ?`,
-  [data2.map(item => [
-    item.id,
-    item.status,
-    item.title,
-    item.content,
-    item.date,
-    item.image,
-    item.link,
-    item.type,
-    item.name,
-    item.comment_count,
-    item.comment_status,
-    item.excerpt,
-    item.author,
-    item.last_update,
-    item.view
-  ])])
-}
-
-getData()
-
+getData();

@@ -26,7 +26,8 @@ export async function GET(request) {
   }
 
   const limit = 20;
-  const skip = !rand ? (page - 1) * limit : 0;
+  let skip = 0;
+  if (rand == 0 || rand == 2) skip = (page - 1) * limit;
   try {
     let query1 = `
     SELECT COUNT(*) as total
