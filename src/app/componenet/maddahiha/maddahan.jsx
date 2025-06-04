@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, memo, use } from "react";
+import { useState, useEffect, memo} from "react";
 const Salam = ({ selectedUser, setSelectedUser, control }) => {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
