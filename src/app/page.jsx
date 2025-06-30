@@ -66,6 +66,7 @@ export default function Home() {
   useEffect(() => {
     if (!control.current.r) return;
     if (control.current.squery.length == 0) {
+      set();
       setNTF(ntf + 1);
       return;
     }
@@ -94,6 +95,7 @@ export default function Home() {
       control.current.reason == 0 &&
       control.current.rand == 0
     ) {
+      set();
       setNTF(ntf + 1);
       return;
     }

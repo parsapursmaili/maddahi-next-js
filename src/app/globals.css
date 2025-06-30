@@ -1,14 +1,22 @@
-@import "tailwindcss";
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
+/* استایل‌های سراسری */
 :root {
   direction: rtl;
-  font-family: var(--font-vazir), sans-serif;
+  font-family: var(
+    --font-vazir,
+    sans-serif
+  ); /* فرض بر اینه که --font-vazir تعریف شده یا میشه */
 }
 
 body {
-  background-color: #181818;
-  color: white;
+  background-color: #1a1a1a; /* کمی تیره‌تر از #181818 برای کنتراست بهتر */
+  color: #e0e0e0; /* سفید ملایم‌تر برای خوانایی بهتر */
 }
+
+/* می‌تونید این‌ها رو نگه دارید یا تغییر بدید اگه تنظیمات تم خاصی دارید */
 /*
 :root {
   --background: #ffffff;
@@ -33,4 +41,5 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
-} */
+}
+*/

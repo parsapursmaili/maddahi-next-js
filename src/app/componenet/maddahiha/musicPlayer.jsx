@@ -32,11 +32,11 @@ const MusicPlayer = ({
   }, [handle]);
 
   const handlePlay = (musicUrl) => {
-    setLoading(false);
     if (musicUrl == audioRef.current.src) {
       handleIcon();
       return;
     }
+    setLoading(false);
     if (!audioRef.current.paused) {
       audioRef.current.pause();
       setMusicPlayer((p) => ({ ...p, currentTime: 0 }));

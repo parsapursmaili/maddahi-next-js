@@ -6,7 +6,7 @@ export const revalidate = 3600;
 async function fetchPosts(orderby = "date desc") {
   try {
     const [data] = await db.query(
-      `select title,thumbnail as thumb from posts where type='post' and status='publish' order by ${orderby}  limit 20`
+      `select ID,title,thumbnail as thumb from posts where type='post' and status='publish' order by ${orderby}  limit 20`
     );
 
     return data;

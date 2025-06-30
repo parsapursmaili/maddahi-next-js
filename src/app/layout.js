@@ -1,6 +1,6 @@
 import "./globals.css";
 import { Geist, Geist_Mono } from "next/font/google";
-import {vazir} from './font'
+import { vazir } from "./font";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,9 +21,8 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={vazir.variable}>
-
-<head>
-      <link
+      <head>
+        <link
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
           integrity="sha512-..."
@@ -31,8 +30,6 @@ export default function RootLayout({ children }) {
           referrerPolicy="no-referrer"
         />
       </head>
-
-
 
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
