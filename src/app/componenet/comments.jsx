@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 
-const Comment = () => {
+const Comment = ({ postId }) => {
+  // `postId` رو به عنوان یک prop می‌پذیره
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [commentText, setCommentText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submissionStatus, setSubmissionStatus] = useState("");
+  const [submissionStatus, setSubmissionStatus] = useState(""); // success, error, ''
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,8 +16,23 @@ const Comment = () => {
     setSubmissionStatus("");
 
     try {
+      // **اینجا باید کد واقعی ارسال کامنت به API سرور رو اضافه کنید.**
+      // **مثال (نیاز به پیاده‌سازی مسیر API در Next.js دارید):**
+      /*
+      const response = await fetch('/api/comments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ postId, name, email, commentText }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to submit comment');
+      }
+      */
 
-      console.log("Comment Submitted:", { name, email, commentText });
+      // برای دمو، فقط لاگ می‌کنیم
+      console.log("Comment Submitted:", { postId, name, email, commentText });
+
       setSubmissionStatus("success");
       setName("");
       setEmail("");
@@ -30,15 +46,15 @@ const Comment = () => {
   };
 
   return (
-    <div className="max-w-xl mx-auto p-6 bg-gray-800 rounded-lg shadow-xl border border-gray-700">
-      <h2 className="text-3xl font-extrabold text-white mb-6 text-center">
+    <div className="w-full p-6 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+      <h2 className="text-3xl font-bold text-white mb-6 text-center">
         نظر خود را بنویسید
       </h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label
             htmlFor="name"
-            className="block text-sm font-medium text-gray-300 mb-1"
+            className="block text-sm font-medium text-gray-300 mb-2"
           >
             نام شما
           </label>
@@ -48,7 +64,7 @@ const Comment = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            className="mt-1 block w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out"
+            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg shadow-sm text-white placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out text-base"
             placeholder="نام خود را وارد کنید"
           />
         </div>
@@ -56,7 +72,7 @@ const Comment = () => {
         <div>
           <label
             htmlFor="email"
-            className="block text-sm font-medium text-gray-300 mb-1"
+            className="block text-sm font-medium text-gray-300 mb-2"
           >
             ایمیل شما (اختیاری)
           </label>
@@ -65,7 +81,7 @@ const Comment = () => {
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 block w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out"
+            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg shadow-sm text-white placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out text-base"
             placeholder="example@email.com"
           />
         </div>
@@ -73,7 +89,7 @@ const Comment = () => {
         <div>
           <label
             htmlFor="commentText"
-            className="block text-sm font-medium text-gray-300 mb-1"
+            className="block text-sm font-medium text-gray-300 mb-2"
           >
             متن نظر
           </label>
@@ -81,9 +97,9 @@ const Comment = () => {
             id="commentText"
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            rows="5"
+            rows="6"
             required
-            className="mt-1 block w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-white placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out resize-y"
+            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg shadow-sm text-white placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out resize-y text-base"
             placeholder="نظر خود را اینجا بنویسید..."
           ></textarea>
         </div>
@@ -92,11 +108,11 @@ const Comment = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-semibold text-white transition duration-200 ease-in-out
+            className={`w-full flex justify-center py-3 px-5 border border-transparent rounded-lg shadow-md text-lg font-semibold text-white transition duration-300 ease-in-out transform hover:-translate-y-0.5
               ${
                 isSubmitting
-                  ? "bg-indigo-400 cursor-not-allowed"
-                  : "bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  ? "bg-indigo-600 opacity-70 cursor-not-allowed"
+                  : "bg-indigo-700 hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
               }`}
           >
             {isSubmitting ? (
@@ -130,13 +146,13 @@ const Comment = () => {
         </div>
 
         {submissionStatus === "success" && (
-          <p className="mt-4 text-center text-green-400 font-medium">
+          <p className="mt-4 text-center text-green-400 font-medium text-sm">
             نظر شما با موفقیت ارسال شد!
           </p>
         )}
         {submissionStatus === "error" && (
-          <p className="mt-4 text-center text-red-400 font-medium">
-            خطایی در ارسال نظر رخ داد. لطفا دوباره تلاش کنید.
+          <p className="mt-4 text-center text-red-400 font-medium text-sm">
+            خطایی در ارسال نظر رخ داد. لطuraفا دوباره تلاش کنید.
           </p>
         )}
       </form>
