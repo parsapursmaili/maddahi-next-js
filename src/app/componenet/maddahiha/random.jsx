@@ -1,38 +1,39 @@
-'use client';
-import {memo } from 'react';
-  const Random=({rand,setRand,control})=>{
+"use client";
+import { memo } from "react";
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-    return(
-    <div className='grid mr-0 ml-10 w-full gap-0 lg:ml-0 grid-cols-1   lg:grid-cols-2 lg:w-120 lg:mr-[-150px] gap-2 '>
-        <button 
-        onClick={()=>{rand==1?setRand(0):setRand(1);control.current.rand=rand==1?0:1;}
-        }
-        className={`cursor-pointer rounded p-2  ${rand==1? ' bg-green-700':'bg-gray-500'} font-bold text-white mr-10`}>مرتب سازی تصادفی</button>
-       <button 
-        onClick={()=>{rand==2?setRand(0):setRand(2);control.current.rand=rand==2?0:2;}
-        }
-        className={`cursor-pointer rounded p-2  ${rand==2? ' bg-green-700':'bg-gray-500'} font-bold text-white mr-10`}>مرتب سازی بر اساس بازدید</button>
-
-
+const Random = ({ rand, setRand, control }) => {
+  return (
+    // چیدمان با flex برای واکنشگرایی بهتر و حذف کلاس‌های پیچیده قبلی
+    <div className="flex flex-col sm:flex-row gap-3 justify-center w-full">
+      <button
+        onClick={() => {
+          const newRand = rand === 1 ? 0 : 1;
+          setRand(newRand);
+          control.current.rand = newRand;
+        }}
+        className={`w-full sm:w-auto px-4 py-2 rounded-lg font-bold text-white transition-colors duration-300 ${
+          rand === 1
+            ? "bg-emerald-600 shadow-lg"
+            : "bg-slate-700 hover:bg-slate-600"
+        }`}
+      >
+        مرتب سازی تصادفی
+      </button>
+      <button
+        onClick={() => {
+          const newRand = rand === 2 ? 0 : 2;
+          setRand(newRand);
+          control.current.rand = newRand;
+        }}
+        className={`w-full sm:w-auto px-4 py-2 rounded-lg font-bold text-white transition-colors duration-300 ${
+          rand === 2
+            ? "bg-emerald-600 shadow-lg"
+            : "bg-slate-700 hover:bg-slate-600"
+        }`}
+      >
+        مرتب سازی بر اساس بازدید
+      </button>
     </div>
-
-        )
-
-
-
-
-  }
-  export default memo(Random);
+  );
+};
+export default memo(Random);

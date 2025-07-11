@@ -39,16 +39,11 @@ const MusicPlayer = ({
     setLoading(false);
     if (!audioRef.current.paused) {
       audioRef.current.pause();
-      setMusicPlayer((p) => ({ ...p, currentTime: 0 }));
-      setMusicPlayer((p) => ({ ...p, isPlay: false }));
+      setMusicPlayer((p) => ({ ...p, currentTime: 0, isPlay: false }));
     }
     if (first) setFirst(false);
     if (musicUrl) {
       audioRef.current.src = musicUrl;
-      if (audioRef.current.readyState === 4) {
-        audioRef.current.play();
-        return;
-      }
       audioRef.current.load();
       setLoading(true);
     }
@@ -56,9 +51,7 @@ const MusicPlayer = ({
 
   function formatTime(time) {
     const minutes = Math.floor(time / 60);
-
     const secondsLeft = Math.floor(time % 60);
-
     return `${minutes}:${secondsLeft < 10 ? "0" : ""}${secondsLeft}`;
   }
 
@@ -69,8 +62,9 @@ const MusicPlayer = ({
   }
 
   function updateProgressBar() {
+    if (!musicPlayer.duration) return;
     const val = (audioRef.current.currentTime / musicPlayer.duration) * 100;
-    timeLine.current.style.backgroundImage = `linear-gradient(to right, #00C853 ${val}%, #ddd 0%)`;
+    timeLine.current.style.background = `linear-gradient(to right, #10b981 ${val}%, #334155 ${val}%)`;
   }
   function canPlay() {
     setLoading(false);
@@ -92,7 +86,7 @@ const MusicPlayer = ({
   function handledownload() {
     const link = document.createElement("a");
     link.href = audioRef.current.src;
-    link.download;
+    link.download = true;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -121,9 +115,7 @@ const MusicPlayer = ({
       setIndex(index - 1);
       handlePlay(posts[i].link);
     } else {
-      if (page == 1) {
-        return;
-      }
+      if (page == 1) return;
       control.current.index = 1;
       control.current.n = 1;
       control.current.page = page - 1;
@@ -134,17 +126,11 @@ const MusicPlayer = ({
   return (
     <div>
       <audio
-        style={{ display: "none" }}
         ref={audioRef}
         loop={musicPlayer.refresh}
         onLoadStart={() => setLoading(true)}
-        onCanPlay={() => {
-          canPlay();
-        }}
-        onError={() => {
-          console.log("تلاش مجدد");
-          audioRef.current.load();
-        }}
+        onCanPlay={canPlay}
+        onError={() => audioRef.current.load()}
         onTimeUpdate={() => {
           setMusicPlayer((p) => ({
             ...p,
@@ -153,63 +139,68 @@ const MusicPlayer = ({
           setTimeLine();
         }}
         onEnded={forward}
+        style={{ display: "none" }}
       />
+      {/* پلیر اصلی */}
       <div
-        className={`backdrop-blur transform duration-1000 fixed bottom-0  ${
-          first ? "translate-y-60" : "translate-y-0"
-        } left-0 right-0 bg-[rgba(52,73,94,0.1)]	 p-0 shadow-lg h-[100px]`}
+        className={`fixed bottom-0 left-0 right-0 h-[100px] bg-slate-900/80 backdrop-blur-lg shadow-2xl transition-transform duration-500 ease-in-out ${
+          first ? "translate-y-full" : "translate-y-0"
+        }`}
       >
-        <input
-          ref={timeLine}
-          onChange={() => {
-            audioRef.current.currentTime =
-              (timeLine.current.value / 10000) * musicPlayer.duration;
-            updateProgressBar();
-          }}
-          type="range"
-          className="translate-y-[-17px]"
-        />
-        <span className="absolute text-white font-bold text-xl  right-150">
-          {formatTime(musicPlayer.duration)}
-        </span>
-        <span className="absolute text-white font-bold text-xl  left-150">
-          {formatTime(musicPlayer.currentTime)}{" "}
-        </span>
-        <div className="flex justify-center gap-8 mt-6">
+        <div className="relative w-full px-4 pt-2">
+          <input
+            ref={timeLine}
+            onChange={() => {
+              audioRef.current.currentTime =
+                (timeLine.current.value / 10000) * musicPlayer.duration;
+              updateProgressBar();
+            }}
+            type="range"
+            className="w-full"
+          />
+          <div className="flex justify-between text-xs font-mono text-slate-400 px-1 mt-1">
+            <span>{formatTime(musicPlayer.duration)}</span>
+            <span>{formatTime(musicPlayer.currentTime)}</span>
+          </div>
+        </div>
+
+        {/* دکمه‌های کنترل */}
+        <div className="flex justify-center items-center gap-8 mt-[-5px]">
           <i
             onClick={handledownload}
-            className="fas fa-download text-white text-3xl"
+            className="fas fa-download text-slate-400 text-2xl transition-colors hover:text-white"
           ></i>
           <i
             onClick={backward}
-            className="fas fa-forward text-white text-3xl"
+            className="fas fa-forward  text-slate-300 text-3xl transition-colors hover:text-white"
           ></i>
           <i
-            onClick={() => {
-              handleIcon();
-            }}
+            onClick={handleIcon}
             className={`fas ${
               musicPlayer.isPlay ? "fa-pause" : "fa-play"
-            } text-white text-3xl`}
+            } text-white text-4xl transition-transform hover:scale-110`}
           ></i>
           <i
             onClick={forward}
-            className="fas fa-backward text-white text-3xl"
+            className="fas fa-backward text-slate-300 text-3xl transition-colors hover:text-white"
           ></i>
           <i
             onClick={() =>
               setMusicPlayer((p) => ({ ...p, refresh: !musicPlayer.refresh }))
             }
-            className={`fas fa-refresh ${
-              musicPlayer.refresh ? "text-green-400/50" : "text-white"
-            } text-3xl`}
+            className={`fas fa-sync-alt text-2xl transition-colors ${
+              musicPlayer.refresh
+                ? "text-emerald-500"
+                : "text-slate-400 hover:text-white"
+            }`}
           ></i>
         </div>
       </div>
 
+      {/* اسپینر لودینگ */}
       {loading && (
-        <div className="fixed right-[50%] top-[50%] flex items-center justify-center  z-50">
-          <div className="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
+        <div className="fixed inset-0 flex items-center justify-center bg-black/30 z-50">
+          <div className="w-12 h-12 border-4 border-slate-600 border-t-emerald-500 rounded-full animate-spin"></div>
         </div>
       )}
     </div>

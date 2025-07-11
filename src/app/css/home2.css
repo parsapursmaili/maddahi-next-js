@@ -1,17 +1,44 @@
-.swiper-pagination {
-          bottom: 0 !important;
-        }
-        .swiper-pagination-bullet {
-          width: 0px;
-          height: 0px;
-          background: #ccc;
-        }
-        .swiper-pagination-bullet-active {
-          background: black;
-        }
-        .swiper-button-next::after,
-        .swiper-button-prev::after {
-          color: white;
-          font-size: 30px !important;
- 
-        }
+/* استایل دکمه‌های ناوبری سفارشی Swiper */
+.swiper-button-prev-custom,
+.swiper-button-next-custom {
+  color: #e0e0e0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+}
+
+.swiper-button-prev-custom::after,
+.swiper-button-next-custom::after {
+  font-family: swiper-icons; /* استفاده از آیکون‌های داخلی swiper */
+  font-size: 1rem !important;
+  font-weight: 900 !important;
+}
+.swiper-button-prev-custom::after {
+  content: "prev"; /* آیکون فلش چپ */
+}
+.swiper-button-next-custom::after {
+  content: "next"; /* آیکون فلش راست */
+}
+
+/* استایل Pagination Dots سفارشی */
+.swiper-pagination-custom .swiper-pagination-bullet {
+  background-color: rgba(255, 255, 255, 0.4) !important;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transition: all 0.4s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+  cursor: pointer;
+}
+
+.swiper-pagination-custom .swiper-pagination-bullet-active {
+  background-color: #16a3b2 !important; /* رنگ فیروزه‌ای */
+  width: 32px;
+  border-radius: 8px;
+}
+
+/* کلاس کمکی برای محدود کردن تعداد خطوط متن (در صورت پشتیبانی Tailwind از آن) */
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}

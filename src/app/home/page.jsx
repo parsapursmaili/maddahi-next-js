@@ -1,4 +1,4 @@
-import Slider from "../componenet/slider";
+import Slider from "@/app/componenet/slider";
 import { db } from "@/app/lib/db/mysql";
 
 export const revalidate = 3600;
@@ -6,7 +6,7 @@ export const revalidate = 3600;
 async function fetchPosts(orderby = "date desc") {
   try {
     const [data] = await db.query(
-      `select ID,title,thumbnail as thumb from posts where type='post' and status='publish' order by ${orderby}  limit 20`
+      `select ID,title,thumbnail from posts where type='post' and status='publish' order by ${orderby}  limit 20`
     );
 
     return data;

@@ -1,12 +1,50 @@
-input[type="range"]::-webkit-slider-thumb {
+/* استایل پایه برای نوار پیشرفت (track) */
+.music-progress {
+  background-color: #4b5563; /* رنگ خاکستری تیره برای بخش پر نشده */
+}
+
+/* استایل دستگیره (Thumb) برای مرورگرهای WebKit (Chrome, Safari, Edge) */
+.music-progress::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 20px; /* کمی بزرگتر برای لمس بهتر */
+  height: 20px; /* کمی بزرگتر برای لمس بهتر */
   border-radius: 50%;
-  background: #00c853;
+  background-color: #f0f9ff; /* یک رنگ سفید مایل به آبی */
   cursor: pointer;
-  border: 2px solid #ffff;
+  border: 3px solid #22d3ee; /* حاشیه فیروزه‌ای */
   margin-top: -2px;
-  box-shadow: 0 0 4px rgba(0, 198, 255, 0.6);
+  margin-left: -1px;
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.7); /* افکت درخشش (Glow) */
+  transition: transform 0.2s ease-in-out;
+}
+
+.music-progress:hover::-webkit-slider-thumb {
+  transform: scale(1.1);
+}
+
+/* استایل دستگیره (Thumb) برای فایرفاکس */
+.music-progress::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #f0f9ff;
+  cursor: pointer;
+  border: 3px solid #22d3ee;
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.7);
+  transition: transform 0.2s ease-in-out;
+}
+
+.music-progress:hover::-moz-range-thumb {
+  transform: scale(1.1);
+}
+
+/* استایل ترک (Track) برای فایرفاکس (برای اطمینان از حذف استایل پیش‌فرض) */
+.music-progress::-moz-range-track {
+  background: transparent;
+}
+.music-progress::-moz-range-progress {
+  background-color: #22d3ee;
+  height: 6px;
+  border-radius: 10px;
 }

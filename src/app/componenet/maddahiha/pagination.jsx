@@ -1,5 +1,6 @@
 "use client";
 import { memo } from "react";
+
 const Pagination = ({
   page,
   setPage,
@@ -10,12 +11,10 @@ const Pagination = ({
   control,
 }) => {
   return (
-    <div>
-      <h1 className="text-white text-3xl font-bold mb-6 text-center">
-        تمامی مداحی‌ها
-      </h1>
+    <div className="my-12 text-center">
+      <h1 className="text-3xl font-bold mb-8 text-slate-100">تمامی مداحی‌ها</h1>
 
-      <div className=" flex justify-center mb-20 gap-5">
+      <div className="flex justify-center items-center gap-4">
         <button
           onClick={() => {
             control.current.page = Math.max(1, page - 1);
@@ -24,11 +23,11 @@ const Pagination = ({
             setIndex(-1);
           }}
           disabled={page === 1}
-          className="px-4 py-2 bg-blue-500 text-white rounded-md disabled:bg-gray-300 cursor-pointer"
+          className="px-6 py-2 bg-emerald-600 text-white font-semibold rounded-lg shadow-md transition-all hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed"
         >
-          <p className="text-lg ">قبلی</p>
+          قبلی
         </button>
-        <span className="text-white font-bold mt-2 text-lg">
+        <span className="text-slate-300 font-bold text-lg tabular-nums">
           صفحه {page} از {totalPages}
         </span>
         <button
@@ -39,9 +38,9 @@ const Pagination = ({
             setIndex(-1);
           }}
           disabled={page === totalPages}
-          className="px-4 py-2 bg-blue-500 text-white rounded-md disabled:bg-gray-300 cursor-pointer"
+          className="px-6 py-2 bg-emerald-600 text-white font-semibold rounded-lg shadow-md transition-all hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed"
         >
-          <p className=" text-lg ">بعدی</p>
+          بعدی
         </button>
       </div>
     </div>
