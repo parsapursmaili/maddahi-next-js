@@ -1,57 +1,49 @@
-// components/MusicPlayer.jsx
 "use client";
-import "@/app/css/singlepost.css"; // فایل CSS آپدیت شده در پایین قرار دارد
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import "@/app/css/singlepost.css"; // فایل CSS برای استایل نوار پیشرفت
+import React, { useRef, useState, useEffect } from "react";
 
-const MusicPlayer = ({
-  audioSrc = "https://dl.besooyeto.ir/maddahi/javad-moghadam/%D9%86%D9%85%D8%A7%D9%87%D9%86%DA%AF%20%D8%A7%D8%B0%D8%A7%D9%86%20%D9%86%D8%AC%D9%81.mp3",
-}) => {
+const MusicPlayer = ({ audioSrc }) => {
   const audioRef = useRef(null);
-  const timeLine = useRef(null);
+  const timeLineRef = useRef(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
-  // تابع آپدیت نوار پیشرفت با استایل جدید
-  function handleTimeUpdate() {
-    const progress = (audioRef.current.currentTime / duration) * 100;
-    if (timeLine.current) {
-      timeLine.current.value = progress * 100; // مقدار بین 0 تا 10000
-      // استفاده از رنگ فیروزه‌ای (cyan) برای هماهنگی با تم
-      const cyanColor = "#22d3ee"; // کد هگز رنگ فیروزه‌ای از Tailwind
-      timeLine.current.style.backgroundImage = `linear-gradient(to right, ${cyanColor} ${progress}%, #4b5563 0%)`;
+  // تابع به‌روزرسانی نوار پیشرفت
+  const updateProgress = () => {
+    if (audioRef.current && timeLineRef.current) {
+      const progress = (audioRef.current.currentTime / audioRef.current.duration) * 100;
+      timeLineRef.current.style.setProperty('--progress', `${progress}%`);
     }
-  }
+  };
 
-  function handlePlay() {
+  const handlePlayPause = () => {
     if (isPlaying) {
-      setIsPlaying(false);
       audioRef.current.pause();
-      return;
+    } else {
+      audioRef.current.play();
     }
-    setIsPlaying(true);
-    audioRef.current.play();
-  }
+    setIsPlaying(!isPlaying);
+  };
 
-  function handleChange() {
-    const newTime = (timeLine.current.value / 10000) * duration;
-    setCurrentTime(newTime);
-    handleTimeUpdate();
+  const handleSeek = (e) => {
+    const newTime = (e.target.value / 100) * duration;
     audioRef.current.currentTime = newTime;
-  }
+    setCurrentTime(newTime);
+    updateProgress();
+  };
 
-  function formatTime(time = 0) {
+  const formatTime = (time = 0) => {
     const minutes = Math.floor(time / 60);
-    const secondsLeft = Math.floor(time % 60);
-    return `${minutes}:${secondsLeft < 10 ? "0" : ""}${secondsLeft}`;
-  }
-
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`;
+  };
+  
   const handleDownload = () => {
     if (audioSrc) {
       const link = document.createElement("a");
       link.href = audioSrc;
-      // برای دانلود مستقیم فایل به جای باز کردن در تب جدید
       link.setAttribute("download", "");
       document.body.appendChild(link);
       link.click();
@@ -59,27 +51,43 @@ const MusicPlayer = ({
     }
   };
 
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    const onLoadedMetadata = () => setDuration(audio.duration);
+    const onTimeUpdate = () => {
+      setCurrentTime(audio.currentTime);
+      updateProgress();
+    };
+    const onEnded = () => setIsPlaying(false);
+
+    audio.addEventListener("loadedmetadata", onLoadedMetadata);
+    audio.addEventListener("timeupdate", onTimeUpdate);
+    audio.addEventListener("ended", onEnded);
+
+    return () => {
+      audio.removeEventListener("loadedmetadata", onLoadedMetadata);
+      audio.removeEventListener("timeupdate", onTimeUpdate);
+      audio.removeEventListener("ended", onEnded);
+    };
+  }, []);
+
   return (
-    // کانتینر اصلی با استایل شیشه‌ای (Glassmorphism) و هماهنگ با تم
     <div
       style={{ direction: "ltr" }}
-      // در حالت پیش‌فرض (موبایل)، flex-col و در sm به بعد flex-row
-      className="flex w-full max-w-2xl items-center justify-between gap-2 rounded-xl bg-black/30 p-2 shadow-lg backdrop-blur-sm ring-1 ring-white/10 sm:gap-4 sm:p-3"
+      className="flex w-full max-w-2xl items-center justify-between gap-3 rounded-xl bg-slate-800/50 p-3 shadow-lg backdrop-blur-md ring-1 ring-white/10 sm:gap-4 sm:p-4"
     >
-      {/* دکمه پخش/توقف با استایل مدرن */}
-      <div
-        // اندازه آیکون در موبایل کوچکتر
-        className="flex items-center justify-center h-9 w-9 text-lg cursor-pointer rounded-full bg-white/10 text-cyan-300 transition-all duration-300 ease-in-out hover:bg-white/20 hover:text-white hover:scale-110
-                   sm:h-11 sm:w-11 sm:text-xl" // در sm به بعد بزرگتر
-        onClick={handlePlay}
-        role="button"
-        aria-label={isPlaying ? "مکث آهنگ" : "پخش آهنگ"}
+      {/* دکمه پخش/توقف */}
+      <button
+        className="flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 text-xl cursor-pointer rounded-full bg-sky-500/80 text-white transition-all duration-300 ease-in-out hover:bg-sky-500 hover:scale-105 shadow-md"
+        onClick={handlePlayPause}
+        aria-label={isPlaying ? "مکث" : "پخش"}
       >
         <i className={`fas ${isPlaying ? "fa-pause" : "fa-play"}`}></i>
-      </div>
+      </button>
 
       {/* زمان فعلی */}
-      <span className="font-mono text-xs text-slate-400 w-10 text-center sm:text-sm sm:w-12">
+      <span className="font-mono text-xs sm:text-sm text-slate-400 w-12 text-center">
         {formatTime(currentTime)}
       </span>
 
@@ -87,26 +95,23 @@ const MusicPlayer = ({
       <div className="flex-grow">
         <input
           type="range"
-          ref={timeLine}
+          ref={timeLineRef}
           min="0"
-          max="10000"
-          defaultValue="0"
-          onChange={handleChange}
-          // ارتفاع و طول نوار در موبایل و دسکتاپ
-          className="music-progress h-1.5 w-full cursor-pointer appearance-none rounded-full outline-none sm:h-2"
+          max="100"
+          value={(currentTime / duration) * 100 || 0}
+          onInput={handleSeek}
+          className="music-progress w-full h-2 cursor-pointer appearance-none rounded-full outline-none"
         />
       </div>
 
       {/* مدت زمان کل */}
-      <span className="font-mono text-xs text-slate-400 w-10 text-center sm:text-sm sm:w-12">
+      <span className="font-mono text-xs sm:text-sm text-slate-400 w-12 text-center">
         {formatTime(duration)}
       </span>
-
-      {/* دکمه دانلود با استایل مدرن */}
+      
+      {/* دکمه دانلود */}
       <button
-        // اندازه آیکون در موبایل کوچکتر
-        className="flex items-center justify-center h-10 w-10 flex-shrink-0 cursor-pointer rounded-full bg-white/15 text-xl text-cyan-300 transition-all duration-300 ease-in-out hover:bg-white/25 hover:text-white hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-opacity-75
-                   sm:h-12 sm:w-12 sm:text-2xl" // در sm به بعد بزرگتر
+        className="flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 text-lg flex-shrink-0 cursor-pointer rounded-full bg-slate-700/60 text-slate-300 transition-all duration-300 ease-in-out hover:bg-slate-700 hover:text-white"
         onClick={handleDownload}
         aria-label="دانلود آهنگ"
       >
@@ -114,18 +119,9 @@ const MusicPlayer = ({
       </button>
 
       <audio
-        loop
         ref={audioRef}
         src={audioSrc}
-        preload="none"
-        onLoadedMetadata={() => {
-          setDuration(audioRef.current.duration);
-        }}
-        onTimeUpdate={() => {
-          setCurrentTime(audioRef.current.currentTime);
-          handleTimeUpdate();
-        }}
-        onEnded={() => setIsPlaying(false)}
+        preload="metadata"
       ></audio>
     </div>
   );

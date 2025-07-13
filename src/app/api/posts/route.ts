@@ -1,7 +1,6 @@
 import { db } from "@/app/lib/db/mysql";
 
 export async function GET(request) {
-  const t1 = Date.now();
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get("page")) || 1;
   const maddah = parseInt(searchParams.get("maddah")) || 0;
@@ -66,8 +65,6 @@ export async function GET(request) {
       values
     );
     const posts2 = posts[0];
-    const t2 = Date.now();
-    console.log("***************************************t2", t2 - t1);
 
     return Response.json({ total2, posts2 });
   } catch (e) {

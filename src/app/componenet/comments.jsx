@@ -1,9 +1,7 @@
 "use client";
-
 import { useState } from "react";
 
 const Comment = ({ postId }) => {
-  // `postId` رو به عنوان یک prop می‌پذیره
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [commentText, setCommentText] = useState("");
@@ -16,21 +14,8 @@ const Comment = ({ postId }) => {
     setSubmissionStatus("");
 
     try {
-      // **اینجا باید کد واقعی ارسال کامنت به API سرور رو اضافه کنید.**
-      // **مثال (نیاز به پیاده‌سازی مسیر API در Next.js دارید):**
-      /*
-      const response = await fetch('/api/comments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ postId, name, email, commentText }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to submit comment');
-      }
-      */
-
-      // برای دمو، فقط لاگ می‌کنیم
+      // شبیه‌سازی ارسال به API
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       console.log("Comment Submitted:", { postId, name, email, commentText });
 
       setSubmissionStatus("success");
@@ -46,50 +31,51 @@ const Comment = ({ postId }) => {
   };
 
   return (
-    <div className="w-full p-6 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
-      <h2 className="text-3xl font-bold text-white mb-6 text-center">
+    <div className="w-full">
+      <h2 className="text-2xl font-bold text-white mb-6 text-center">
         نظر خود را بنویسید
       </h2>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label
-            htmlFor="name"
-            className="block text-sm font-medium text-gray-300 mb-2"
-          >
-            نام شما
-          </label>
-          <input
-            type="text"
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg shadow-sm text-white placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out text-base"
-            placeholder="نام خود را وارد کنید"
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-gray-300 mb-2"
-          >
-            ایمیل شما (اختیاری)
-          </label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg shadow-sm text-white placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out text-base"
-            placeholder="example@email.com"
-          />
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-slate-300 mb-2"
+            >
+              نام شما
+            </label>
+            <input
+              type="text"
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              className="w-full px-4 py-2.5 bg-slate-800/70 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-sky-500 focus:border-sky-500 transition-all duration-200 outline-none"
+              placeholder="نام خود را وارد کنید"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-slate-300 mb-2"
+            >
+              ایمیل (اختیاری)
+            </label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-2.5 bg-slate-800/70 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-sky-500 focus:border-sky-500 transition-all duration-200 outline-none"
+              placeholder="example@email.com"
+            />
+          </div>
         </div>
 
         <div>
           <label
             htmlFor="commentText"
-            className="block text-sm font-medium text-gray-300 mb-2"
+            className="block text-sm font-medium text-slate-300 mb-2"
           >
             متن نظر
           </label>
@@ -97,9 +83,9 @@ const Comment = ({ postId }) => {
             id="commentText"
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            rows="6"
+            rows="5"
             required
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg shadow-sm text-white placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out resize-y text-base"
+            className="w-full px-4 py-2.5 bg-slate-800/70 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-sky-500 focus:border-sky-500 transition-all duration-200 outline-none resize-y"
             placeholder="نظر خود را اینجا بنویسید..."
           ></textarea>
         </div>
@@ -108,11 +94,11 @@ const Comment = ({ postId }) => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`w-full flex justify-center py-3 px-5 border border-transparent rounded-lg shadow-md text-lg font-semibold text-white transition duration-300 ease-in-out transform hover:-translate-y-0.5
+            className={`w-full flex justify-center py-3 px-5 border border-transparent rounded-lg shadow-md text-base font-semibold text-white transition-all duration-300 ease-in-out transform hover:-translate-y-1
               ${
                 isSubmitting
-                  ? "bg-indigo-600 opacity-70 cursor-not-allowed"
-                  : "bg-indigo-700 hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
+                  ? "bg-indigo-500/70 cursor-not-allowed"
+                  : "bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-indigo-500"
               }`}
           >
             {isSubmitting ? (
@@ -145,14 +131,15 @@ const Comment = ({ postId }) => {
           </button>
         </div>
 
-        {submissionStatus === "success" && (
-          <p className="mt-4 text-center text-green-400 font-medium text-sm">
-            نظر شما با موفقیت ارسال شد!
-          </p>
-        )}
-        {submissionStatus === "error" && (
-          <p className="mt-4 text-center text-red-400 font-medium text-sm">
-            خطایی در ارسال نظر رخ داد. لطuraفا دوباره تلاش کنید.
+        {submissionStatus && (
+          <p
+            className={`mt-4 text-center font-medium text-sm ${
+              submissionStatus === "success" ? "text-green-400" : "text-red-400"
+            }`}
+          >
+            {submissionStatus === "success"
+              ? "نظر شما با موفقیت ارسال شد!"
+              : "خطایی در ارسال نظر رخ داد. لطفا دوباره تلاش کنید."}
           </p>
         )}
       </form>

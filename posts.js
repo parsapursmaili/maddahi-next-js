@@ -20,7 +20,7 @@ export const recreateAndPopulatePostsTable = async () => {
     console.log("در حال ایجاد جدول 'posts'...");
     await db.query(`
       CREATE TABLE posts (
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        ID INT AUTO_INCREMENT PRIMARY KEY,
         status VARCHAR(255),
         title TEXT,
         content LONGTEXT,

@@ -1,50 +1,69 @@
-/* استایل پایه برای نوار پیشرفت (track) */
 .music-progress {
-  background-color: #4b5563; /* رنگ خاکستری تیره برای بخش پر نشده */
+  --track-bg: #334155; /* bg-slate-700 */
+  --progress-bg: #0ea5e9; /* bg-sky-500 */
+  --thumb-bg: #f8fafc; /* bg-slate-50 */
+  --thumb-size: 16px;
+
+  /* متغیر CSS برای نگهداری درصد پیشرفت */
+  --progress: 0%;
+
+  background-color: transparent;
 }
 
-/* استایل دستگیره (Thumb) برای مرورگرهای WebKit (Chrome, Safari, Edge) */
+/* === Webkit (Chrome, Safari) === */
+.music-progress::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(
+    to right,
+    var(--progress-bg) var(--progress),
+    var(--track-bg) var(--progress)
+  );
+  border-radius: 3px;
+  transition: background-color 0.2s;
+}
+
 .music-progress::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 20px; /* کمی بزرگتر برای لمس بهتر */
-  height: 20px; /* کمی بزرگتر برای لمس بهتر */
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+  background-color: var(--thumb-bg);
   border-radius: 50%;
-  background-color: #f0f9ff; /* یک رنگ سفید مایل به آبی */
+  border: 2px solid var(--progress-bg);
+  margin-top: -5px; /* (track_height - thumb_height) / 2 */
   cursor: pointer;
-  border: 3px solid #22d3ee; /* حاشیه فیروزه‌ای */
-  margin-top: -2px;
-  margin-left: -1px;
-  box-shadow: 0 0 12px rgba(34, 211, 238, 0.7); /* افکت درخشش (Glow) */
-  transition: transform 0.2s ease-in-out;
+  transition: transform 0.2s ease;
 }
 
 .music-progress:hover::-webkit-slider-thumb {
   transform: scale(1.1);
 }
 
-/* استایل دستگیره (Thumb) برای فایرفاکس */
+/* === Firefox === */
+.music-progress::-moz-range-track {
+  width: 100%;
+  height: 6px;
+  background: var(--track-bg);
+  border-radius: 3px;
+}
+
+.music-progress::-moz-range-progress {
+  height: 6px;
+  background: var(--progress-bg);
+  border-radius: 3px;
+}
+
 .music-progress::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+  background-color: var(--thumb-bg);
   border-radius: 50%;
-  background-color: #f0f9ff;
+  border: 2px solid var(--progress-bg);
   cursor: pointer;
-  border: 3px solid #22d3ee;
-  box-shadow: 0 0 12px rgba(34, 211, 238, 0.7);
-  transition: transform 0.2s ease-in-out;
+  transition: transform 0.2s ease;
 }
 
 .music-progress:hover::-moz-range-thumb {
   transform: scale(1.1);
-}
-
-/* استایل ترک (Track) برای فایرفاکس (برای اطمینان از حذف استایل پیش‌فرض) */
-.music-progress::-moz-range-track {
-  background: transparent;
-}
-.music-progress::-moz-range-progress {
-  background-color: #22d3ee;
-  height: 6px;
-  border-radius: 10px;
 }

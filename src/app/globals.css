@@ -1,43 +1,81 @@
 @import "tailwindcss";
 
-/* استایل‌های سراسری */
 :root {
-  direction: rtl;
-  font-family: var(
-    --font-vazir,
-    sans-serif
-  ); /* فرض بر اینه که --font-vazir تعریف شده یا میشه */
+  /* -- پالت رنگی اصلی -- */
+  --background-primary: #0f172a; /* slate-900: پس‌زمینه اصلی و عمیق */
+  --background-secondary: #1e293b; /* slate-800: پس‌زمینه کارت‌ها و سطوح بالاتر */
+  --background-tertiary: #334155; /* slate-700: برای حالت هاور و عناصر تعاملی */
+
+  --foreground-primary: #e2e8f0; /* slate-200: متن اصلی با خوانایی بالا */
+  --foreground-secondary: #94a3b8; /* slate-400: متن ثانویه و توضیحات */
+  --foreground-muted: #64748b; /* slate-500: متن‌های کم‌اهمیت‌تر */
+
+  --accent-primary: #0ea5e9; /* sky-500: رنگ اصلی برای لینک‌ها و دکمه‌ها (آبی آسمانی) */
+  --accent-secondary: #4f46e5; /* indigo-600: رنگ ثانویه برای گرادیانت‌ها (نیلی) */
+
+  --border-primary: #334155; /* slate-700: حاشیه‌های اصلی */
+  --border-secondary: #475569; /* slate-600: حاشیه‌های ظریف‌تر */
+
+  --success: #22c55e; /* green-500: برای پیام‌های موفقیت */
+  --error: #ef4444; /* red-500: برای پیام‌های خطا */
+
+  /* -- تایپوگرافی -- */
+  /* فرض می‌شود که فونت وزیر از طریق next/font در فایل layout.js تعریف شده است */
+  --font-sans: var(--font-vazir), system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
 }
 
-body {
-  background-color: #1a1a1a; /* کمی تیره‌تر از #181818 برای کنتراست بهتر */
-  color: #e0e0e0; /* سفید ملایم‌تر برای خوانایی بهتر */
-}
-
-/* می‌تونید این‌ها رو نگه دارید یا تغییر بدید اگه تنظیمات تم خاصی دارید */
 /*
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+ * =================================================================
+ *  تنظیمات پایه برای تگ‌های HTML و Body
+ * =================================================================
+ */
+
+/* تنظیمات سراسری برای کل سند HTML */
+html {
+  font-family: var(--font-sans);
+  direction: rtl;
+  scroll-behavior: smooth; /* ایجاد افکت اسکرول نرم در صفحه */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* تنظیمات اصلی بدنه سایت */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--background-primary);
+  color: var(--foreground-primary);
+  -webkit-font-smoothing: antialiased; /* رندر بهتر فونت‌ها در مرورگرهای Webkit */
+  -moz-osx-font-smoothing: grayscale; /* رندر بهتر فونت‌ها در فایرفاکس */
+  min-height: 100vh;
 }
-*/
+
+/*
+ * =================================================================
+ *  بهبودهای جزئی تجربه کاربری (UX Enhancements)
+ * =================================================================
+ */
+
+/* تغییر رنگ هایلایت (انتخاب) متن برای هماهنگی با تم */
+::selection {
+  background-color: var(--accent-primary);
+  color: var(--background-primary);
+}
+
+/* استایل برای اسکرول‌بار در مرورگرهای Webkit (اختیاری ولی پیشنهادی) */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--background-tertiary);
+  border-radius: 6px;
+  border: 2px solid var(--background-secondary);
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--border-secondary);
+}
