@@ -1,48 +1,44 @@
 @import "tailwindcss";
 
 :root {
-  /* ========================================= */
-  /* -- پالت رنگی خلاقانه "Deep Space" -- */
-  /* ========================================= */
+  /* ================================================== */
+  /* -- پالت نهایی و قطعی: "نوا و کریستال" (Nocturne & Crystal) -- */
+  /* ================================================== */
 
-  /* پس‌زمینه‌ای بسیار عمیق با ته‌رنگ آبی/بنفش که فضا را شبیه‌سازی می‌کند */
-  --background-primary: #0a091a;
+  /* پس‌زمینه اصلی: همان سیاه عمیق، جذاب و مورد علاقه شما */
+  --background-primary: #0a0a0a;
 
-  /* رنگ کارت‌ها که به وضوح روشن‌تر است و حس شناور بودن را القا می‌کند */
-  --background-secondary: #1c1b33;
+  /* لایه‌ها و سطوح ثانویه: بدون تغییر */
+  --background-secondary: #171717;
+  --background-tertiary: #262626;
 
-  /* رنگ هاور که کارت‌ها را برجسته‌تر می‌کند */
-  --background-tertiary: #2d2b4e;
+  /* متن اصلی (کمی نرم‌تر): سفید استخوانی برای حس لوکس‌تر و راحتی چشم */
+  --foreground-primary: #f5f6f7;
+  --foreground-secondary: #a3a3a3;
+  --foreground-muted: #525252;
 
-  /* متن اصلی کاملاً روشن برای حداکثر خوانایی */
-  --foreground-primary: #f0f2f5;
+  /* ★ رنگ تاکیدی اصلی (ارتقا یافته): کمی عمیق‌تر و باوقارتر */
+  --accent-primary: #00b4a0; /* A deeper, dignified and rich Teal */
+  --accent-primary-rgb: 0, 180, 160;
 
-  /* متن ثانویه با کنتراست ملایم‌تر */
-  --foreground-secondary: #a8a4d1;
+  /* ★★ هایلایت کریستالی (سلاح نهایی): برای جزئیات تیز و مدرن */
+  --accent-crystal-highlight: #a3fff4; /* For 1px borders, focus rings, sharp details */
 
-  /* متن‌های کم‌اهمیت‌تر یا غیرفعال */
-  --foreground-muted: #6f6c99;
+  /* حاشیه‌ها: بدون تغییر */
+  --border-primary: #262626;
+  --border-secondary: #333333;
 
-  /* رنگ تاکیدی بسیار زنده و درخشان (مثل یک نئون) برای جلب توجه */
-  --accent-primary: #33e1ed; /* A vibrant Cyan */
-  --accent-primary-rgb: 51, 225, 237;
+  /* رنگ‌های بازخورد: واضح و حرفه‌ای */
+  --success: #10b981;
+  --error: #ef4444;
 
-  /* حاشیه‌ها برای تعریف ساختار، بدون ایجاد مزاحمت بصری */
-  --border-primary: #2d2b4e;
-  --border-secondary: #42406f;
-
-  /* رنگ‌های بازخورد زنده و واضح */
-  --success: #00f5a0; /* A vivid Green */
-  --error: #ff5a79; /* A sharp Pink/Red */
-
-  /* -- تایپوگرافی -- */
+  /* -- تایپوگرافی (بدون تغییر) -- */
   --font-sans: var(--font-vazir), system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", "Courier New", monospace;
 }
-
 /*
  * =================================================================
  *  تنظیمات پایه (بدون تغییر)

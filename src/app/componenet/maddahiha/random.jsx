@@ -11,10 +11,10 @@ const Random = ({ rand, setRand, control }) => {
           setRand(newRand);
           control.current.rand = newRand;
         }}
-        className={`w-full sm:w-auto px-4 py-2 rounded-lg font-bold text-white transition-colors duration-300 ${
+        className={`w-full sm:w-auto px-4 py-2 rounded-lg font-bold text-[var(--foreground-primary)] transition-colors duration-300 ${
           rand === 1
-            ? "bg-emerald-600 shadow-lg"
-            : "bg-slate-700 hover:bg-slate-600"
+            ? "bg-[var(--success)] shadow-lg"
+            : "bg-[var(--background-tertiary)] hover:bg-[var(--border-secondary)]"
         }`}
       >
         مرتب سازی تصادفی
@@ -25,10 +25,10 @@ const Random = ({ rand, setRand, control }) => {
           setRand(newRand);
           control.current.rand = newRand;
         }}
-        className={`w-full sm:w-auto px-4 py-2 rounded-lg font-bold text-white transition-colors duration-300 ${
+        className={`w-full sm:w-auto px-4 py-2 rounded-lg font-bold text-[var(--foreground-primary)] transition-colors duration-300 ${
           rand === 2
-            ? "bg-emerald-600 shadow-lg"
-            : "bg-slate-700 hover:bg-slate-600"
+            ? "bg-[var(--success)] shadow-lg"
+            : "bg-[var(--background-tertiary)] hover:bg-[var(--border-secondary)]"
         }`}
       >
         مرتب سازی بر اساس بازدید

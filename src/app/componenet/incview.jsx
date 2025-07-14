@@ -1,4 +1,3 @@
-// app/posts/componenet/ViewCounter.jsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -21,7 +20,7 @@ export default function ViewCounter({ postId }) {
   }, [postId]);
 
   return (
-    <h3 className="font-mono text-sm text-gray-500">
+    <h3 className="font-mono text-sm text-[var(--foreground-muted)]">
       {(parseFloat(currentViews) || 0).toLocaleString("fa-IR")} بازدید
     </h3>
   );

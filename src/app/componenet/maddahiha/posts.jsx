@@ -26,7 +26,7 @@ const Posts = ({ posts, setHnadle }) => {
         return (
           <div
             key={post.ID}
-            className="bg-background-secondary rounded-2xl shadow-xl overflow-hidden flex flex-col group transition-all duration-300 ease-in-out hover:shadow-accent-primary/20 hover:-translate-y-1"
+            className="bg-[var(--background-secondary)] rounded-2xl shadow-xl overflow-hidden flex flex-col group transition-all duration-300 ease-in-out hover:shadow-[var(--accent-primary)/20] hover:-translate-y-1"
           >
             <div className="relative flex items-center p-4">
               {/* Thumbnail */}
@@ -42,9 +42,9 @@ const Posts = ({ posts, setHnadle }) => {
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 ) : (
-                  <div className="w-full h-full bg-background-tertiary flex items-center justify-center rounded-lg">
+                  <div className="w-full h-full bg-[var(--background-tertiary)] flex items-center justify-center rounded-lg">
                     <svg
-                      className="w-8 h-8 text-foreground-muted"
+                      className="w-8 h-8 text-[var(--foreground-muted)]"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -62,11 +62,11 @@ const Posts = ({ posts, setHnadle }) => {
 
               {/* Text Content */}
               <Link href={`/${post.ID}`} className="flex-grow mr-4">
-                <h3 className="text-base font-bold text-foreground-primary mb-1 transition-colors group-hover:text-accent-primary leading-tight">
+                <h3 className="text-base font-bold text-[var(--foreground-primary)] mb-1 transition-colors group-hover:text-[var(--accent-primary)] leading-tight">
                   {post.post_title}
                 </h3>
                 {maddahName && (
-                  <p className="text-xs text-foreground-secondary font-medium">
+                  <p className="text-xs text-[var(--foreground-secondary)] font-medium">
                     {maddahName}
                   </p>
                 )}
@@ -79,10 +79,10 @@ const Posts = ({ posts, setHnadle }) => {
                 className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-sm shadow-md transition-all duration-300
                   ${
                     isCurrentlyPlaying
-                      ? "bg-accent-background-secondary text-white scale-110"
-                      : "bg-background-tertiary text-foreground-primary hover:bg-accent-primary hover:text-white"
+                      ? "bg-[var(--accent-primary)] text-[var(--background-primary)] scale-110"
+                      : "bg-[var(--background-tertiary)] text-[var(--foreground-primary)] hover:bg-[var(--accent-primary)] hover:text-[var(--background-primary)]"
                   }
-                  focus:outline-none focus:ring-4 focus:ring-accent-primary/50`}
+                  focus:outline-none focus:ring-4 focus:ring-[var(--accent-primary)/50]`}
               >
                 {isCurrentlyPlaying ? (
                   <PauseIcon className="w-6 h-6" />
@@ -94,12 +94,12 @@ const Posts = ({ posts, setHnadle }) => {
 
             {/* Tags (Optional - displays below main content if present) */}
             {post.tag && post.tag.length > 0 && (
-              <div className="px-4 pb-4 border-t border-border-secondary pt-3">
+              <div className="px-4 pb-4 border-t border-[var(--border-secondary)] pt-3">
                 <div className="flex flex-wrap gap-2">
                   {post.tag.slice(0, 2).map((tagItem) => (
                     <span
                       key={tagItem.slug}
-                      className="block text-xs font-semibold bg-background-tertiary text-foreground-secondary px-2.5 py-1 rounded-full"
+                      className="block text-xs font-semibold bg-[var(--background-tertiary)] text-[var(--foreground-secondary)] px-2.5 py-1 rounded-full"
                     >
                       {tagItem.name}
                     </span>

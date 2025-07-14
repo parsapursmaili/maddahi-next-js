@@ -1,26 +1,16 @@
-// components/Header.js
-
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import {
-  motion,
-  AnimatePresence,
-  useMotionValue,
-  useSpring,
-} from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { FaBars, FaTimes, FaSearch } from "react-icons/fa";
-import SearchOverlay from "./SearchOverlay";
+import SearchOverlay from "./SearchOverlay"; // فرض بر اینکه این کامپوننت وجود دارد
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const pathname = usePathname();
-
-  const mouseX = useMotionValue(Infinity);
-  const springMouseX = useSpring(mouseX, { stiffness: 300, damping: 30 });
 
   const navLinks = [
     { href: "/home", label: "صفحه اصلی" },
@@ -29,6 +19,7 @@ export default function Header() {
     { href: "/about", label: "درباره ما" },
   ];
 
+  // با تغییر مسیر، منو و جستجو را می‌بندیم
   useEffect(() => {
     setIsMenuOpen(false);
     setIsSearchOpen(false);
@@ -36,32 +27,21 @@ export default function Header() {
 
   return (
     <>
-      <motion.header
-        onMouseMove={(e) => mouseX.set(e.pageX)}
-        onMouseLeave={() => mouseX.set(Infinity)}
-        // ✅ تغییر اصلی اینجاست: اضافه کردن کلاس overflow-x-hidden
-        className="sticky top-0 z-40 w-full bg-slate-900/80 backdrop-blur-xl border-b border-white/10 shadow-lg overflow-x-hidden"
-      >
-        {/* افکت نورانی */}
-        <motion.div
-          style={{ left: springMouseX }}
-          className="pointer-events-none absolute inset-0 z-[-1] -translate-x-1/2"
-        >
-          <div className="absolute inset-0 h-full w-full bg-[radial-gradient(400px_circle_at_center,rgba(29,78,216,0.15),transparent_80%)]"></div>
-        </motion.div>
-
-        <div className="container mx-auto flex items-center justify-between p-4 h-20 text-white">
-          {/* لوگو */}
+      <header className="sticky top-0 z-40 w-full bg-[var(--background-primary)/85] backdrop-blur-lg border-b border-[var(--border-primary)] shadow-[0_4px_14px_0_rgba(var(--accent-primary-rgb),0.1)]">
+        <div className="container mx-auto flex items-center justify-between p-4 h-20 text-[var(--foreground-primary)]">
+          {/* لوگو با استایل جدید و انیمیشن درخشش */}
           <Link
             href="/"
-            className="text-3xl lg:text-4xl font-black group transition-all duration-300"
+            className="text-3xl lg:text-4xl font-black relative overflow-hidden group"
           >
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-sky-300 to-indigo-400 group-hover:from-white group-hover:to-sky-300">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-crystal-highlight)]">
               به سوی تو
             </span>
+            {/* افکت درخشش هنگام هاور */}
+            <span className="absolute inset-0 w-full h-full bg-[linear-gradient(100deg,transparent_20%,var(--accent-crystal-highlight),transparent_80%)] -translate-x-full transition-transform duration-700 ease-in-out group-hover:translate-x-full opacity-50 blur-xl" />
           </Link>
 
-          {/* منوی دسکتاپ */}
+          {/* منوی دسکتاپ با استایل حبابی (Pill) */}
           <nav className="hidden md:flex items-center">
             <ul className="flex items-center gap-2">
               {navLinks.map((link) => {
@@ -75,25 +55,25 @@ export default function Header() {
                   >
                     <Link
                       href={link.href}
-                      className={`relative block px-4 py-2 font-medium text-base rounded-md transition-colors duration-300 ${
+                      className={`relative block px-4 py-2 text-base rounded-md transition-colors duration-300 z-10 ${
                         isActive
-                          ? "text-slate-200"
-                          : "text-slate-400 hover:text-white"
+                          ? "text-[var(--foreground-primary)]"
+                          : "text-[var(--foreground-secondary)] hover:text-[var(--foreground-primary)]"
                       }`}
                     >
                       {link.label}
-                      {isActive && (
-                        <motion.div
-                          className="absolute bottom-0 left-2 right-2 h-0.5 bg-sky-500"
-                          layoutId="underline"
-                          transition={{
-                            type: "spring",
-                            stiffness: 300,
-                            damping: 25,
-                          }}
-                        />
-                      )}
                     </Link>
+                    {isActive && (
+                      <motion.div
+                        className="absolute inset-0 bg-[var(--background-tertiary)] rounded-lg z-0"
+                        layoutId="active-pill"
+                        transition={{
+                          type: "spring",
+                          stiffness: 300,
+                          damping: 25,
+                        }}
+                      />
+                    )}
                   </motion.li>
                 );
               })}
@@ -101,22 +81,23 @@ export default function Header() {
           </nav>
 
           {/* آیکون‌ها در سمت چپ */}
-          <div className="flex items-center gap-2">
-            {/* دکمه جستجو */}
-            <button
+          <div className="flex items-center gap-1">
+            <motion.button
               onClick={() => setIsSearchOpen(true)}
-              className="p-3 text-xl text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors"
+              className="p-3 text-xl text-[var(--foreground-muted)] hover:text-[var(--foreground-primary)] rounded-full"
               aria-label="باز کردن جستجو"
+              whileHover={{ backgroundColor: "var(--background-tertiary)" }}
+              whileTap={{ scale: 0.9 }}
             >
               <FaSearch />
-            </button>
+            </motion.button>
 
-            {/* دکمه منوی موبایل */}
             <div className="md:hidden">
-              <button
+              <motion.button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="text-white text-2xl p-2 z-50 relative"
+                className="text-[var(--foreground-primary)] text-2xl p-3 z-50 relative rounded-full"
                 aria-label="منو"
+                whileTap={{ scale: 0.9 }}
               >
                 <AnimatePresence initial={false} mode="wait">
                   {isMenuOpen ? (
@@ -141,44 +122,52 @@ export default function Header() {
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </button>
+              </motion.button>
             </div>
           </div>
         </div>
-      </motion.header>
+      </header>
 
-      {/* رندر کردن منوی موبایل */}
+      {/* منوی موبایل بهبود یافته */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-30 bg-slate-900/95 backdrop-blur-md md:hidden flex flex-col items-center justify-center p-8"
-            onClick={() => setIsMenuOpen(false)}
+            className="fixed inset-0 z-30 bg-[var(--background-primary)/80] backdrop-blur-xl md:hidden flex flex-col items-center justify-center p-8"
           >
-            <motion.nav className="flex flex-col items-center gap-8">
-              {navLinks.map((link, i) => (
-                <motion.div
-                  key={link.href}
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{
-                    opacity: 1,
-                    y: 0,
-                    transition: { delay: 0.1 + i * 0.1 },
-                  }}
-                  exit={{ opacity: 0, y: -20 }}
-                >
-                  <Link
-                    href={link.href}
-                    onClick={() => setIsMenuOpen(false)}
-                    className="text-3xl font-bold text-slate-300 hover:text-white transition-colors"
+            <nav className="flex flex-col items-center gap-6">
+              {navLinks.map((link, i) => {
+                const isActive = pathname === link.href;
+                return (
+                  <motion.div
+                    key={link.href}
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{
+                      opacity: 1,
+                      y: 0,
+                      transition: { delay: 0.1 + i * 0.1 },
+                    }}
+                    exit={{ opacity: 0, y: -20 }}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    {link.label}
-                  </Link>
-                </motion.div>
-              ))}
-            </motion.nav>
+                    <Link
+                      href={link.href}
+                      onClick={() => setIsMenuOpen(false)}
+                      className={`text-3xl font-bold transition-colors ${
+                        isActive
+                          ? "text-[var(--accent-primary)]"
+                          : "text-[var(--foreground-secondary)] hover:text-[var(--foreground-primary)]"
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </nav>
           </motion.div>
         )}
       </AnimatePresence>

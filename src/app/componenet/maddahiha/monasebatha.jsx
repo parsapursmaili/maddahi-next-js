@@ -36,15 +36,15 @@ const Reason = ({ reason, setReason, control }) => {
     <div className="select-none relative w-64">
       {/* دکمه اصلی انتخاب */}
       <div
-        className="flex items-center justify-between p-3 bg-slate-800 border border-slate-700 rounded-lg cursor-pointer transition-colors hover:bg-slate-700"
+        className="flex items-center justify-between p-3 bg-[var(--background-secondary)] border border-[var(--border-primary)] rounded-lg cursor-pointer transition-colors hover:bg-[var(--background-tertiary)]"
         onClick={() => setOpen(!open)}
       >
-        <p className="font-semibold text-slate-200">
+        <p className="font-semibold text-[var(--foreground-primary)]">
           {reason.name ? reason.name : "انتخاب مناسبت"}
         </p>
         {/* آیکون برای نشان دادن وضعیت باز/بسته بودن */}
         <svg
-          className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${
+          className={`w-5 h-5 text-[var(--foreground-muted)] transition-transform duration-300 ${
             open ? "transform rotate-180" : ""
           }`}
           fill="none"
@@ -63,11 +63,11 @@ const Reason = ({ reason, setReason, control }) => {
 
       {/* پنل دراپ‌داون */}
       {open && (
-        <div className="absolute z-20 w-full mt-2 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl overflow-hidden">
+        <div className="absolute z-20 w-full mt-2 bg-[var(--background-secondary)] border border-[var(--border-primary)] rounded-lg shadow-2xl overflow-hidden">
           {/* فیلد جستجو */}
           <input
             type="text"
-            className="w-full p-3 bg-slate-800 text-slate-200 font-semibold border-b border-slate-700 outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full p-3 bg-[var(--background-secondary)] text-[var(--foreground-primary)] font-semibold border-b border-[var(--border-primary)] outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
             placeholder="جستجو..."
             value={query}
             onChange={(e) => setQuery(e.currentTarget.value)}
@@ -83,7 +83,7 @@ const Reason = ({ reason, setReason, control }) => {
                 setOpen(false);
                 setQuery("");
               }}
-              className="p-3 hover:bg-slate-700 cursor-pointer text-slate-300 transition-colors"
+              className="p-3 hover:bg-[var(--background-tertiary)] cursor-pointer text-[var(--foreground-secondary)] transition-colors"
             >
               انتخاب کنید
             </li>
@@ -96,13 +96,13 @@ const Reason = ({ reason, setReason, control }) => {
                   setOpen(false);
                   setQuery("");
                 }}
-                className="p-3 hover:bg-slate-700 cursor-pointer text-slate-200 break-words whitespace-normal transition-colors"
+                className="p-3 hover:bg-[var(--background-tertiary)] cursor-pointer text-[var(--foreground-primary)] break-words whitespace-normal transition-colors"
               >
                 {user.name}
               </li>
             ))}
             {filteredUsers.length === 0 && (
-              <li className="p-3 text-slate-500 text-center">
+              <li className="p-3 text-[var(--foreground-muted)] text-center">
                 مناسبت پیدا نشد
               </li>
             )}

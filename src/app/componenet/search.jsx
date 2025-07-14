@@ -21,7 +21,7 @@ const Search = ({ setSQuery, squery, control }) => {
     <div className="relative w-64">
       <input
         onChange={(e) => setInputValue(e.target.value)}
-        className="w-full p-3 bg-slate-800 text-slate-200 font-semibold border border-slate-700 rounded-lg outline-none transition-all focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+        className="w-full p-3 bg-[var(--background-secondary)] text-[var(--foreground-primary)] font-semibold border border-[var(--border-primary)] rounded-lg outline-none transition-all focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-[var(--accent-primary)]"
         placeholder="جستجوی مداحی..."
         value={inputValue}
         type="search"

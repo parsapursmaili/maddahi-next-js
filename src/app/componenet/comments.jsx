@@ -14,7 +14,6 @@ const Comment = ({ postId }) => {
     setSubmissionStatus("");
 
     try {
-      // شبیه‌سازی ارسال به API
       await new Promise((resolve) => setTimeout(resolve, 1500));
       console.log("Comment Submitted:", { postId, name, email, commentText });
 
@@ -32,7 +31,7 @@ const Comment = ({ postId }) => {
 
   return (
     <div className="w-full">
-      <h2 className="text-2xl font-bold text-white mb-6 text-center">
+      <h2 className="text-2xl font-bold text-[var(--foreground-primary)] mb-6 text-center">
         نظر خود را بنویسید
       </h2>
       <form onSubmit={handleSubmit} className="space-y-5">
@@ -40,7 +39,7 @@ const Comment = ({ postId }) => {
           <div>
             <label
               htmlFor="name"
-              className="block text-sm font-medium text-slate-300 mb-2"
+              className="block text-sm font-medium text-[var(--foreground-secondary)] mb-2"
             >
               نام شما
             </label>
@@ -50,14 +49,14 @@ const Comment = ({ postId }) => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full px-4 py-2.5 bg-slate-800/70 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-sky-500 focus:border-sky-500 transition-all duration-200 outline-none"
+              className="w-full px-4 py-2.5 bg-[var(--background-secondary)] border border-[var(--border-primary)] rounded-lg text-[var(--foreground-primary)] placeholder-[var(--foreground-muted)] focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--background-primary)] focus:ring-[var(--accent-primary)] focus:border-[var(--accent-primary)] transition-all duration-200 outline-none"
               placeholder="نام خود را وارد کنید"
             />
           </div>
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-slate-300 mb-2"
+              className="block text-sm font-medium text-[var(--foreground-secondary)] mb-2"
             >
               ایمیل (اختیاری)
             </label>
@@ -66,7 +65,7 @@ const Comment = ({ postId }) => {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-800/70 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-sky-500 focus:border-sky-500 transition-all duration-200 outline-none"
+              className="w-full px-4 py-2.5 bg-[var(--background-secondary)] border border-[var(--border-primary)] rounded-lg text-[var(--foreground-primary)] placeholder-[var(--foreground-muted)] focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--background-primary)] focus:ring-[var(--accent-primary)] focus:border-[var(--accent-primary)] transition-all duration-200 outline-none"
               placeholder="example@email.com"
             />
           </div>
@@ -75,7 +74,7 @@ const Comment = ({ postId }) => {
         <div>
           <label
             htmlFor="commentText"
-            className="block text-sm font-medium text-slate-300 mb-2"
+            className="block text-sm font-medium text-[var(--foreground-secondary)] mb-2"
           >
             متن نظر
           </label>
@@ -85,7 +84,7 @@ const Comment = ({ postId }) => {
             onChange={(e) => setCommentText(e.target.value)}
             rows="5"
             required
-            className="w-full px-4 py-2.5 bg-slate-800/70 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-sky-500 focus:border-sky-500 transition-all duration-200 outline-none resize-y"
+            className="w-full px-4 py-2.5 bg-[var(--background-secondary)] border border-[var(--border-primary)] rounded-lg text-[var(--foreground-primary)] placeholder-[var(--foreground-muted)] focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--background-primary)] focus:ring-[var(--accent-primary)] focus:border-[var(--accent-primary)] transition-all duration-200 outline-none resize-y"
             placeholder="نظر خود را اینجا بنویسید..."
           ></textarea>
         </div>
@@ -94,11 +93,11 @@ const Comment = ({ postId }) => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`w-full flex justify-center py-3 px-5 border border-transparent rounded-lg shadow-md text-base font-semibold text-white transition-all duration-300 ease-in-out transform hover:-translate-y-1
+            className={`w-full flex justify-center py-3 px-5 border border-transparent rounded-lg shadow-md text-base font-semibold text-[var(--background-primary)] transition-all duration-300 ease-in-out transform hover:-translate-y-1
               ${
                 isSubmitting
-                  ? "bg-indigo-500/70 cursor-not-allowed"
-                  : "bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-indigo-500"
+                  ? "bg-[var(--accent-primary)/70] cursor-not-allowed"
+                  : "bg-[var(--accent-primary)] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--background-primary)] focus:ring-[var(--accent-primary)]"
               }`}
           >
             {isSubmitting ? (
@@ -134,7 +133,9 @@ const Comment = ({ postId }) => {
         {submissionStatus && (
           <p
             className={`mt-4 text-center font-medium text-sm ${
-              submissionStatus === "success" ? "text-green-400" : "text-red-400"
+              submissionStatus === "success"
+                ? "text-[var(--success)]"
+                : "text-[var(--error)]"
             }`}
           >
             {submissionStatus === "success"

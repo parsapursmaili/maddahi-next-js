@@ -1,5 +1,5 @@
 "use client";
-import "@/app/css/singlepost.css"; // فایل CSS برای استایل نوار پیشرفت
+import "@/app/css/singlepost.css";
 import React, { useRef, useState, useEffect } from "react";
 
 const MusicPlayer = ({ audioSrc }) => {
@@ -10,11 +10,11 @@ const MusicPlayer = ({ audioSrc }) => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
-  // تابع به‌روزرسانی نوار پیشرفت
   const updateProgress = () => {
     if (audioRef.current && timeLineRef.current) {
-      const progress = (audioRef.current.currentTime / audioRef.current.duration) * 100;
-      timeLineRef.current.style.setProperty('--progress', `${progress}%`);
+      const progress =
+        (audioRef.current.currentTime / audioRef.current.duration) * 100;
+      timeLineRef.current.style.setProperty("--progress", `${progress}%`);
     }
   };
 
@@ -39,7 +39,7 @@ const MusicPlayer = ({ audioSrc }) => {
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`;
   };
-  
+
   const handleDownload = () => {
     if (audioSrc) {
       const link = document.createElement("a");
@@ -50,7 +50,6 @@ const MusicPlayer = ({ audioSrc }) => {
       document.body.removeChild(link);
     }
   };
-
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -75,19 +74,23 @@ const MusicPlayer = ({ audioSrc }) => {
   return (
     <div
       style={{ direction: "ltr" }}
-      className="flex w-full max-w-2xl items-center justify-between gap-3 rounded-xl bg-slate-800/50 p-3 shadow-lg backdrop-blur-md ring-1 ring-white/10 sm:gap-4 sm:p-4"
+      className="flex w-full max-w-2xl items-center justify-between gap-3 rounded-xl bg-[var(--background-secondary)/50] p-3 shadow-lg backdrop-blur-md ring-1 ring-[var(--border-primary)] sm:gap-4 sm:p-4"
     >
       {/* دکمه پخش/توقف */}
       <button
-        className="flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 text-xl cursor-pointer rounded-full bg-sky-500/80 text-white transition-all duration-300 ease-in-out hover:bg-sky-500 hover:scale-105 shadow-md"
+        className="flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 text-xl cursor-pointer rounded-full bg-[var(--accent-primary)] text-[var(--background-primary)] transition-all duration-300 ease-in-out hover:opacity-90 hover:scale-105 shadow-md"
         onClick={handlePlayPause}
         aria-label={isPlaying ? "مکث" : "پخش"}
       >
-        <i className={`fas ${isPlaying ? "fa-pause" : "fa-play"}`}></i>
+        <i
+          className={`fas ${isPlaying ? "fa-pause" : "fa-play"} ${
+            !isPlaying && "pl-0.5"
+          }`}
+        ></i>
       </button>
 
       {/* زمان فعلی */}
-      <span className="font-mono text-xs sm:text-sm text-slate-400 w-12 text-center">
+      <span className="font-mono text-xs sm:text-sm text-[var(--foreground-muted)] w-12 text-center">
         {formatTime(currentTime)}
       </span>
 
@@ -105,24 +108,20 @@ const MusicPlayer = ({ audioSrc }) => {
       </div>
 
       {/* مدت زمان کل */}
-      <span className="font-mono text-xs sm:text-sm text-slate-400 w-12 text-center">
+      <span className="font-mono text-xs sm:text-sm text-[var(--foreground-muted)] w-12 text-center">
         {formatTime(duration)}
       </span>
-      
+
       {/* دکمه دانلود */}
       <button
-        className="flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 text-lg flex-shrink-0 cursor-pointer rounded-full bg-slate-700/60 text-slate-300 transition-all duration-300 ease-in-out hover:bg-slate-700 hover:text-white"
+        className="flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 text-lg flex-shrink-0 cursor-pointer rounded-full bg-[var(--background-tertiary)]/60 text-[var(--foreground-secondary)] transition-all duration-300 ease-in-out hover:bg-[var(--border-secondary)] hover:text-[var(--foreground-primary)]"
         onClick={handleDownload}
         aria-label="دانلود آهنگ"
       >
         <i className="fas fa-download"></i>
       </button>
 
-      <audio
-        ref={audioRef}
-        src={audioSrc}
-        preload="metadata"
-      ></audio>
+      <audio ref={audioRef} src={audioSrc} preload="metadata"></audio>
     </div>
   );
 };

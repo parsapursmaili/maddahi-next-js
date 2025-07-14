@@ -1,7 +1,7 @@
 .music-progress {
-  --track-bg: #334155; /* bg-slate-700 */
-  --progress-bg: #0ea5e9; /* bg-sky-500 */
-  --thumb-bg: #f8fafc; /* bg-slate-50 */
+  --track-bg: var(--background-tertiary);
+  --progress-bg: var(--accent-primary);
+  --thumb-bg: var(--foreground-primary);
   --thumb-size: 16px;
 
   /* متغیر CSS برای نگهداری درصد پیشرفت */

@@ -13,11 +13,12 @@ const MusicPlayer = ({
   handle,
   control,
   setHandle,
+  isPlaying,
+  setIsPlaying,
 }) => {
   const [musicPlayer, setMusicPlayer] = useState({
     duration: 0,
     currentTime: 0,
-    isPlay: false,
     refresh: false,
   });
   const [loading, setLoading] = useState(false);
@@ -64,7 +65,7 @@ const MusicPlayer = ({
   function updateProgressBar() {
     if (!musicPlayer.duration) return;
     const val = (audioRef.current.currentTime / musicPlayer.duration) * 100;
-    timeLine.current.style.background = `linear-gradient(to right, var(--accent-primary) ${val}%, #334155 ${val}%)`;
+    timeLine.current.style.background = `linear-gradient(to right, var(--accent-primary) ${val}%, var(--background-tertiary) ${val}%)`;
   }
   function canPlay() {
     setLoading(false);
@@ -143,7 +144,7 @@ const MusicPlayer = ({
       />
       {/* پلیر اصلی */}
       <div
-        className={`fixed bottom-0 left-0 right-0 h-[110px] bg-slate-900/80 backdrop-blur-lg shadow-2xl transition-transform duration-500 ease-in-out ${
+        className={`fixed bottom-0 left-0 right-0 h-[110px] bg-[var(--background-primary)/80] backdrop-blur-lg shadow-2xl transition-transform duration-500 ease-in-out z-1000 ${
           first ? "translate-y-full" : "translate-y-0"
         }`}
       >
@@ -158,7 +159,7 @@ const MusicPlayer = ({
             type="range"
             className="w-full"
           />
-          <div className="flex justify-between text-xs font-mono text-slate-400 px-1 mt-1">
+          <div className="flex justify-between text-xs font-mono text-[var(--foreground-muted)] px-1 mt-1">
             <span>{formatTime(musicPlayer.duration)}</span>
             <span>{formatTime(musicPlayer.currentTime)}</span>
           </div>
@@ -169,28 +170,27 @@ const MusicPlayer = ({
           {/* دکمه دانلود */}
           <i
             onClick={handledownload}
-            className="fas fa-download cursor-pointer text-2xl text-slate-400 transition-all duration-300 ease-in-out hover:text-white hover:scale-110 active:scale-95"
+            className="fas fa-download cursor-pointer text-2xl text-[var(--foreground-muted)] transition-all duration-300 ease-in-out hover:text-[var(--foreground-primary)] hover:scale-110 active:scale-95"
             title="دانلود"
           ></i>
 
           {/* دکمه آهنگ قبلی (با آیکون fa-forward طبق کد شما) */}
           <i
             onClick={backward}
-            className="fas fa-forward cursor-pointer text-3xl text-slate-300 transition-all duration-300 ease-in-out hover:text-white hover:scale-110 active:scale-95"
+            className="fas fa-forward cursor-pointer text-3xl text-[var(--foreground-secondary)] transition-all duration-300 ease-in-out hover:text-[var(--foreground-primary)] hover:scale-110 active:scale-95"
             title="آهنگ قبلی"
           ></i>
 
           {/* دکمه اصلی پخش/توقف - طراحی شده به عنوان نقطه کانونی */}
           <button
             onClick={handleIcon}
-            className="flex h-16 w-16 items-center justify-center rounded-full bg-sky-500 shadow-lg shadow-sky-500/40 transition-all duration-300 ease-in-out hover:scale-105 hover:bg-sky-400 active:scale-95"
+            className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--accent-primary)] shadow-lg shadow-[var(--accent-primary)/40] transition-all duration-300 ease-in-out hover:scale-105 hover:opacity-90 active:scale-95"
             aria-label={musicPlayer.isPlay ? "توقف" : "پخش"}
           >
             <i
               className={`fas ${
                 musicPlayer.isPlay ? "fa-pause" : "fa-play"
-              } text-3xl text-white transition-transform duration-200 ease-in-out ${
-                //  جابجایی جزئی آیکون پلی برای مرکزیت بصری بهتر
+              } text-3xl text-[var(--background-primary)] transition-transform duration-200 ease-in-out ${
                 !musicPlayer.isPlay && "ml-1"
               }`}
             ></i>
@@ -199,7 +199,7 @@ const MusicPlayer = ({
           {/* دکمه آهنگ بعدی (با آیکون fa-backward طبق کد شما) */}
           <i
             onClick={forward}
-            className="fas fa-backward cursor-pointer text-3xl text-slate-300 transition-all duration-300 ease-in-out hover:text-white hover:scale-110 active:scale-95"
+            className="fas fa-backward cursor-pointer text-3xl text-[var(--foreground-secondary)] transition-all duration-300 ease-in-out hover:text-[var(--foreground-primary)] hover:scale-110 active:scale-95"
             title="آهنگ بعدی"
           ></i>
 
@@ -210,8 +210,8 @@ const MusicPlayer = ({
             }
             className={`fas fa-sync-alt cursor-pointer text-2xl transition-all duration-300 ease-in-out hover:scale-110 active:scale-95 ${
               musicPlayer.refresh
-                ? "text-[var(--accent-primary)] " // انیمیشن چرخش هنگام فعال بودن
-                : "text-slate-400 hover:text-white"
+                ? "text-[var(--accent-primary)]"
+                : "text-[var(--foreground-muted)] hover:text-[var(--foreground-primary)]"
             }`}
             title="تکرار"
           ></i>
@@ -221,7 +221,7 @@ const MusicPlayer = ({
       {/* اسپینر لودینگ */}
       {loading && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/30 pointer-events-none z-50">
-          <div className="w-12 h-12 border-4 border-slate-600 border-t-emerald-500 rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-[var(--background-tertiary)] border-t-[var(--accent-primary)] rounded-full animate-spin"></div>
         </div>
       )}
     </div>

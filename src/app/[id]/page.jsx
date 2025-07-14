@@ -50,7 +50,6 @@ export async function generateMetadata({ params }) {
   };
 }
 
-// کامپوننت اصلی صفحه - نسخه نهایی با استایلینگ پیشرفته و مدرن
 export default async function ProductPage({ params }) {
   const id = params.id;
 
@@ -71,28 +70,18 @@ export default async function ProductPage({ params }) {
 
   const post = postRows[0][0];
   const maddah = maddahRows[0];
-  const monasebat = monasebatRows[0]; // این هنوز آرایه ای از آبجکت هاست
-
+  const monasebat = monasebatRows[0];
   const comments = commentsRows[0];
-
   const monasebatIds = monasebat.map((tag) => tag.ID);
 
   let moshabeh = [];
   if (monasebatIds.length > 0) {
     [moshabeh] = await db.query(
       `
-      SELECT DISTINCT
-          p.*
-      FROM
-          posts AS p
-      JOIN
-          wp_term_relationships AS wtr ON p.ID = wtr.object_id
-      WHERE
-          wtr.term_taxonomy_id IN (?)
-          AND p.ID != ?
-      ORDER BY
-          RAND()
-      LIMIT 20; -- تعداد دلخواه پست‌های مشابه را محدود کنید
+      SELECT DISTINCT p.* FROM posts AS p
+      JOIN wp_term_relationships AS wtr ON p.ID = wtr.object_id
+      WHERE wtr.term_taxonomy_id IN (?) AND p.ID != ?
+      ORDER BY RAND() LIMIT 20;
     `,
       [monasebatIds[0], id]
     );
@@ -103,16 +92,12 @@ export default async function ProductPage({ params }) {
   }
 
   return (
-    // پس‌زمینه بهبودیافته: گرادیانت فضایی تیره و جذاب
-    <div className="flex min-h-screen flex-col items-center bg-gray-900 bg-gradient-to-b from-gray-900 to-slate-900 py-16 px-4 sm:px-6 lg:px-8">
-      {/* کانتینر اصلی با حداکثر عرض و موقعیت‌دهی نسبی */}
-      <article className="relative w-full max-w-5xl rounded-2xl bg-slate-800/50 shadow-2xl shadow-cyan-500/10 backdrop-blur-lg ring-1 ring-white/10 overflow-hidden">
-        {/* بخش هدر پست */}
+    <div className="flex min-h-screen flex-col items-center bg-[var(--background-primary)] py-16 px-4 sm:px-6 lg:px-8">
+      <article className="relative w-full max-w-5xl rounded-2xl bg-[var(--background-secondary)]/50 shadow-2xl shadow-[var(--accent-primary)]/10 backdrop-blur-lg ring-1 ring-[var(--border-primary)] overflow-hidden">
         <div className="flex flex-col md:flex-row items-center p-6 sm:p-8 md:p-10 gap-8">
           {post.thumbnail && (
-            // کانتینر تصویر با افکت درخشش هاور
             <div className="group relative h-52 w-52 md:h-64 md:w-64 flex-shrink-0">
-              <div className="absolute inset-0 z-0 -m-3 rounded-2xl bg-gradient-to-br from-sky-400 to-indigo-600 opacity-20 blur-xl transition-all duration-700 group-hover:opacity-30 group-hover:blur-2xl"></div>
+              <div className="absolute inset-0 z-0 -m-3 rounded-2xl bg-gradient-to-br from-[var(--accent-primary)] to-[var(--success)] opacity-20 blur-xl transition-all duration-700 group-hover:opacity-30 group-hover:blur-2xl"></div>
               <Image
                 src={`https://besooyeto.ir/maddahi/wp-content/uploads/${post.thumbnail}`}
                 alt={post.title || "تصویر بندانگشتی پست"}
@@ -124,18 +109,16 @@ export default async function ProductPage({ params }) {
             </div>
           )}
           <div className="flex flex-col items-center md:items-start text-center md:text-right flex-grow mt-4 md:mt-0">
-            {/* عنوان اصلی با فونت سنگین و گرادیانت متنی */}
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-gray-200 via-gray-300 to-gray-400 bg-clip-text text-transparent mb-4 leading-tight">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-[var(--foreground-primary)] to-[var(--foreground-secondary)] bg-clip-text text-transparent mb-4 leading-tight">
               {post.title}
             </h1>
             {maddah && maddah.length > 0 && (
               <div className="flex flex-wrap gap-3 mb-4 justify-center md:justify-start">
                 {maddah.map((maddahh) => (
-                  // تگ‌های دسته‌بندی با استایل کپسولی و هاور جذاب
                   <a
                     key={maddahh.slug}
                     href={`/category/${maddahh.slug}`}
-                    className="text-sm bg-sky-500/10 text-sky-300 px-4 py-1.5 rounded-full font-medium transition-all duration-300 border border-sky-500/30 hover:bg-sky-500/20 hover:border-sky-500/50 hover:shadow-md hover:shadow-sky-500/10"
+                    className="text-sm bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] px-4 py-1.5 rounded-full font-medium transition-all duration-300 border border-[var(--accent-primary)]/30 hover:bg-[var(--accent-primary)]/20 hover:border-[var(--accent-primary)]/50 hover:shadow-md hover:shadow-[var(--accent-primary)]/10"
                   >
                     {maddahh.name}
                   </a>
@@ -145,11 +128,10 @@ export default async function ProductPage({ params }) {
             {monasebat && monasebat.length > 0 && (
               <div className="flex flex-wrap gap-x-4 gap-y-2 mb-6 justify-center md:justify-start">
                 {monasebat.map((monasebatItem) => (
-                  // تگ‌های مناسبت با استایل ساده‌تر و هاور آندرلاین
                   <a
                     key={monasebatItem.slug}
                     href={`/tag/${monasebatItem.slug}`}
-                    className="text-xs text-indigo-300/80 transition-colors duration-200 hover:text-indigo-300 hover:underline underline-offset-4"
+                    className="text-xs text-[var(--foreground-secondary)]/80 transition-colors duration-200 hover:text-[var(--foreground-secondary)] hover:underline underline-offset-4"
                   >
                     #{monasebatItem.name.replace(/\s/g, "_")}
                   </a>
@@ -168,49 +150,46 @@ export default async function ProductPage({ params }) {
         <div className="mt-10">
           <Slider slides={moshabeh} />
         </div>
-        {/* محتوای پست با استایل‌دهی بهتر برای خوانایی */}
         {post.content && (
           <div
-            className="prose prose-lg prose-invert max-w-none p-6 sm:p-8 md:p-10 border-t border-white/10
-                           prose-p:text-slate-300 prose-p:leading-8 
-                           prose-a:text-sky-400 prose-a:transition-colors hover:prose-a:text-sky-300 prose-a:font-semibold
-                           prose-strong:text-slate-100
-                           prose-li:marker:text-sky-400
-                           prose-blockquote:border-r-4 prose-blockquote:border-sky-500/80 prose-blockquote:pr-4 prose-blockquote:text-slate-400 prose-blockquote:font-normal prose-blockquote:bg-slate-900/40 prose-blockquote:rounded-r-lg"
+            className="prose prose-lg prose-invert max-w-none p-6 sm:p-8 md:p-10 border-t border-[var(--border-primary)]
+                           prose-p:text-[var(--foreground-secondary)] prose-p:leading-8
+                           prose-a:text-[var(--accent-primary)] prose-a:transition-colors hover:prose-a:opacity-80 prose-a:font-semibold
+                           prose-strong:text-[var(--foreground-primary)]
+                           prose-li:marker:text-[var(--accent-primary)]
+                           prose-blockquote:border-r-4 prose-blockquote:border-[var(--accent-primary)]/80 prose-blockquote:pr-4 prose-blockquote:text-[var(--foreground-muted)] prose-blockquote:font-normal prose-blockquote:bg-[var(--background-tertiary)]/40 prose-blockquote:rounded-r-lg"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
         )}
 
-        {/* بخش نظرات با طراحی جدید */}
-        <div className="p-6 sm:p-8 md:p-10 border-t border-white/10">
+        <div className="p-6 sm:p-8 md:p-10 border-t border-[var(--border-primary)]">
           <div className="max-w-3xl mx-auto">
             {comments && comments.length > 0 && (
               <div className="mb-12">
-                <h2 className="text-2xl font-bold text-white mb-8 text-center md:text-right">
+                <h2 className="text-2xl font-bold text-[var(--foreground-primary)] mb-8 text-center md:text-right">
                   نظرات ({comments.length.toLocaleString("fa-IR")})
                 </h2>
                 <div className="space-y-6">
                   {comments.map((comment) => (
                     <div key={comment.id} className="group flex gap-4">
-                      {/* آواتار کاربر با گرادیانت */}
-                      <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-indigo-600 text-xl font-bold text-white ring-2 ring-white/20">
+                      <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-[var(--success)] text-xl font-bold text-white ring-2 ring-[var(--foreground-primary)]/20">
                         {comment.author_name
                           ? comment.author_name.charAt(0)
                           : "؟"}
                       </span>
-                      <div className="flex-grow rounded-xl bg-slate-900/60 p-4 border border-white/10 transition-colors duration-300 group-hover:border-sky-500/40">
+                      <div className="flex-grow rounded-xl bg-[var(--background-primary)]/60 p-4 border border-[var(--border-primary)] transition-colors duration-300 group-hover:border-[var(--accent-primary)]/40">
                         <div className="flex items-baseline justify-between mb-2">
-                          <p className="font-semibold text-sky-300 text-base">
+                          <p className="font-semibold text-[var(--accent-primary)] text-base">
                             {comment.author_name || "کاربر ناشناس"}
                           </p>
-                          <p className="text-gray-500 text-xs font-mono">
+                          <p className="text-[var(--foreground-muted)] text-xs font-mono">
                             {new Date(comment.created_at).toLocaleDateString(
                               "fa-IR",
                               { year: "numeric", month: "long", day: "numeric" }
                             )}
                           </p>
                         </div>
-                        <p className="text-slate-300 leading-relaxed text-sm whitespace-pre-wrap">
+                        <p className="text-[var(--foreground-secondary)] leading-relaxed text-sm whitespace-pre-wrap">
                           {comment.comment_content}
                         </p>
                       </div>
@@ -220,8 +199,7 @@ export default async function ProductPage({ params }) {
               </div>
             )}
 
-            {/* کانتینر فرم ارسال نظر با پس‌زمینه و حاشیه متمایز */}
-            <div className="rounded-xl border border-dashed border-gray-700 p-6 bg-slate-900/30">
+            <div className="rounded-xl border border-dashed border-[var(--border-secondary)] p-6 bg-[var(--background-primary)]/30">
               <Comment postId={id} />
             </div>
           </div>

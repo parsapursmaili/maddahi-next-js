@@ -21,9 +21,11 @@ export default async function Home() {
 
   return (
     <div className="container mx-auto p-4 w-[1350px]">
-      <h3 className="text-2xl text-white font-bold mb-4">آخرین نماهنگ ها</h3>
+      <h3 className="text-2xl text-[var(--foreground-primary)] font-bold mb-4">
+        آخرین نماهنگ ها
+      </h3>
       <Slider slides={slides} />
-      <h3 className="text-2xl text-white font-bold mb-4 mt-5">
+      <h3 className="text-2xl text-[var(--foreground-primary)] font-bold mb-4 mt-5">
         محبوب ترین نماهنگ ها
       </h3>
       <Slider slides={slides2} />
