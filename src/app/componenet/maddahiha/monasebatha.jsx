@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, memo } from "react";
-
+import getTerms from "@/app/actions/terms";
 const Reason = ({ reason, setReason, control }) => {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -9,18 +9,17 @@ const Reason = ({ reason, setReason, control }) => {
 
   useEffect(() => {
     if (users.length > 0) {
-      if (reason.term_id == 0) return;
-      const user = users.find((user) => user.term_id == reason.term_id);
-      control.current.reason = user ? user.term_id : 0;
-      setReason(user || { term_id: 0 });
+      if (reason.ID == 0) return;
+      const user = users.find((user) => user.ID == reason.ID);
+      control.current.reason = user ? user.ID : 0;
+      setReason(user || { ID: 0 });
     }
   }, [users]);
 
   useEffect(() => {
     async function fetchReason() {
-      const response = await fetch(`/api/terms/?s=monasebat`);
-      const data = await response.json();
-      setUsers(data);
+      const response = await await getTerms({ req: 1 });
+      setUsers(response);
     }
     fetchReason();
   }, []);
@@ -80,7 +79,7 @@ const Reason = ({ reason, setReason, control }) => {
             <li
               onClick={() => {
                 control.current.reason = 0;
-                setReason({ term_id: 0 });
+                setReason({ ID: 0 });
                 setOpen(false);
                 setQuery("");
               }}
@@ -92,7 +91,7 @@ const Reason = ({ reason, setReason, control }) => {
               <li
                 key={i}
                 onClick={() => {
-                  control.current.reason = user.term_id;
+                  control.current.reason = user.ID;
                   setReason(user);
                   setOpen(false);
                   setQuery("");

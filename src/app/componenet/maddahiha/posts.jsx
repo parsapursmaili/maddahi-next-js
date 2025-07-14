@@ -9,7 +9,7 @@ const Posts = ({ posts, setIndex, index, setHnadle }) => {
       {posts.map((post, i) => (
         <div
           key={i}
-          className={`flex items-center p-4 bg-slate-800 rounded-xl shadow-lg transition-all duration-300 cursor-pointer border-2 ${
+          className={` flex items-center p-4 bg-slate-800 rounded-xl shadow-lg transition-all duration-300 cursor-pointer border-2 ${
             index === i
               ? "border-sky-500 shadow-sky-500/20"
               : "border-transparent hover:bg-slate-700/70 hover:border-slate-600"

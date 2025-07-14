@@ -10,13 +10,14 @@ import Posts from "./componenet/maddahiha/posts";
 import Reason from "./componenet/maddahiha/monasebatha";
 import Random from "./componenet/maddahiha/random";
 import Search from "./componenet/search";
+import getPosts from "@/app/actions/getPost";
 export default function Home() {
   const [posts, setPosts] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [index, setIndex] = useState(-1);
-  const [selectedUser, setSelectedUser] = useState({ term_id: 0 });
-  const [reason, setReason] = useState({ term_id: 0 });
+  const [selectedUser, setSelectedUser] = useState({ ID: 0 });
+  const [reason, setReason] = useState({ ID: 0 });
   const [handle, setHnadle] = useState("");
   const [rand, setRand] = useState(0);
   const [squery, setSQuery] = useState("");
@@ -71,13 +72,13 @@ export default function Home() {
       return;
     }
     if (compare()) return;
-    if (selectedUser.term_id) {
+    if (selectedUser.ID) {
       control.current.selectedUser = 0;
-      setSelectedUser({ term_id: 0 });
+      setSelectedUser({ ID: 0 });
     }
-    if (reason.term_id) {
+    if (reason.ID) {
       control.current.reason = 0;
-      setReason({ term_id: 0 });
+      setReason({ ID: 0 });
     }
     if (rand) {
       control.current.rand = 0;
@@ -117,20 +118,18 @@ export default function Home() {
       setIndex(0);
     }
     async function fetchPosts() {
+      const filter = {
+        page: control.current.page,
+        maddah: control.current.selectedUser,
+        monasebat: control.current.reason,
+        rand: control.current.rand,
+        s: control.current.squery,
+      };
       try {
-        const response = await fetch(
-          `/api/posts/?page=${control.current.page}&maddah=${control.current.selectedUser}&monasebatha=${control.current.reason}&rand=${control.current.rand}&s=${control.current.squery}`
-        );
+        const response = await getPosts(filter);
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          if (data.error) throw new Error(data.error);
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        setPosts(data.posts2 || []);
-        setTotal(data.total2 || 0);
+        setPosts(response.posts || []);
+        setTotal(response.total || 0);
 
         if (control.current.n == 1) {
           window.scrollTo({ top: 0, behavior: "smooth" });
@@ -156,11 +155,11 @@ export default function Home() {
     const params = new URLSearchParams();
     page != 1 ? params.set("page", page) : params.delete("page");
     rand ? params.set("rand", rand) : params.delete("rand");
-    selectedUser.term_id != 0
-      ? params.set("maddah", selectedUser.term_id)
+    selectedUser.ID != 0
+      ? params.set("maddah", selectedUser.ID)
       : params.delete("maddah");
-    reason.term_id != 0
-      ? params.set("monasebatha", reason.term_id)
+    reason.ID != 0
+      ? params.set("monasebatha", reason.ID)
       : params.delete("monasebatha");
 
     squery != "" ? params.set("s", squery) : params.delete("s");
@@ -180,11 +179,11 @@ export default function Home() {
     }
     if (Number(params.get("maddah"))) {
       control.current.selectedUser = Number(params.get("maddah"));
-      setSelectedUser({ term_id: control.current.selectedUser });
+      setSelectedUser({ ID: control.current.selectedUser });
     }
     if (Number(params.get("monasebatha"))) {
       control.current.reason = Number(params.get("monasebatha"));
-      setReason({ term_id: control.current.reason });
+      setReason({ ID: control.current.reason });
     }
     if (params.get("s")) {
       control.current.squery = params.get("s");

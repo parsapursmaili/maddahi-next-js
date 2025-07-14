@@ -10,8 +10,8 @@
   --foreground-secondary: #94a3b8; /* slate-400: متن ثانویه و توضیحات */
   --foreground-muted: #64748b; /* slate-500: متن‌های کم‌اهمیت‌تر */
 
-  --accent-primary: #0ea5e9; /* sky-500: رنگ اصلی برای لینک‌ها و دکمه‌ها (آبی آسمانی) */
-  --accent-secondary: #4f46e5; /* indigo-600: رنگ ثانویه برای گرادیانت‌ها (نیلی) */
+  --accent-primary: #0ea5e9; /* sky-500 */
+  --accent-primary-rgb: 14, 165, 233; /* همان رنگ به صورت RGB */
 
   --border-primary: #334155; /* slate-700: حاشیه‌های اصلی */
   --border-secondary: #475569; /* slate-600: حاشیه‌های ظریف‌تر */

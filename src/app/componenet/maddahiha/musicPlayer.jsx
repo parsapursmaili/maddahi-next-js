@@ -64,7 +64,7 @@ const MusicPlayer = ({
   function updateProgressBar() {
     if (!musicPlayer.duration) return;
     const val = (audioRef.current.currentTime / musicPlayer.duration) * 100;
-    timeLine.current.style.background = `linear-gradient(to right, #10b981 ${val}%, #334155 ${val}%)`;
+    timeLine.current.style.background = `linear-gradient(to right, var(--accent-primary) ${val}%, #334155 ${val}%)`;
   }
   function canPlay() {
     setLoading(false);
@@ -143,11 +143,11 @@ const MusicPlayer = ({
       />
       {/* پلیر اصلی */}
       <div
-        className={`fixed bottom-0 left-0 right-0 h-[100px] bg-slate-900/80 backdrop-blur-lg shadow-2xl transition-transform duration-500 ease-in-out ${
+        className={`fixed bottom-0 left-0 right-0 h-[110px] bg-slate-900/80 backdrop-blur-lg shadow-2xl transition-transform duration-500 ease-in-out ${
           first ? "translate-y-full" : "translate-y-0"
         }`}
       >
-        <div className="relative w-full px-4 pt-2">
+        <div className="relative w-full px-4  ">
           <input
             ref={timeLine}
             onChange={() => {
@@ -164,42 +164,63 @@ const MusicPlayer = ({
           </div>
         </div>
 
-        {/* دکمه‌های کنترل */}
-        <div className="flex justify-center items-center gap-8 mt-[-5px]">
+        {/* دکمه‌های کنترل با استایل جدید و انیمیشن‌های بهبود یافته */}
+        <div className="flex justify-center items-center gap-8 mt-[-10px]">
+          {/* دکمه دانلود */}
           <i
             onClick={handledownload}
-            className="fas fa-download text-slate-400 text-2xl transition-colors hover:text-white"
+            className="fas fa-download cursor-pointer text-2xl text-slate-400 transition-all duration-300 ease-in-out hover:text-white hover:scale-110 active:scale-95"
+            title="دانلود"
           ></i>
+
+          {/* دکمه آهنگ قبلی (با آیکون fa-forward طبق کد شما) */}
           <i
             onClick={backward}
-            className="fas fa-forward  text-slate-300 text-3xl transition-colors hover:text-white"
+            className="fas fa-forward cursor-pointer text-3xl text-slate-300 transition-all duration-300 ease-in-out hover:text-white hover:scale-110 active:scale-95"
+            title="آهنگ قبلی"
           ></i>
-          <i
+
+          {/* دکمه اصلی پخش/توقف - طراحی شده به عنوان نقطه کانونی */}
+          <button
             onClick={handleIcon}
-            className={`fas ${
-              musicPlayer.isPlay ? "fa-pause" : "fa-play"
-            } text-white text-4xl transition-transform hover:scale-110`}
-          ></i>
+            className="flex h-16 w-16 items-center justify-center rounded-full bg-sky-500 shadow-lg shadow-sky-500/40 transition-all duration-300 ease-in-out hover:scale-105 hover:bg-sky-400 active:scale-95"
+            aria-label={musicPlayer.isPlay ? "توقف" : "پخش"}
+          >
+            <i
+              className={`fas ${
+                musicPlayer.isPlay ? "fa-pause" : "fa-play"
+              } text-3xl text-white transition-transform duration-200 ease-in-out ${
+                //  جابجایی جزئی آیکون پلی برای مرکزیت بصری بهتر
+                !musicPlayer.isPlay && "ml-1"
+              }`}
+            ></i>
+          </button>
+
+          {/* دکمه آهنگ بعدی (با آیکون fa-backward طبق کد شما) */}
           <i
             onClick={forward}
-            className="fas fa-backward text-slate-300 text-3xl transition-colors hover:text-white"
+            className="fas fa-backward cursor-pointer text-3xl text-slate-300 transition-all duration-300 ease-in-out hover:text-white hover:scale-110 active:scale-95"
+            title="آهنگ بعدی"
           ></i>
+
+          {/* دکمه تکرار */}
           <i
             onClick={() =>
               setMusicPlayer((p) => ({ ...p, refresh: !musicPlayer.refresh }))
             }
-            className={`fas fa-sync-alt text-2xl transition-colors ${
+            className={`fas fa-sync-alt cursor-pointer text-2xl transition-all duration-300 ease-in-out hover:scale-110 active:scale-95 ${
               musicPlayer.refresh
-                ? "text-emerald-500"
+                ? "text-[var(--accent-primary)] " // انیمیشن چرخش هنگام فعال بودن
                 : "text-slate-400 hover:text-white"
             }`}
+            title="تکرار"
           ></i>
         </div>
       </div>
 
       {/* اسپینر لودینگ */}
       {loading && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/30 z-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/30 pointer-events-none z-50">
           <div className="w-12 h-12 border-4 border-slate-600 border-t-emerald-500 rounded-full animate-spin"></div>
         </div>
       )}

@@ -1,17 +1,80 @@
+/* 
+=================================================================
+  اصلاح استایل‌های صفحه و پست‌ها برای هماهنگی با تم اصلی
+=================================================================
+*/
+
+/* 
+  به جای استفاده از رنگ ثابت، از متغیر پس‌زمینه ثانویه استفاده می‌کنیم
+  تا این صفحه با سایر بخش‌های سایت هماهنگ شود.
+*/
 .container {
-  background-color: rgb(36, 36, 36);
+  background-color: var(--background-primary);
+  padding: 2rem; /* افزودن کمی فاصله داخلی برای زیبایی بیشتر */
 }
-.items {
-  background-color: rgba(44, 62, 80, 0.5);
+
+input[type="range"] {
+  direction: ltr; /* جهت‌گیری چپ به راست حفظ شده است */
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px; /* کمی باریک‌تر برای ظاهر مدرن‌تر */
+  border-radius: 3px;
+  background: var(--background-tertiary); /* رنگ پس‌زمینه ترک */
+  outline: none;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
 }
+
+/* استایل دستگیره (Thumb) برای مرورگرهای Webkit */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px; /* کمی بزرگ‌تر برای تعامل راحت‌تر */
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent-primary); /* استفاده از رنگ اصلی تم */
+  border: 3px solid var(--background-secondary); /* حاشیه همرنگ با پس‌زمینه پلیر */
+  box-shadow: 0 0 8px rgba(var(--accent-primary-rgb), 0.5); /* افزودن درخشش زیبا */
+  margin-top: -2px; /* تنظیم موقعیت عمودی دستگیره */
+  transition: transform 0.2s ease;
+}
+
+/* افکت هاور برای دستگیره */
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+/* استایل دستگیره (Thumb) برای فایرفاکس */
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  border: 3px solid var(--background-secondary);
+  box-shadow: 0 0 8px rgba(var(--accent-primary-rgb), 0.5);
+  cursor: pointer;
+}
+
+/* 
+  نکته: برای اینکه box-shadow با متغیر رنگی کار کند، 
+  بهتر است یک متغیر RGB از رنگ اصلی خود در :root تعریف کنید:
+  --accent-primary-rgb: 14, 165, 233; 
+*/
+
+/* 
+=================================================================
+  انیمیشن Bounce
+=================================================================
+*/
 
 @keyframes bounce {
   0%,
   100% {
-    color: rgba(59, 59, 152, 1);
+    color: var(--accent-secondary); /* استفاده از رنگ نیلی */
   }
   50% {
-    color: rgba(27, 156, 252, 1);
+    color: var(--accent-primary); /* استفاده از رنگ آبی آسمانی */
   }
 }
 
@@ -20,39 +83,5 @@
 }
 
 i {
-  cursor: pointer;
-}
-
-input[type="range"] {
-  direction: ltr;
-  -webkit-appearance: none;
-  width: 100%;
-  height: 8px;
-  border-radius: 4px;
-  background: linear-gradient(to right, #00c853 10%, #ddd 0%);
-  outline: none;
-  transition: background 0.2s;
-  cursor: pointer;
-}
-
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #00c853;
-  cursor: pointer;
-  border: 2px solid #ffff;
-  margin-top: -2px;
-  box-shadow: 0 0 4px rgba(0, 198, 255, 0.6);
-}
-
-input[type="range"]::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
-  background: #00c853;
-  border: none;
-  border-radius: 50%;
   cursor: pointer;
 }

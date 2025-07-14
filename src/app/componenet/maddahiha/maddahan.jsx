@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, memo } from "react";
-
+import getTerms from "@/app/actions/terms";
 const Salam = ({ selectedUser, setSelectedUser, control }) => {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -9,18 +9,17 @@ const Salam = ({ selectedUser, setSelectedUser, control }) => {
 
   useEffect(() => {
     if (users.length > 0) {
-      if (selectedUser.term_id == 0) return;
-      const user = users.find((user) => user.term_id == selectedUser.term_id);
-      control.current.selectedUser = user ? user.term_id : 0;
-      setSelectedUser(user || { term_id: 0 });
+      if (selectedUser.ID == 0) return;
+      const user = users.find((user) => user.ID == selectedUser.ID);
+      control.current.selectedUser = user ? user.ID : 0;
+      setSelectedUser(user || { ID: 0 });
     }
   }, [users]);
 
   useEffect(() => {
     async function fetchmadahan() {
-      const response = await fetch(`/api/terms/?s=maddah`);
-      const data = await response.json();
-      setUsers(data);
+      const response = await getTerms({ req: 0 });
+      setUsers(response);
     }
     fetchmadahan();
   }, []);
@@ -80,7 +79,7 @@ const Salam = ({ selectedUser, setSelectedUser, control }) => {
             <li
               onClick={() => {
                 control.current.selectedUser = 0;
-                setSelectedUser({ term_id: 0 });
+                setSelectedUser({ ID: 0 });
                 setOpen(false);
                 setQuery("");
               }}
@@ -92,7 +91,7 @@ const Salam = ({ selectedUser, setSelectedUser, control }) => {
               <li
                 key={i}
                 onClick={() => {
-                  control.current.selectedUser = user.term_id;
+                  control.current.selectedUser = user.ID;
                   setSelectedUser(user);
                   setOpen(false);
                   setQuery("");
