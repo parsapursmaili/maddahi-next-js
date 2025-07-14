@@ -79,7 +79,7 @@ const Posts = ({ posts, setHnadle }) => {
                 className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-sm shadow-md transition-all duration-300
                   ${
                     isCurrentlyPlaying
-                      ? "bg-accent-primary text-white scale-110"
+                      ? "bg-accent-background-secondary text-white scale-110"
                       : "bg-background-tertiary text-foreground-primary hover:bg-accent-primary hover:text-white"
                   }
                   focus:outline-none focus:ring-4 focus:ring-accent-primary/50`}

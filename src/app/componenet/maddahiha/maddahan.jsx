@@ -39,7 +39,7 @@ const Salam = ({ selectedUser, setSelectedUser, control }) => {
         className="flex items-center justify-between p-3 bg-slate-800 border border-slate-700 rounded-lg cursor-pointer transition-colors hover:bg-slate-700"
         onClick={() => setOpen(!open)}
       >
-        <p className="font-semibold text-slate-200">
+        <p className="font-semibold text-background-primary">
           {selectedUser.name ? selectedUser.name : "انتخاب مداح"}
         </p>
         {/* آیکون برای نشان دادن وضعیت باز/بسته بودن */}
