@@ -4,24 +4,22 @@ import Image from "next/image";
 import Link from "next/link";
 import { PlayIcon, PauseIcon } from "@heroicons/react/24/solid";
 
-const Posts = ({ posts, setHnadle }) => {
-  const [playingPostId, setPlayingPostId] = useState(null);
-
-  const handlePlayPause = (post) => {
-    if (playingPostId === post.ID) {
-      setPlayingPostId(null);
-      // Logic to pause the global player
+const Posts = ({ posts, setHnadle, isPlay, setIndex, setPID, PID }) => {
+  const handlePlayPause = (post, i) => {
+    if (PID === post.ID) {
+      setHnadle(post.link);
     } else {
-      setPlayingPostId(post.ID);
-      setHnadle(post.link); // Send audio link to the global player
+      setIndex(i);
+      setPID(post.ID);
+      setHnadle(post.link);
     }
   };
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-40">
-      {posts.map((post) => {
+      {posts.map((post, i) => {
         const maddahName = post.cat?.[0]?.name;
-        const isCurrentlyPlaying = playingPostId === post.ID;
+        const isCurrentlyPlaying = PID === post.ID;
 
         return (
           <div
@@ -74,20 +72,20 @@ const Posts = ({ posts, setHnadle }) => {
 
               {/* Play/Pause Button */}
               <button
-                onClick={() => handlePlayPause(post)}
+                onClick={() => handlePlayPause(post, i)}
                 aria-label={isCurrentlyPlaying ? "توقف" : "پخش"}
                 className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-sm shadow-md transition-all duration-300
                   ${
-                    isCurrentlyPlaying
+                    isCurrentlyPlaying && isPlay
                       ? "bg-[var(--accent-primary)] text-[var(--background-primary)] scale-110"
                       : "bg-[var(--background-tertiary)] text-[var(--foreground-primary)] hover:bg-[var(--accent-primary)] hover:text-[var(--background-primary)]"
                   }
                   focus:outline-none focus:ring-4 focus:ring-[var(--accent-primary)/50]`}
               >
-                {isCurrentlyPlaying ? (
-                  <PauseIcon className="w-6 h-6" />
+                {isCurrentlyPlaying && isPlay ? (
+                  <PauseIcon className="w-6 h-6 cursor-pointer" />
                 ) : (
-                  <PlayIcon className="w-6 h-6 pl-0.5" />
+                  <PlayIcon className="w-6 h-6 pl-0.5 cursor-pointer" />
                 )}
               </button>
             </div>

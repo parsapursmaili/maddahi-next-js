@@ -13,8 +13,9 @@ const MusicPlayer = ({
   handle,
   control,
   setHandle,
-  isPlaying,
+  isPlay,
   setIsPlaying,
+  setPID,
 }) => {
   const [musicPlayer, setMusicPlayer] = useState({
     duration: 0,
@@ -40,7 +41,8 @@ const MusicPlayer = ({
     setLoading(false);
     if (!audioRef.current.paused) {
       audioRef.current.pause();
-      setMusicPlayer((p) => ({ ...p, currentTime: 0, isPlay: false }));
+      setMusicPlayer((p) => ({ ...p, currentTime: 0 }));
+      setIsPlaying(false);
     }
     if (first) setFirst(false);
     if (musicUrl) {
@@ -73,15 +75,15 @@ const MusicPlayer = ({
     timeLine.current.min = 0;
     timeLine.current.max = 10000;
     audioRef.current.play();
-    setMusicPlayer((p) => ({ ...p, isPlay: true }));
+    setIsPlaying(true);
   }
   function handleIcon() {
     if (!audioRef.current.paused) {
       audioRef.current.pause();
-      setMusicPlayer((p) => ({ ...p, isPlay: false }));
+      setIsPlaying(false);
     } else {
       audioRef.current.play();
-      setMusicPlayer((p) => ({ ...p, isPlay: true }));
+      setIsPlaying(true);
     }
   }
   function handledownload() {
@@ -97,11 +99,13 @@ const MusicPlayer = ({
       const i = index + 1;
       setIndex(index + 1);
       handlePlay(posts[i].link);
+      setPID(posts[i].ID);
     } else {
       setIndex(0);
       control.current.index = 0;
       if (totalPages == 1) {
         handlePlay(posts[0].link);
+        setPID(posts[0].ID);
         return;
       }
       control.current.n = 1;
@@ -115,6 +119,7 @@ const MusicPlayer = ({
       const i = index - 1;
       setIndex(index - 1);
       handlePlay(posts[i].link);
+      setPID(posts[i].ID);
     } else {
       if (page == 1) return;
       control.current.index = 1;
@@ -185,13 +190,13 @@ const MusicPlayer = ({
           <button
             onClick={handleIcon}
             className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--accent-primary)] shadow-lg shadow-[var(--accent-primary)/40] transition-all duration-300 ease-in-out hover:scale-105 hover:opacity-90 active:scale-95"
-            aria-label={musicPlayer.isPlay ? "توقف" : "پخش"}
+            aria-label={isPlay ? "توقف" : "پخش"}
           >
             <i
               className={`fas ${
-                musicPlayer.isPlay ? "fa-pause" : "fa-play"
+                isPlay ? "fa-pause" : "fa-play"
               } text-3xl text-[var(--background-primary)] transition-transform duration-200 ease-in-out ${
-                !musicPlayer.isPlay && "ml-1"
+                !isPlay && "ml-1"
               }`}
             ></i>
           </button>

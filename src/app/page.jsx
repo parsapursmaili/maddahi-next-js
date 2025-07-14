@@ -16,12 +16,14 @@ export default function Home() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [index, setIndex] = useState(-1);
+  const [isPlay, setIsPlaying] = useState(false);
   const [selectedUser, setSelectedUser] = useState({ ID: 0 });
   const [reason, setReason] = useState({ ID: 0 });
   const [handle, setHnadle] = useState("");
   const [rand, setRand] = useState(0);
   const [squery, setSQuery] = useState("");
   const [ntf, setNTF] = useState(0);
+  const [PID, setPID] = useState(0);
 
   const control = useRef({
     page: 1,
@@ -112,7 +114,6 @@ export default function Home() {
     if (!control.current.r) return;
     if (compare()) return;
     equalControl();
-    console.log("ntf:", ntf);
     if (control.current.index) {
       control.current.index = 0;
       setIndex(0);
@@ -131,7 +132,6 @@ export default function Home() {
 
         setPosts(response.post || []);
         setTotal(response.total || 0);
-        console.log("response: ", response);
 
         if (control.current.n == 1) {
           window.scrollTo({ top: 0, behavior: "smooth" });
@@ -240,6 +240,9 @@ export default function Home() {
         posts={posts}
         handle={handle}
         setHandle={setHnadle}
+        isPlay={isPlay}
+        setIsPlaying={setIsPlaying}
+        setPID={setPID}
       />
 
       <Posts
@@ -247,6 +250,10 @@ export default function Home() {
         setIndex={setIndex}
         index={index}
         setHnadle={setHnadle}
+        isPlay={isPlay}
+        setIsPlaying={setIsPlaying}
+        PID={PID}
+        setPID={setPID}
       />
     </div>
   );
