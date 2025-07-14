@@ -124,12 +124,14 @@ export default function Home() {
         monasebat: control.current.reason,
         rand: control.current.rand,
         s: control.current.squery,
+        terms: 1,
       };
       try {
         const response = await getPosts(filter);
 
-        setPosts(response.posts || []);
+        setPosts(response.post || []);
         setTotal(response.total || 0);
+        console.log("response: ", response);
 
         if (control.current.n == 1) {
           window.scrollTo({ top: 0, behavior: "smooth" });
