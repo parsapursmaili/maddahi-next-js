@@ -112,6 +112,7 @@ const MusicPlayer = ({
       control.current.page = page + 1 > totalPages ? 1 : page + 1;
       setPage(control.current.page);
       setNTF(ntf + 1);
+      handlePlay(posts[0].link);
     }
   }
   function backward() {

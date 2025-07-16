@@ -1,3 +1,4 @@
+// app/page.js
 import Slider from "@/app/componenet/slider";
 import { db } from "@/app/lib/db/mysql";
 
@@ -6,7 +7,7 @@ export const revalidate = 3600;
 async function fetchPosts(orderby = "date desc") {
   try {
     const [data] = await db.query(
-      `select ID,title,thumbnail from posts where type='post' and status='publish' order by ${orderby}  limit 20`
+      `select ID,title,thumbnail,name from posts where type='post' and status='publish' order by ${orderby}  limit 20`
     );
 
     return data;
@@ -24,11 +25,13 @@ export default async function Home() {
       <h3 className="text-2xl text-[var(--foreground-primary)] font-bold mb-4">
         آخرین نماهنگ ها
       </h3>
-      <Slider slides={slides} />
+      {/* تغییر: اضافه کردن شناسه منحصر به فرد برای هر اسلایدر */}
+      <Slider slides={slides} sliderId="latest-clips" />
       <h3 className="text-2xl text-[var(--foreground-primary)] font-bold mb-4 mt-5">
         محبوب ترین نماهنگ ها
       </h3>
-      <Slider slides={slides2} />
+      {/* تغییر: اضافه کردن شناسه منحصر به فرد برای هر اسلایدر */}
+      <Slider slides={slides2} sliderId="popular-clips" />
     </div>
   );
 }

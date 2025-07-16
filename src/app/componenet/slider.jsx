@@ -1,3 +1,4 @@
+// app/componenet/slider.js
 "use client";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
@@ -10,18 +11,25 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "../css/home2.css";
 
-const Slider = ({ slides }) => {
+// تغییر: دریافت sliderId به عنوان پراپ
+const Slider = ({ slides, sliderId }) => {
+  // تغییر: ساختن کلاس‌های منحصر به فرد بر اساس sliderId
+  const nextButtonClass = `swiper-button-next-${sliderId}`;
+  const prevButtonClass = `swiper-button-prev-${sliderId}`;
+  const paginationClass = `swiper-pagination-${sliderId}`;
+
   return (
     <div className="relative group/slider container mx-auto px-4">
       <Swiper
         modules={[Navigation, Pagination]}
         spaceBetween={24}
         slidesPerView={2}
+        // تغییر: استفاده از کلاس‌های منحصر به فرد برای ناوبری و صفحه‌بندی
         navigation={{
-          nextEl: ".swiper-button-next-custom",
-          prevEl: ".swiper-button-prev-custom",
+          nextEl: `.${nextButtonClass}`,
+          prevEl: `.${prevButtonClass}`,
         }}
-        pagination={{ clickable: true, el: ".swiper-pagination-custom" }}
+        pagination={{ clickable: true, el: `.${paginationClass}` }}
         breakpoints={{
           640: { slidesPerView: 3 },
           768: { slidesPerView: 4 },
@@ -29,11 +37,12 @@ const Slider = ({ slides }) => {
           1280: { slidesPerView: 7 },
         }}
         className="!pb-16"
+        dir="rtl" // اضافه کردن این پراپ برای اطمینان از عملکرد صحیح در حالت RTL
       >
         {slides && slides.length > 0 ? (
           slides.map((post) => (
             <SwiperSlide key={post.ID} style={{ perspective: "1000px" }}>
-              <Link href={`/${post.ID}`} className="group block">
+              <Link href={`/${post.name}`} className="group block">
                 <div
                   className="relative rounded-2xl p-px bg-gradient-to-br from-transparent via-transparent to-transparent transition-all duration-300 group-hover:from-[var(--accent-primary)/80] group-hover:to-[var(--success)/80]"
                   style={{ transformStyle: "preserve-3d" }}
@@ -54,7 +63,6 @@ const Slider = ({ slides }) => {
                         </div>
                       )}
                     </div>
-
                     <div className="h-16 flex items-center justify-center text-center">
                       <h3 className="text-sm font-medium text-[var(--foreground-secondary)] group-hover:text-[var(--foreground-primary)] transition-colors duration-300 line-clamp-3">
                         {post.title}
@@ -74,15 +82,23 @@ const Slider = ({ slides }) => {
         )}
       </Swiper>
 
-      <div className="swiper-button-prev-custom absolute top-1/2 -translate-y-1/2 left-0 w-11 h-11 flex items-center justify-center bg-[var(--background-secondary)]/60 rounded-full text-[var(--foreground-primary)] backdrop-blur-sm cursor-pointer transition-all duration-300 opacity-0 group-hover/slider:opacity-100 group-hover/slider:-translate-x-4 z-10 hover:bg-[var(--accent-primary)/40]">
+      {/* تغییر برای RTL: دکمه سمت چپ، دکمه "بعدی" (Next) است */}
+      <div
+        className={`${nextButtonClass} absolute top-1/2 -translate-y-1/2 left-0 w-11 h-11 flex items-center justify-center bg-[var(--background-secondary)]/60 rounded-full text-[var(--foreground-primary)] backdrop-blur-sm cursor-pointer transition-all duration-300 opacity-0 group-hover/slider:opacity-100 group-hover/slider:-translate-x-4 z-10 hover:bg-[var(--accent-primary)/40]`}
+      >
         <FaChevronLeft />
       </div>
-      <div className="swiper-button-next-custom absolute top-1/2 -translate-y-1/2 right-0 w-11 h-11 flex items-center justify-center bg-[var(--background-secondary)]/60 rounded-full text-[var(--foreground-primary)] backdrop-blur-sm cursor-pointer transition-all duration-300 opacity-0 group-hover/slider:opacity-100 group-hover/slider:translate-x-4 z-10 hover:bg-[var(--accent-primary)/40]">
+
+      {/* تغییر برای RTL: دکمه سمت راست، دکمه "قبلی" (Prev) است */}
+      <div
+        className={`${prevButtonClass} absolute top-1/2 -translate-y-1/2 right-0 w-11 h-11 flex items-center justify-center bg-[var(--background-secondary)]/60 rounded-full text-[var(--foreground-primary)] backdrop-blur-sm cursor-pointer transition-all duration-300 opacity-0 group-hover/slider:opacity-100 group-hover/slider:translate-x-4 z-10 hover:bg-[var(--accent-primary)/40]`}
+      >
         <FaChevronRight />
       </div>
 
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 w-full flex justify-center">
-        <div className="swiper-pagination-custom flex gap-2" />
+        {/* تغییر: استفاده از کلاس منحصر به فرد برای صفحه‌بندی */}
+        <div className={`${paginationClass} flex gap-2`} />
       </div>
     </div>
   );

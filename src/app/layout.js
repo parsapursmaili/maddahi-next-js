@@ -38,9 +38,9 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Header /> {/* کامپوننت هدر اینجا قرار می‌گیرد */}
-        <Suspense fallback={null}>
+        {/* <Suspense fallback={null}>
           <NProgressIndicator />
-        </Suspense>
+        </Suspense> */}
         <main>{children}</main> {/* محتوای صفحات در تگ main قرار می‌گیرد */}
       </body>
     </html>

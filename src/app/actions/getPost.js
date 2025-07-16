@@ -56,7 +56,7 @@ export default async function getPosts(params) {
     const total = totalResult[0][0].total;
 
     const postsQuery = `
-      SELECT p.ID, p.title as post_title, p.link, p.thumbnail as thumb
+      SELECT p.ID, p.title as post_title,p.name, p.link, p.thumbnail as thumb
       FROM posts p
       ${where} AND link IS NOT NULL AND link != ''
       ${orderby}

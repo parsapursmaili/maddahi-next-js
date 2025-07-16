@@ -135,7 +135,8 @@ export default function Home() {
 
         if (control.current.n == 1) {
           window.scrollTo({ top: 0, behavior: "smooth" });
-          setHnadle(data.posts2[0].link);
+          setHnadle(response.post[0].link);
+          setPID(response.post[0].ID);
         }
 
         control.current.n = 0;

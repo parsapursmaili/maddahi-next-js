@@ -13,7 +13,9 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }) {
   const id = params.id;
-  const [rows] = await db.query("SELECT * FROM posts WHERE ID = ?", [id]);
+  console.log("params: ", params);
+  const [rows] = await db.query("SELECT * FROM posts WHERE name = ?", [id]);
+  console.log("rows: ", rows);
 
   if (!rows || rows.length === 0) {
     return {
@@ -53,22 +55,20 @@ export async function generateMetadata({ params }) {
 export default async function ProductPage({ params }) {
   const id = params.id;
 
-  const [postRows, maddahRows, monasebatRows, commentsRows] = await Promise.all(
-    [
-      db.query("SELECT * FROM posts WHERE ID = ?", [id]),
-      db.query(
-        `SELECT t.ID, t.name, t.slug FROM wp_term_relationships wtr INNER JOIN terms t ON t.ID = wtr.term_taxonomy_id AND t.taxonomy = 'category' WHERE object_id = ?`,
-        [id]
-      ),
-      db.query(
-        `SELECT t.ID, t.name, t.slug FROM wp_term_relationships wtr INNER JOIN terms t ON t.ID = wtr.term_taxonomy_id AND t.taxonomy = 'post_tag' WHERE object_id = ?`,
-        [id]
-      ),
-      [], //db.query(`SELECT * FROM comments WHERE post_id = ?`, [id]),
-    ]
-  );
+  const [postRows] = await db.query("SELECT * FROM posts WHERE name = ?", [id]);
+  const post = postRows[0];
+  const [maddahRows, monasebatRows, commentsRows] = await Promise.all([
+    db.query(
+      `SELECT t.ID, t.name, t.slug FROM wp_term_relationships wtr INNER JOIN terms t ON t.ID = wtr.term_taxonomy_id AND t.taxonomy = 'category' WHERE object_id = ?`,
+      [post.ID]
+    ),
+    db.query(
+      `SELECT t.ID, t.name, t.slug FROM wp_term_relationships wtr INNER JOIN terms t ON t.ID = wtr.term_taxonomy_id AND t.taxonomy = 'post_tag' WHERE object_id = ?`,
+      [post.ID]
+    ),
+    [], //db.query(`SELECT * FROM comments WHERE post_id = ?`, [id]),
+  ]);
 
-  const post = postRows[0][0];
   const maddah = maddahRows[0];
   const monasebat = monasebatRows[0];
   const comments = commentsRows[0];
@@ -83,7 +83,7 @@ export default async function ProductPage({ params }) {
       WHERE wtr.term_taxonomy_id IN (?) AND p.ID != ?
       ORDER BY RAND() LIMIT 20;
     `,
-      [monasebatIds[0], id]
+      [monasebatIds[0], post.ID]
     );
   }
 
@@ -138,7 +138,7 @@ export default async function ProductPage({ params }) {
                 ))}
               </div>
             )}
-            <ServerViewCounter postId={parseInt(id)} />
+            <ServerViewCounter postId={parseInt(post.ID)} />
           </div>
         </div>
 
@@ -200,7 +200,7 @@ export default async function ProductPage({ params }) {
             )}
 
             <div className="rounded-xl border border-dashed border-[var(--border-secondary)] p-6 bg-[var(--background-primary)]/30">
-              <Comment postId={id} />
+              <Comment postId={post.ID} />
             </div>
           </div>
         </div>

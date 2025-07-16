@@ -29,7 +29,7 @@ const Posts = ({ posts, setHnadle, isPlay, setIndex, setPID, PID }) => {
             <div className="relative flex items-center p-4">
               {/* Thumbnail */}
               <Link
-                href={`/${post.ID}`}
+                href={`/${post.name}`}
                 className="block flex-shrink-0 w-20 h-20 relative rounded-lg overflow-hidden"
               >
                 {post.thumb ? (
@@ -59,7 +59,7 @@ const Posts = ({ posts, setHnadle, isPlay, setIndex, setPID, PID }) => {
               </Link>
 
               {/* Text Content */}
-              <Link href={`/${post.ID}`} className="flex-grow mr-4">
+              <Link href={`/${post.name}`} className="flex-grow mr-4">
                 <h3 className="text-base font-bold text-[var(--foreground-primary)] mb-1 transition-colors group-hover:text-[var(--accent-primary)] leading-tight">
                   {post.post_title}
                 </h3>
