@@ -12,8 +12,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }) {
-  const id = params.id;
-  console.log("params: ", params);
+  const id = params.slug;
   const [rows] = await db.query("SELECT * FROM posts WHERE name = ?", [id]);
   console.log("rows: ", rows);
 
@@ -53,7 +52,7 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function ProductPage({ params }) {
-  const id = params.id;
+  const id = params.slug;
 
   const [postRows] = await db.query("SELECT * FROM posts WHERE name = ?", [id]);
   const post = postRows[0];

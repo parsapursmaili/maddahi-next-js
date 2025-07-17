@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { incrementView } from "@/app/[id]/actions";
+import { incrementView } from "@/app/[slug]/actions";
 
 export default function ViewCounter({ postId }) {
   const [currentViews, setCurrentViews] = useState(0);
