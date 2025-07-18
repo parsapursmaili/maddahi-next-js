@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, memo } from "react";
 import getTerms from "@/app/actions/terms";
-const Salam = ({ selectedUser, setSelectedUser, control }) => {
+const Maddahan = ({ selectedUser, setSelectedUser, control, set }) => {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [filteredUsers, setFilteredUsers] = useState([]);
@@ -82,6 +82,7 @@ const Salam = ({ selectedUser, setSelectedUser, control }) => {
                 setSelectedUser({ ID: 0 });
                 setOpen(false);
                 setQuery("");
+                set(0);
               }}
               className="p-3 hover:bg-[var(--background-tertiary)] cursor-pointer text-[var(--foreground-secondary)] transition-colors"
             >
@@ -95,6 +96,7 @@ const Salam = ({ selectedUser, setSelectedUser, control }) => {
                   setSelectedUser(user);
                   setOpen(false);
                   setQuery("");
+                  set(1);
                 }}
                 className="p-3 hover:bg-[var(--background-tertiary)] cursor-pointer text-[var(--foreground-primary)] break-words whitespace-normal transition-colors"
               >
@@ -112,4 +114,4 @@ const Salam = ({ selectedUser, setSelectedUser, control }) => {
     </div>
   );
 };
-export default memo(Salam);
+export default memo(Maddahan);

@@ -3,13 +3,13 @@
 import "./css/home.css";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import Salam from "./componenet/maddahiha/maddahan";
+import Maddahan from "./componenet/maddahiha/maddahan";
 import Pagination from "./componenet/maddahiha/pagination";
 import MusicPlayer from "./componenet/maddahiha/musicPlayer";
 import Posts from "./componenet/maddahiha/posts";
 import Reason from "./componenet/maddahiha/monasebatha";
 import Random from "./componenet/maddahiha/random";
-import Search from "./componenet/search";
+import Search from "./componenet/maddahiha/search";
 import getPosts from "@/app/actions/getPost";
 export default function Home() {
   const [posts, setPosts] = useState([]);
@@ -22,7 +22,6 @@ export default function Home() {
   const [handle, setHnadle] = useState("");
   const [rand, setRand] = useState(0);
   const [squery, setSQuery] = useState("");
-  const [ntf, setNTF] = useState(0);
   const [PID, setPID] = useState(0);
 
   const control = useRef({
@@ -31,127 +30,59 @@ export default function Home() {
     reason: 0,
     rand: 0,
     squery: "",
-    r: false,
     index: 0,
-  });
-  const control2 = useRef({
-    page: 1,
-    selectedUser: 0,
-    reason: 0,
-    rand: 0,
-    squery: "",
-    n: 0,
   });
 
   const router = useRouter();
 
-  function compare() {
-    if (
-      control.current.page == control2.current.page &&
-      control.current.selectedUser == control2.current.selectedUser &&
-      control.current.reason == control2.current.reason &&
-      control.current.rand == control2.current.rand &&
-      control.current.squery == control2.current.squery
-    ) {
-      return true;
-    }
-    return false;
-  }
-
-  function equalControl() {
-    control2.current.page = control.current.page;
-    control2.current.selectedUser = control.current.selectedUser;
-    control2.current.reason = control.current.reason;
-    control2.current.rand = control.current.rand;
-    control2.current.squery = control.current.squery;
-  }
-
-  useEffect(() => {
-    if (!control.current.r) return;
-    if (control.current.squery.length == 0) {
-      set();
-      setNTF(ntf + 1);
-      return;
-    }
-    if (compare()) return;
-    if (selectedUser.ID) {
-      control.current.selectedUser = 0;
-      setSelectedUser({ ID: 0 });
-    }
-    if (reason.ID) {
-      control.current.reason = 0;
-      setReason({ ID: 0 });
-    }
-    if (rand) {
-      control.current.rand = 0;
-      setRand(0);
-    }
-    set();
-    setNTF(ntf + 1);
-  }, [squery]);
-
-  useEffect(() => {
-    if (!control.current.r) return;
-    if (compare()) return;
-    if (
-      control.current.selectedUser == 0 &&
-      control.current.reason == 0 &&
-      control.current.rand == 0
-    ) {
-      set();
-      setNTF(ntf + 1);
-      return;
-    }
-    if (squery.length > 0) {
+  function set(phaze) {
+    if (phaze == 1) {
       control.current.squery = "";
       setSQuery("");
     }
-    set();
-    setNTF(ntf + 1);
-  }, [selectedUser, reason, rand]);
-
-  useEffect(() => {
-    if (!control.current.r) return;
-    if (compare()) return;
-    equalControl();
-    if (control.current.index) {
-      control.current.index = 0;
-      setIndex(0);
+    if (phaze == 2) {
+      control.current.selectedUser = 0;
+      setSelectedUser({ ID: 0 });
+      control.current.reason = 0;
+      setReason({ ID: 0 });
+      control.current.rand = 0;
+      setRand(0);
     }
-    async function fetchPosts() {
-      const filter = {
-        page: control.current.page,
-        maddah: control.current.selectedUser,
-        monasebat: control.current.reason,
-        rand: control.current.rand,
-        s: control.current.squery,
-        terms: 1,
-      };
-      try {
-        const response = await getPosts(filter);
-
-        setPosts(response.post || []);
-        setTotal(response.total || 0);
-
-        if (control.current.n == 1) {
-          window.scrollTo({ top: 0, behavior: "smooth" });
-          setHnadle(response.post[0].link);
-          setPID(response.post[0].ID);
-        }
-
-        control.current.n = 0;
-      } catch (error) {
-        console.error("Fetch Error:", error);
-      }
+    if (phaze != 3) {
+      control.current.page = 1;
+      setPage(1);
     }
-
-    fetchPosts();
-  }, [ntf]);
-
-  function set() {
+    control.current.index = -1;
     setIndex(-1);
-    setPage(1);
-    control.current.page = 1;
+    fetchPosts();
+  }
+
+  async function fetchPosts() {
+    const filter = {
+      page: control.current.page,
+      maddah: control.current.selectedUser,
+      monasebat: control.current.reason,
+      rand: control.current.rand,
+      s: control.current.squery,
+      terms: 1,
+    };
+    console.log("filter: ", filter);
+    try {
+      const response = await getPosts(filter);
+
+      setPosts(response.post || []);
+      setTotal(response.total || 0);
+
+      if (control.current.n == 1) {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        setHnadle(response.post[0].link);
+        setPID(response.post[0].ID);
+      }
+
+      control.current.n = 0;
+    } catch (error) {
+      console.error("Fetch Error:", error);
+    }
   }
 
   useEffect(() => {
@@ -192,17 +123,8 @@ export default function Home() {
       control.current.squery = params.get("s");
       setSQuery(control.current.squery);
     }
-    if (
-      control.current.page == 1 &&
-      control.current.rand == 0 &&
-      control.current.selectedUser == 0 &&
-      control.current.reason == 0 &&
-      control.current.squery.length == 0
-    ) {
-      control2.current.page = 5;
-      setNTF(1);
-    }
-    control.current.r = true;
+
+    fetchPosts();
   }, []);
 
   const totalPages = Math.ceil(total / 20);
@@ -210,28 +132,36 @@ export default function Home() {
   return (
     <div className="pb-50 container mx-auto p-4">
       <Pagination
-        ntf={ntf}
         control={control}
-        setNTF={setNTF}
+        set={set}
         setIndex={setIndex}
         page={page}
         setPage={setPage}
         totalPages={totalPages}
       />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-        <Salam
+        <Maddahan
           control={control}
           selectedUser={selectedUser}
           setSelectedUser={setSelectedUser}
+          set={set}
         />
-        <Reason control={control} reason={reason} setReason={setReason} />
-        <Random control={control} rand={rand} setRand={setRand} />
-        <Search control={control} setSQuery={setSQuery} squery={squery} />
+        <Reason
+          control={control}
+          reason={reason}
+          setReason={setReason}
+          set={set}
+        />
+        <Random control={control} rand={rand} setRand={setRand} set={set} />
+        <Search
+          control={control}
+          setSQuery={setSQuery}
+          squery={squery}
+          set={set}
+        />
       </div>
 
       <MusicPlayer
-        ntf={ntf}
-        setNTF={setNTF}
         control={control}
         page={page}
         setPage={setPage}
@@ -244,6 +174,7 @@ export default function Home() {
         isPlay={isPlay}
         setIsPlaying={setIsPlaying}
         setPID={setPID}
+        set={set}
       />
 
       <Posts
@@ -255,6 +186,7 @@ export default function Home() {
         setIsPlaying={setIsPlaying}
         PID={PID}
         setPID={setPID}
+        set={set}
       />
     </div>
   );

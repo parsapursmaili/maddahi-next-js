@@ -26,6 +26,8 @@ export const recreateAndPopulatePostsTable = async () => {
         content LONGTEXT,
         date DATETIME,
         thumbnail VARCHAR(255),
+        thumbnail2 VARCHAR(255),
+        thumbnail_alt VARCHAR(255),
         link VARCHAR(255),
         type VARCHAR(255),
         name VARCHAR(255),

@@ -18,7 +18,7 @@ async function fetchPosts(orderby = "date desc") {
 }
 export default async function Home() {
   const slides = await fetchPosts();
-  const slides2 = await fetchPosts("view desc");
+  const slides2 = await fetchPosts("CAST(view AS UNSIGNED) desc");
 
   return (
     <div className="container mx-auto p-4 w-[1350px]">

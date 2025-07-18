@@ -10,6 +10,7 @@ export default async function getPosts(params) {
     rand = 0,
     s: search = null,
     terms = 0,
+    view = 0,
   } = params;
 
   let orderby = "";
@@ -21,13 +22,12 @@ export default async function getPosts(params) {
       orderby = "ORDER BY RAND()";
       break;
     case 2:
-      orderby = "ORDER BY view DESC";
+      orderby = "ORDER BY CAST(view AS UNSIGNED) DESC";
       break;
     default:
       orderby = "ORDER BY RAND()";
       break;
   }
-
   const limit = 20;
   let skip = 0;
   if (rand === 0 || rand === 2) {
@@ -56,7 +56,7 @@ export default async function getPosts(params) {
     const total = totalResult[0][0].total;
 
     const postsQuery = `
-      SELECT p.ID, p.title as post_title,p.name, p.link, p.thumbnail as thumb
+      SELECT p.ID, p.title ,p.name, p.link, p.thumbnail,view
       FROM posts p
       ${where} AND link IS NOT NULL AND link != ''
       ${orderby}
@@ -64,12 +64,23 @@ export default async function getPosts(params) {
     `;
     const [postsData] = await db.query(postsQuery, values);
 
-    // بخش بهینه‌سازی شده برای دریافت دسته‌ها و تگ‌ها
+    let totalview = 0;
+    if (view == 1) {
+      const [vq] = await db.query(
+        `
+      SELECT view
+      FROM posts
+      ${where}`,
+        [maddah]
+      );
+      for (let v of vq) {
+        totalview += parseInt(v.view);
+      }
+    }
+
     if (terms == 1 && postsData.length > 0) {
-      // ۱. استخراج تمام شناسه‌های پست (Post IDs)
       const postIds = postsData.map((p) => p.ID);
 
-      // ۲. دریافت تمام ترم‌های مرتبط (دسته و تگ) فقط با یک کوئری
       const termsQuery = `
         SELECT
           rel.object_id,
@@ -103,7 +114,7 @@ export default async function getPosts(params) {
       });
     }
 
-    return { post: postsData, total: total };
+    return { post: postsData, total: total, totalview: totalview };
   } catch (e) {
     console.error("Database query error:", e);
     return { error: "خطایی در دریافت اطلاعات رخ داد." };

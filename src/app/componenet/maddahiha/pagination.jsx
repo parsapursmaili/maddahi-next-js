@@ -1,20 +1,12 @@
 "use client";
 import { memo } from "react";
 
-const Pagination = ({
-  page,
-  setPage,
-  totalPages,
-  setIndex,
-  setNTF,
-  ntf,
-  control,
-}) => {
+const Pagination = ({ page, setPage, totalPages, setIndex, set, control }) => {
   const handlePrev = () => {
     if (page > 1) {
       control.current.page = page - 1;
       setPage(control.current.page);
-      setNTF(ntf + 1);
+      set(3);
       setIndex(-1);
     }
   };
@@ -23,7 +15,7 @@ const Pagination = ({
     if (page < totalPages) {
       control.current.page = page + 1;
       setPage(control.current.page);
-      setNTF(ntf + 1);
+      set(3);
       setIndex(-1);
     }
   };

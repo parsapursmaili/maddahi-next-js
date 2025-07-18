@@ -1,7 +1,7 @@
 "use client";
 import { memo } from "react";
 
-const Random = ({ rand, setRand, control }) => {
+const Random = ({ rand, setRand, control, set }) => {
   return (
     // چیدمان با flex برای واکنشگرایی بهتر و حذف کلاس‌های پیچیده قبلی
     <div className="flex flex-col sm:flex-row gap-3 justify-center w-full">
@@ -10,6 +10,7 @@ const Random = ({ rand, setRand, control }) => {
           const newRand = rand === 1 ? 0 : 1;
           setRand(newRand);
           control.current.rand = newRand;
+          set(1);
         }}
         className={`w-full sm:w-auto px-4 py-2 rounded-lg font-bold text-[var(--foreground-primary)] transition-colors duration-300 ${
           rand === 1
@@ -24,6 +25,7 @@ const Random = ({ rand, setRand, control }) => {
           const newRand = rand === 2 ? 0 : 2;
           setRand(newRand);
           control.current.rand = newRand;
+          set(1);
         }}
         className={`w-full sm:w-auto px-4 py-2 rounded-lg font-bold text-[var(--foreground-primary)] transition-colors duration-300 ${
           rand === 2

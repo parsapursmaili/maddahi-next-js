@@ -32,10 +32,10 @@ const Posts = ({ posts, setHnadle, isPlay, setIndex, setPID, PID }) => {
                 href={`/${post.name}`}
                 className="block flex-shrink-0 w-20 h-20 relative rounded-lg overflow-hidden"
               >
-                {post.thumb ? (
+                {post.thumbnail ? (
                   <Image
-                    src={`https://besooyeto.ir/maddahi/wp-content/uploads/${post.thumb}`}
-                    alt={post.post_title}
+                    src={`https://besooyeto.ir/maddahi/wp-content/uploads/${post.thumbnail}`}
+                    alt={post.title}
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                   />
@@ -61,7 +61,7 @@ const Posts = ({ posts, setHnadle, isPlay, setIndex, setPID, PID }) => {
               {/* Text Content */}
               <Link href={`/${post.name}`} className="flex-grow mr-4">
                 <h3 className="text-base font-bold text-[var(--foreground-primary)] mb-1 transition-colors group-hover:text-[var(--accent-primary)] leading-tight">
-                  {post.post_title}
+                  {post.title}
                 </h3>
                 {maddahName && (
                   <p className="text-xs text-[var(--foreground-secondary)] font-medium">

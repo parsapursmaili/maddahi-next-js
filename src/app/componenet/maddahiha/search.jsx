@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, memo } from "react";
 
-const Search = ({ setSQuery, squery, control }) => {
+const Search = ({ setSQuery, squery, control, set }) => {
   const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
@@ -12,6 +12,7 @@ const Search = ({ setSQuery, squery, control }) => {
     const timer = setTimeout(() => {
       setSQuery(inputValue);
       control.current.squery = inputValue;
+      if (inputValue != "") set(2);
     }, 500);
 
     return () => clearTimeout(timer);

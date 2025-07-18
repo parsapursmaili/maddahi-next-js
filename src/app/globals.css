@@ -88,3 +88,11 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background-color: var(--border-secondary);
 }
+@layer utilities {
+  .clip-shard-left {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 15% 100%, 0 85%);
+  }
+  .clip-shard-right {
+    clip-path: polygon(0 0, 100% 0, 100% 85%, 85% 100%, 0 100%);
+  }
+}

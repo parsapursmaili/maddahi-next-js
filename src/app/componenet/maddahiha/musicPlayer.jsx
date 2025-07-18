@@ -2,8 +2,6 @@
 import { useState, useEffect, useRef, memo } from "react";
 
 const MusicPlayer = ({
-  ntf,
-  setNTF,
   posts,
   index,
   setIndex,
@@ -16,6 +14,7 @@ const MusicPlayer = ({
   isPlay,
   setIsPlaying,
   setPID,
+  set,
 }) => {
   const [musicPlayer, setMusicPlayer] = useState({
     duration: 0,
@@ -111,7 +110,7 @@ const MusicPlayer = ({
       control.current.n = 1;
       control.current.page = page + 1 > totalPages ? 1 : page + 1;
       setPage(control.current.page);
-      setNTF(ntf + 1);
+      set(3);
       handlePlay(posts[0].link);
     }
   }
@@ -127,7 +126,7 @@ const MusicPlayer = ({
       control.current.n = 1;
       control.current.page = page - 1;
       setPage(control.current.page);
-      setNTF(ntf + 1);
+      set(3);
     }
   }
   return (
