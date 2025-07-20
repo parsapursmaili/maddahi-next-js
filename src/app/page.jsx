@@ -66,7 +66,6 @@ export default function Home() {
       s: control.current.squery,
       terms: 1,
     };
-    console.log("filter: ", filter);
     try {
       const response = await getPosts(filter);
 

@@ -13,6 +13,7 @@ const Search = ({ setSQuery, squery, control, set }) => {
       setSQuery(inputValue);
       control.current.squery = inputValue;
       if (inputValue != "") set(2);
+      else set(0);
     }, 500);
 
     return () => clearTimeout(timer);
