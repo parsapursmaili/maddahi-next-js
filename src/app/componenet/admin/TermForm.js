@@ -1,13 +1,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation"; // جدید: برای دریافت مسیر فعلی
+import { usePathname } from "next/navigation";
+import dynamic from "next/dynamic";
 import {
   createTermWithMetadata,
   updateTermWithMetadata,
   deleteTermWithMetadata,
 } from "@/app/actions/termActions";
 import ImageUploader from "@/app/componenet/ImageUploader";
+
+// TiptapEditor اکنون از استایل‌های گلوبال استفاده می‌کند
+const TiptapEditor = dynamic(() => import("@/app/componenet/TiptapEditor"), {
+  ssr: false,
+});
 
 const defaultTerm = {
   ID: null,
@@ -24,7 +30,7 @@ export default function TermForm({
   onCancel,
 }) {
   const termForEditing = initialTerm?.ID ? initialTerm : defaultTerm;
-  const pathname = usePathname(); // جدید: دریافت مسیر فعلی مثلا /admin/terms
+  const pathname = usePathname();
 
   const [formData, setFormData] = useState(termForEditing);
   const [message, setMessage] = useState({ type: "", text: "" });
@@ -40,6 +46,8 @@ export default function TermForm({
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   const handleImageChange = (url) =>
     setFormData((prev) => ({ ...prev, image_url: url }));
+  const handleBiographyChange = (content) =>
+    setFormData((prev) => ({ ...prev, biography: content }));
   const handleBusyState = (isBusy) =>
     setLoadingAction(isBusy ? "upload" : null);
 
@@ -81,19 +89,21 @@ export default function TermForm({
     return termForEditing.ID ? "ذخیره تغییرات" : "ایجاد ترم";
   };
 
+  // تعریف کلاس‌های Tailwind برای استفاده مجدد
+  const inputFieldClasses =
+    "w-full mt-1 px-3.5 py-2.5 bg-[var(--background-tertiary)] border border-[var(--border-primary)] rounded-md text-[var(--foreground-primary)] transition-all duration-200 ease-in-out focus:outline-none focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--accent-crystal-highlight)]";
+  const labelClasses =
+    "block text-sm font-medium text-[var(--foreground-secondary)]";
+
   return (
     <div className="p-8 bg-[var(--background-secondary)] rounded-lg border border-[var(--border-primary)] shadow-lg">
-      <h2 className="text-2xl font-bold mb-6 text-[var(--foreground-primary)] border-b-2 border-[var(--accent-primary)] pb-3">
+      <h2 className="pb-3 mb-6 text-2xl font-bold text-[var(--foreground-primary)] border-b-2 border-[var(--accent-primary)]">
         {termForEditing.ID ? `ویرایش: ${formData.name}` : "ایجاد ترم جدید"}
       </h2>
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* ... بقیه فیلدهای فرم بدون تغییر ... */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-[var(--foreground-secondary)]"
-            >
+            <label htmlFor="name" className={labelClasses}>
               نام
             </label>
             <input
@@ -103,14 +113,11 @@ export default function TermForm({
               value={formData.name}
               onChange={handleChange}
               required
-              className="mt-1 input-field"
+              className={inputFieldClasses}
             />
           </div>
           <div>
-            <label
-              htmlFor="slug"
-              className="block text-sm font-medium text-[var(--foreground-secondary)]"
-            >
+            <label htmlFor="slug" className={labelClasses}>
               اسلاگ
             </label>
             <input
@@ -120,19 +127,17 @@ export default function TermForm({
               value={formData.slug}
               onChange={handleChange}
               required
-              className="mt-1 input-field"
+              className={inputFieldClasses}
             />
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-[var(--foreground-secondary)]">
-            نوع
-          </label>
+          <label className={labelClasses}>نوع</label>
           <select
             name="taxonomy"
             value={formData.taxonomy}
             onChange={handleChange}
-            className="mt-1 input-field"
+            className={inputFieldClasses}
           >
             <option value="category">دسته‌بندی</option>
             <option value="post_tag">تگ</option>
@@ -147,21 +152,13 @@ export default function TermForm({
         />
 
         <div>
-          <label
-            htmlFor="biography"
-            className="block text-sm font-medium text-[var(--foreground-secondary)]"
-          >
-            توضیحات
-          </label>
-          <textarea
-            name="biography"
-            id="biography"
-            rows="5"
+          <label className={`${labelClasses} mb-2`}>توضیحات</label>
+          <TiptapEditor
             value={formData.biography || ""}
-            onChange={handleChange}
-            className="mt-1 input-field"
-          ></textarea>
+            onChange={handleBiographyChange}
+          />
         </div>
+
         {message.text && (
           <p
             className={`text-sm text-center p-3 rounded-md ${
@@ -173,6 +170,7 @@ export default function TermForm({
             {message.text}
           </p>
         )}
+
         <div className="flex items-center justify-between pt-4">
           <div>
             {termForEditing.ID && (
@@ -180,7 +178,7 @@ export default function TermForm({
                 type="button"
                 onClick={handleDelete}
                 disabled={!!loadingAction}
-                className="px-6 py-2 text-sm rounded-md text-[var(--error)] bg-transparent border border-[var(--error)] hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                className="px-6 py-2 text-sm transition-colors border rounded-md disabled:opacity-50 text-[var(--error)] border-[var(--error)] hover:bg-red-500/10"
               >
                 {loadingAction === "delete" ? "در حال حذف..." : "حذف"}
               </button>
@@ -191,36 +189,20 @@ export default function TermForm({
               type="button"
               onClick={onCancel}
               disabled={!!loadingAction}
-              className="px-6 py-2 text-sm rounded-md bg-[var(--background-tertiary)] hover:bg-[var(--foreground-muted)] transition-colors"
+              className="px-6 py-2 text-sm transition-colors rounded-md bg-[var(--background-tertiary)] hover:bg-[var(--foreground-muted)]"
             >
               انصراف
             </button>
             <button
               type="submit"
               disabled={!!loadingAction}
-              className="px-8 py-2 text-sm font-semibold text-black bg-[var(--accent-primary)] rounded-md hover:bg-[var(--accent-crystal-highlight)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--background-secondary)] focus:ring-[var(--accent-primary)] transition-colors disabled:opacity-50"
+              className="px-8 py-2 text-sm font-semibold text-black transition-colors rounded-md disabled:opacity-50 bg-[var(--accent-primary)] hover:bg-[var(--accent-crystal-highlight)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--background-secondary)] focus:ring-[var(--accent-primary)]"
             >
               {getButtonText()}
             </button>
           </div>
         </div>
       </form>
-      <style jsx>{`
-        .input-field {
-          width: 100%;
-          padding: 10px 14px;
-          background-color: var(--background-tertiary);
-          border: 1px solid var(--border-primary);
-          border-radius: 6px;
-          color: var(--foreground-primary);
-          transition: all 0.2s ease-in-out;
-        }
-        .input-field:focus {
-          outline: none;
-          border-color: var(--accent-primary);
-          box-shadow: 0 0 0 2px var(--accent-crystal-highlight);
-        }
-      `}</style>
     </div>
   );
 }
