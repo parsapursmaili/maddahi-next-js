@@ -6,24 +6,19 @@ import TermList from "./TermList";
 import TermForm from "./TermForm";
 
 export default function TermManager({ initialTerms }) {
-  const [terms, setTerms] = useState(initialTerms);
+  // این state ها اکنون با داده‌های اولیه به درستی مقداردهی می‌شوند
+  const [terms, setTerms] = useState(initialTerms || []);
   const [selectedTerm, setSelectedTerm] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState("all"); // 'all', 'category', 'post_tag'
 
   const handleCreateNew = () => {
-    setSelectedTerm({
-      ID: null,
-      name: "",
-      slug: "",
-      taxonomy: "category",
-      image_url: "",
-      biography: "",
-    });
+    // با null کردن ID، فرم به حالت "ایجاد" می‌رود
+    setSelectedTerm({ ID: null });
   };
 
   const filteredTerms = useMemo(() => {
-    return (terms || [])
+    return terms
       .filter((term) => {
         if (filter === "all") return true;
         return term.taxonomy === filter;
@@ -33,9 +28,8 @@ export default function TermManager({ initialTerms }) {
       );
   }, [terms, searchTerm, filter]);
 
-  // این تابع برای آپدیت لیست پس از ویرایش یا ایجاد فراخوانی می‌شود
   const onTermUpdate = (updatedTerm) => {
-    // اگر ترم جدید است
+    // اگر ترم جدید است (ID نداشت)
     if (!selectedTerm?.ID) {
       setTerms((prev) => [updatedTerm, ...prev]);
     } else {
@@ -44,6 +38,7 @@ export default function TermManager({ initialTerms }) {
         prev.map((t) => (t.ID === updatedTerm.ID ? updatedTerm : t))
       );
     }
+    // فرم را در حالت انتخاب شده نگه می‌داریم تا کاربر نتیجه را ببیند
     setSelectedTerm(updatedTerm);
   };
 
@@ -58,7 +53,7 @@ export default function TermManager({ initialTerms }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* ستون لیست و جستجو */}
-        <div className="lg:col-span-1 bg-[var(--background-secondary)] p-6 rounded-lg border border-[var(--border-primary)] h-fit">
+        <div className="lg:col-span-1 bg-[var(--background-secondary)] p-6 rounded-lg border border-[var(--border-primary)] h-fit shadow-lg">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-semibold">لیست ترم‌ها</h2>
             <button
@@ -98,7 +93,7 @@ export default function TermManager({ initialTerms }) {
         <div className="lg:col-span-2">
           {selectedTerm ? (
             <TermForm
-              key={selectedTerm.ID} // برای ریست شدن فرم هنگام تغییر ترم
+              key={selectedTerm.ID || "new"} // برای ریست شدن فرم هنگام تغییر ترم
               term={selectedTerm}
               onFormSubmit={onTermUpdate}
               onCancel={() => setSelectedTerm(null)}

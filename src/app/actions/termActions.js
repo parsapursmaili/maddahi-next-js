@@ -1,4 +1,3 @@
-// /actions/termActions.js
 "use server";
 
 import { db } from "@/app/lib/db/mysql";
@@ -31,8 +30,7 @@ export async function getTermsForAdmin() {
 }
 
 /**
- * ایجاد یک ترم جدید به همراه متادیتا (بدون تغییر نسبت به کد قبلی)
- * نام تابع برای خوانایی بهتر تغییر کرده است
+ * ایجاد یک ترم جدید به همراه متادیتا (بدون تغییر)
  */
 export async function createTermWithMetadata(formData) {
   const { name, slug, taxonomy, image_url, biography } = formData;
@@ -41,7 +39,6 @@ export async function createTermWithMetadata(formData) {
     return { success: false, message: "نام، اسلاگ و نوع ترم الزامی است." };
   }
 
-  // برای جلوگیری از ID تکراری، یک ID جدید بر اساس بزرگترین ID موجود می‌سازیم
   const [maxIdResult] = await db.query("SELECT MAX(ID) as maxId FROM terms");
   const newTermId = (maxIdResult[0].maxId || 0) + 1;
 
@@ -81,8 +78,7 @@ export async function createTermWithMetadata(formData) {
 }
 
 /**
- * ویرایش یک ترم موجود و متادیتای آن (بدون تغییر نسبت به کد قبلی)
- * نام تابع برای خوانایی بهتر تغییر کرده است
+ * ویرایش یک ترم موجود و متادیتای آن (بدون تغییر)
  */
 export async function updateTermWithMetadata(termId, formData) {
   const { name, slug, taxonomy, image_url, biography } = formData;
@@ -124,6 +120,44 @@ export async function updateTermWithMetadata(termId, formData) {
     await connection.rollback();
     console.error("MySQL Error updating term:", error);
     return { success: false, message: "خطا در به‌روزرسانی ترم." };
+  } finally {
+    connection.release();
+  }
+}
+
+/**
+ * جدید: حذف یک ترم و تمام متادیتای مرتبط با آن
+ * @param {number} termId - شناسه ترمی که باید حذف شود
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
+export async function deleteTermWithMetadata(termId) {
+  if (!termId) {
+    return { success: false, message: "شناسه ترم برای حذف الزامی است." };
+  }
+
+  const connection = await db.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    // قدم اول: حذف متادیتا از جدول terms_metadata
+    await connection.query("DELETE FROM terms_metadata WHERE term_id = ?", [
+      termId,
+    ]);
+
+    // نکته: اگر جدولی برای ارتباط ترم‌ها با پست‌ها دارید (مثلاً term_relationships)
+    // باید قبل از حذف ترم اصلی، رکوردهای مربوطه در آن جدول را نیز حذف کنید.
+    // await connection.query("DELETE FROM term_relationships WHERE term_id = ?", [termId]);
+
+    // قدم دوم: حذف خود ترم از جدول terms
+    await connection.query("DELETE FROM terms WHERE ID = ?", [termId]);
+
+    await connection.commit();
+    revalidatePath("/admin");
+    return { success: true, message: "ترم با موفقیت حذف شد." };
+  } catch (error) {
+    await connection.rollback();
+    console.error("MySQL Error deleting term:", error);
+    return { success: false, message: "خطا در هنگام حذف ترم." };
   } finally {
     connection.release();
   }

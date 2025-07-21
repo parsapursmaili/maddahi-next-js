@@ -1,20 +1,38 @@
-// /components/admin/TermForm.js
 "use client";
 
 import { useState, useEffect } from "react";
 import {
   createTermWithMetadata,
   updateTermWithMetadata,
+  deleteTermWithMetadata, // وارد کردن تابع جدید
 } from "@/app/actions/termActions";
-export default function TermForm({ term, onFormSubmit, onCancel }) {
-  const [formData, setFormData] = useState(term);
-  const [isLoading, setIsLoading] = useState(false);
+
+const defaultTerm = {
+  ID: null,
+  name: "",
+  slug: "",
+  taxonomy: "category",
+  image_url: "",
+  biography: "",
+};
+
+export default function TermForm({
+  term: initialTerm,
+  onFormSubmit,
+  onCancel,
+}) {
+  const termForEditing = initialTerm?.ID ? initialTerm : defaultTerm;
+
+  const [formData, setFormData] = useState(termForEditing);
   const [message, setMessage] = useState({ type: "", text: "" });
+  // استفاده از استیت جدید برای مدیریت اکشن‌های مختلف (ذخیره، حذف)
+  const [loadingAction, setLoadingAction] = useState(null);
 
   useEffect(() => {
-    setFormData(term); // Re-initialize form when selected term changes
+    setFormData(initialTerm?.ID ? initialTerm : defaultTerm);
     setMessage({ type: "", text: "" });
-  }, [term]);
+    setLoadingAction(null);
+  }, [initialTerm]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,30 +41,65 @@ export default function TermForm({ term, onFormSubmit, onCancel }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    setLoadingAction("submit");
     setMessage({ type: "", text: "" });
 
-    const action = term.ID ? updateTermWithMetadata : createTermWithMetadata;
-    const result = await action(term.ID, formData);
-
-    if (result.success) {
-      setMessage({ type: "success", text: result.message });
-      // به‌روزرسانی state در کامپوننت والد
-      onFormSubmit({ ...formData, ID: term.ID || result.newTermId });
+    let result;
+    if (termForEditing.ID) {
+      result = await updateTermWithMetadata(termForEditing.ID, formData);
     } else {
-      setMessage({ type: "error", text: result.message });
+      result = await createTermWithMetadata(formData);
     }
-    setIsLoading(false);
+
+    if (result && result.success) {
+      setMessage({ type: "success", text: result.message });
+      onFormSubmit({ ...formData, ID: termForEditing.ID || result.newTermId });
+    } else {
+      setMessage({
+        type: "error",
+        text: result?.message || "خطایی رخ داد. لطفا دوباره تلاش کنید.",
+      });
+    }
+
+    setLoadingAction(null);
+  };
+
+  // تابع جدید برای مدیریت حذف
+  const handleDelete = async () => {
+    if (
+      !window.confirm(
+        `آیا از حذف ترم "${formData.name}" مطمئن هستید؟ این عمل غیرقابل بازگشت است.`
+      )
+    ) {
+      return;
+    }
+
+    setLoadingAction("delete");
+    setMessage({ type: "", text: "" });
+
+    const result = await deleteTermWithMetadata(termForEditing.ID);
+
+    if (result && result.success) {
+      setMessage({ type: "success", text: result.message });
+      // اطلاع به کامپوننت والد که ترم حذف شده است تا UI را به‌روز کند
+      onFormSubmit({ ...formData, ID: termForEditing.ID, deleted: true });
+    } else {
+      setMessage({
+        type: "error",
+        text: result?.message || "خطا در هنگام حذف.",
+      });
+      setLoadingAction(null); // در صورت خطا، لودینگ را متوقف کن
+    }
   };
 
   return (
     <div className="p-8 bg-[var(--background-secondary)] rounded-lg border border-[var(--border-primary)] shadow-lg">
       <h2 className="text-2xl font-bold mb-6 text-[var(--foreground-primary)] border-b-2 border-[var(--accent-primary)] pb-3">
-        {term.ID ? `ویرایش ترم: ${term.name}` : "ایجاد ترم جدید"}
+        {termForEditing.ID ? `ویرایش ترم: ${formData.name}` : "ایجاد ترم جدید"}
       </h2>
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* فیلدها (بدون تغییر) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Name */}
           <div>
             <label
               htmlFor="name"
@@ -64,8 +117,6 @@ export default function TermForm({ term, onFormSubmit, onCancel }) {
               className="mt-1 input-field"
             />
           </div>
-
-          {/* Slug */}
           <div>
             <label
               htmlFor="slug"
@@ -84,8 +135,6 @@ export default function TermForm({ term, onFormSubmit, onCancel }) {
             />
           </div>
         </div>
-
-        {/* Taxonomy */}
         <div>
           <label className="block text-sm font-medium text-[var(--foreground-secondary)]">
             نوع (Taxonomy)
@@ -100,8 +149,6 @@ export default function TermForm({ term, onFormSubmit, onCancel }) {
             <option value="post_tag">تگ (Post Tag)</option>
           </select>
         </div>
-
-        {/* Image URL */}
         <div>
           <label
             htmlFor="image_url"
@@ -119,8 +166,6 @@ export default function TermForm({ term, onFormSubmit, onCancel }) {
             placeholder="https://example.com/image.jpg"
           />
         </div>
-
-        {/* Biography */}
         <div>
           <label
             htmlFor="biography"
@@ -138,7 +183,7 @@ export default function TermForm({ term, onFormSubmit, onCancel }) {
           ></textarea>
         </div>
 
-        {/* Messages */}
+        {/* پیام‌ها */}
         {message.text && (
           <p
             className={`text-sm text-center p-3 rounded-md ${
@@ -151,28 +196,48 @@ export default function TermForm({ term, onFormSubmit, onCancel }) {
           </p>
         )}
 
-        {/* Actions */}
-        <div className="flex items-center justify-end space-x-4 space-x-reverse pt-4">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-6 py-2 text-sm rounded-md bg-[var(--background-tertiary)] hover:bg-[var(--foreground-muted)] transition-colors"
-          >
-            انصراف
-          </button>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="px-8 py-2 text-sm font-semibold text-black bg-[var(--accent-primary)] rounded-md hover:bg-[var(--accent-crystal-highlight)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--background-secondary)] focus:ring-[var(--accent-primary)] transition-colors disabled:opacity-50"
-          >
-            {isLoading
-              ? "در حال ذخیره..."
-              : term.ID
-              ? "ذخیره تغییرات"
-              : "ایجاد ترم"}
-          </button>
+        {/* دکمه‌ها */}
+        <div className="flex items-center justify-between pt-4">
+          {/* دکمه حذف (جدید) */}
+          <div>
+            {termForEditing.ID && (
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={loadingAction !== null}
+                className="px-6 py-2 text-sm rounded-md text-[var(--error)] bg-transparent border border-[var(--error)] hover:bg-red-500/10 transition-colors disabled:opacity-50"
+              >
+                {loadingAction === "delete" ? "در حال حذف..." : "حذف ترم"}
+              </button>
+            )}
+          </div>
+
+          {/* دکمه‌های انصراف و ذخیره */}
+          <div className="flex items-center space-x-4 space-x-reverse">
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={loadingAction !== null}
+              className="px-6 py-2 text-sm rounded-md bg-[var(--background-tertiary)] hover:bg-[var(--foreground-muted)] transition-colors"
+            >
+              انصراف
+            </button>
+            <button
+              type="submit"
+              disabled={loadingAction !== null}
+              className="px-8 py-2 text-sm font-semibold text-black bg-[var(--accent-primary)] rounded-md hover:bg-[var(--accent-crystal-highlight)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--background-secondary)] focus:ring-[var(--accent-primary)] transition-colors disabled:opacity-50"
+            >
+              {loadingAction === "submit"
+                ? "در حال ذخیره..."
+                : termForEditing.ID
+                ? "ذخیره تغییرات"
+                : "ایجاد ترم"}
+            </button>
+          </div>
         </div>
       </form>
+
+      {/* استایل‌ها (بدون تغییر) */}
       <style jsx>{`
         .input-field {
           width: 100%;
