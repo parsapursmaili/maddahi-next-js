@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation"; // جدید: برای دریافت مسیر فعلی
 import {
   createTermWithMetadata,
   updateTermWithMetadata,
-  deleteTermWithMetadata, // وارد کردن تابع جدید
+  deleteTermWithMetadata,
 } from "@/app/actions/termActions";
+import ImageUploader from "@/app/componenet/ImageUploader";
 
 const defaultTerm = {
   ID: null,
@@ -22,10 +24,10 @@ export default function TermForm({
   onCancel,
 }) {
   const termForEditing = initialTerm?.ID ? initialTerm : defaultTerm;
+  const pathname = usePathname(); // جدید: دریافت مسیر فعلی مثلا /admin/terms
 
   const [formData, setFormData] = useState(termForEditing);
   const [message, setMessage] = useState({ type: "", text: "" });
-  // استفاده از استیت جدید برای مدیریت اکشن‌های مختلف (ذخیره، حذف)
   const [loadingAction, setLoadingAction] = useState(null);
 
   useEffect(() => {
@@ -34,71 +36,58 @@ export default function TermForm({
     setLoadingAction(null);
   }, [initialTerm]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  const handleChange = (e) =>
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleImageChange = (url) =>
+    setFormData((prev) => ({ ...prev, image_url: url }));
+  const handleBusyState = (isBusy) =>
+    setLoadingAction(isBusy ? "upload" : null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loadingAction) return;
     setLoadingAction("submit");
-    setMessage({ type: "", text: "" });
+    const result = termForEditing.ID
+      ? await updateTermWithMetadata(termForEditing.ID, formData)
+      : await createTermWithMetadata(formData);
 
-    let result;
-    if (termForEditing.ID) {
-      result = await updateTermWithMetadata(termForEditing.ID, formData);
-    } else {
-      result = await createTermWithMetadata(formData);
-    }
-
-    if (result && result.success) {
+    if (result?.success) {
       setMessage({ type: "success", text: result.message });
       onFormSubmit({ ...formData, ID: termForEditing.ID || result.newTermId });
     } else {
-      setMessage({
-        type: "error",
-        text: result?.message || "خطایی رخ داد. لطفا دوباره تلاش کنید.",
-      });
+      setMessage({ type: "error", text: result?.message || "خطایی رخ داد." });
     }
-
     setLoadingAction(null);
   };
 
-  // تابع جدید برای مدیریت حذف
   const handleDelete = async () => {
-    if (
-      !window.confirm(
-        `آیا از حذف ترم "${formData.name}" مطمئن هستید؟ این عمل غیرقابل بازگشت است.`
-      )
-    ) {
+    if (!window.confirm(`آیا از حذف ترم "${formData.name}" مطمئن هستید؟`))
       return;
-    }
-
     setLoadingAction("delete");
-    setMessage({ type: "", text: "" });
-
     const result = await deleteTermWithMetadata(termForEditing.ID);
-
-    if (result && result.success) {
+    if (result?.success) {
       setMessage({ type: "success", text: result.message });
-      // اطلاع به کامپوننت والد که ترم حذف شده است تا UI را به‌روز کند
       onFormSubmit({ ...formData, ID: termForEditing.ID, deleted: true });
     } else {
-      setMessage({
-        type: "error",
-        text: result?.message || "خطا در هنگام حذف.",
-      });
-      setLoadingAction(null); // در صورت خطا، لودینگ را متوقف کن
+      setMessage({ type: "error", text: result?.message || "خطا در حذف." });
+      setLoadingAction(null);
     }
+  };
+
+  const getButtonText = () => {
+    if (loadingAction === "submit") return "در حال ذخیره...";
+    if (loadingAction === "upload") return "در حال آپلود...";
+    if (loadingAction === "delete") return "در حال حذف...";
+    return termForEditing.ID ? "ذخیره تغییرات" : "ایجاد ترم";
   };
 
   return (
     <div className="p-8 bg-[var(--background-secondary)] rounded-lg border border-[var(--border-primary)] shadow-lg">
       <h2 className="text-2xl font-bold mb-6 text-[var(--foreground-primary)] border-b-2 border-[var(--accent-primary)] pb-3">
-        {termForEditing.ID ? `ویرایش ترم: ${formData.name}` : "ایجاد ترم جدید"}
+        {termForEditing.ID ? `ویرایش: ${formData.name}` : "ایجاد ترم جدید"}
       </h2>
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* فیلدها (بدون تغییر) */}
+        {/* ... بقیه فیلدهای فرم بدون تغییر ... */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label
@@ -122,7 +111,7 @@ export default function TermForm({
               htmlFor="slug"
               className="block text-sm font-medium text-[var(--foreground-secondary)]"
             >
-              اسلاگ (Slug)
+              اسلاگ
             </label>
             <input
               type="text"
@@ -137,7 +126,7 @@ export default function TermForm({
         </div>
         <div>
           <label className="block text-sm font-medium text-[var(--foreground-secondary)]">
-            نوع (Taxonomy)
+            نوع
           </label>
           <select
             name="taxonomy"
@@ -145,33 +134,24 @@ export default function TermForm({
             onChange={handleChange}
             className="mt-1 input-field"
           >
-            <option value="category">دسته‌بندی (Category)</option>
-            <option value="post_tag">تگ (Post Tag)</option>
+            <option value="category">دسته‌بندی</option>
+            <option value="post_tag">تگ</option>
           </select>
         </div>
-        <div>
-          <label
-            htmlFor="image_url"
-            className="block text-sm font-medium text-[var(--foreground-secondary)]"
-          >
-            آدرس تصویر (اختیاری)
-          </label>
-          <input
-            type="text"
-            name="image_url"
-            id="image_url"
-            value={formData.image_url || ""}
-            onChange={handleChange}
-            className="mt-1 input-field"
-            placeholder="https://example.com/image.jpg"
-          />
-        </div>
+
+        <ImageUploader
+          imageUrl={formData.image_url}
+          onImageChange={handleImageChange}
+          onBusyStateChange={handleBusyState}
+          revalidatePath={pathname}
+        />
+
         <div>
           <label
             htmlFor="biography"
             className="block text-sm font-medium text-[var(--foreground-secondary)]"
           >
-            بیوگرافی/توضیحات (اختیاری)
+            توضیحات
           </label>
           <textarea
             name="biography"
@@ -182,8 +162,6 @@ export default function TermForm({
             className="mt-1 input-field"
           ></textarea>
         </div>
-
-        {/* پیام‌ها */}
         {message.text && (
           <p
             className={`text-sm text-center p-3 rounded-md ${
@@ -195,49 +173,38 @@ export default function TermForm({
             {message.text}
           </p>
         )}
-
-        {/* دکمه‌ها */}
         <div className="flex items-center justify-between pt-4">
-          {/* دکمه حذف (جدید) */}
           <div>
             {termForEditing.ID && (
               <button
                 type="button"
                 onClick={handleDelete}
-                disabled={loadingAction !== null}
+                disabled={!!loadingAction}
                 className="px-6 py-2 text-sm rounded-md text-[var(--error)] bg-transparent border border-[var(--error)] hover:bg-red-500/10 transition-colors disabled:opacity-50"
               >
-                {loadingAction === "delete" ? "در حال حذف..." : "حذف ترم"}
+                {loadingAction === "delete" ? "در حال حذف..." : "حذف"}
               </button>
             )}
           </div>
-
-          {/* دکمه‌های انصراف و ذخیره */}
           <div className="flex items-center space-x-4 space-x-reverse">
             <button
               type="button"
               onClick={onCancel}
-              disabled={loadingAction !== null}
+              disabled={!!loadingAction}
               className="px-6 py-2 text-sm rounded-md bg-[var(--background-tertiary)] hover:bg-[var(--foreground-muted)] transition-colors"
             >
               انصراف
             </button>
             <button
               type="submit"
-              disabled={loadingAction !== null}
+              disabled={!!loadingAction}
               className="px-8 py-2 text-sm font-semibold text-black bg-[var(--accent-primary)] rounded-md hover:bg-[var(--accent-crystal-highlight)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--background-secondary)] focus:ring-[var(--accent-primary)] transition-colors disabled:opacity-50"
             >
-              {loadingAction === "submit"
-                ? "در حال ذخیره..."
-                : termForEditing.ID
-                ? "ذخیره تغییرات"
-                : "ایجاد ترم"}
+              {getButtonText()}
             </button>
           </div>
         </div>
       </form>
-
-      {/* استایل‌ها (بدون تغییر) */}
       <style jsx>{`
         .input-field {
           width: 100%;

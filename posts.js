@@ -26,17 +26,21 @@ export const recreateAndPopulatePostsTable = async () => {
         content LONGTEXT,
         date DATETIME,
         thumbnail VARCHAR(255),
-        thumbnail2 VARCHAR(255),
         thumbnail_alt VARCHAR(255),
         link VARCHAR(255),
         type VARCHAR(255),
         name VARCHAR(255),
         comments_count INT,
         comment_status VARCHAR(255),
-        excerpt TEXT,
+        -- excerpt TEXT, -- حذف شد
         author INT,
         last_update DATETIME,
-        view VARCHAR(255) DEFAULT '0' -- مقدار پیش‌فرض '0' برای ستون view
+        view VARCHAR(255) DEFAULT '0', 
+        
+        description TEXT, 
+        rozeh VARCHAR(255), 
+        thumbnail_image_alt VARCHAR(255), 
+        extra_metadata JSON 
       )
     `);
     console.log("جدول 'posts' با موفقیت ایجاد شد.");
@@ -55,10 +59,13 @@ export const recreateAndPopulatePostsTable = async () => {
           p.post_name, 
           p.comment_count, 
           p.comment_status, 
-          p.post_excerpt, 
+          -- p.post_excerpt, -- حذف شد
           p.post_author, 
           p.post_modified, 
-          view.meta_value AS view, 
+          IFNULL(view.meta_value, '0') AS view, 
+          description.meta_value AS description, 
+          rozeh.meta_value AS rozeh, 
+          -- گرفتن آدرس فایل تامبنیل اصلی
           (
               SELECT pm2.meta_value 
               FROM wp_postmeta pm1
@@ -66,42 +73,72 @@ export const recreateAndPopulatePostsTable = async () => {
               LEFT JOIN wp_postmeta pm2 ON pm2.post_id = p2.ID AND pm2.meta_key = '_wp_attached_file'
               WHERE pm1.post_id = p.ID AND pm1.meta_key = '_thumbnail_id'
               LIMIT 1
-          ) AS thumb
+          ) AS thumb,
+          -- گرفتن آلت تکست تامبنیل اصلی
+          (
+              SELECT pm2.meta_value 
+              FROM wp_postmeta pm1
+              LEFT JOIN wp_posts p2 ON p2.ID = pm1.meta_value
+              LEFT JOIN wp_postmeta pm2 ON pm2.post_id = p2.ID AND pm2.meta_key = '_wp_attachment_image_alt'
+              WHERE pm1.post_id = p.ID AND pm1.meta_key = '_thumbnail_id'
+              LIMIT 1
+          ) AS thumbnail_alt_text, 
+          -- شروع منطق JSON بهینه شده برای extra_metadata
+          (
+              SELECT 
+                  CASE 
+                      WHEN second_thumb_file.meta_value IS NOT NULL 
+                      THEN JSON_OBJECT('second_thumbnail', second_thumb_file.meta_value)
+                      ELSE NULL 
+                  END
+              FROM wp_postmeta pm_second_thumb_id 
+              LEFT JOIN wp_posts p_second_thumb_attach 
+                  ON p_second_thumb_attach.ID = pm_second_thumb_id.meta_value
+              LEFT JOIN wp_postmeta second_thumb_file 
+                  ON second_thumb_file.post_id = p_second_thumb_attach.ID 
+                  AND second_thumb_file.meta_key = '_wp_attached_file'
+              WHERE pm_second_thumb_id.post_id = p.ID 
+              AND pm_second_thumb_id.meta_key = '_' 
+              LIMIT 1
+          ) AS extra_data_json
       FROM wp_posts p
       LEFT JOIN wp_postmeta link ON link.post_id = p.ID AND link.meta_key = 'sib-post-pre-link'
       LEFT JOIN wp_postmeta view ON view.post_id = p.ID AND view.meta_key = 'entry_views'
-      WHERE p.post_type = 'post' OR p.post_type = 'page'
-      `
+      LEFT JOIN wp_postmeta description ON description.post_id = p.ID AND description.meta_key = 'rank_math_description'
+      LEFT JOIN wp_postmeta rozeh ON rozeh.post_id = p.ID AND rozeh.meta_key = 'rozeh'
+      WHERE p.post_type = 'post' OR p.post_type = 'page'`
     );
     console.log(`تعداد ${rows.length} ردیف داده دریافت شد.`);
 
     // 4. آماده‌سازی داده‌ها برای درج
     const dataToInsert = rows.map((item) => [
-      item.ID, // ID را هم اینجا شامل می‌کنیم
+      item.ID,
       item.post_status,
       item.post_title,
       item.post_content,
       item.post_date,
       item.thumb,
+      item.thumbnail_alt_text || item.thumbnail_alt,
       item.link,
       item.post_type,
       item.post_name,
       item.comment_count,
       item.comment_status,
-      item.post_excerpt,
+      // item.post_excerpt, -- حذف شد
       item.post_author,
       item.post_modified,
-      // اطمینان حاصل می‌کنیم که 'view' همیشه '0' باشد اگر null یا خالی بود
-      item.view === null || item.view === undefined || item.view === ""
-        ? "0"
-        : item.view,
+      item.view,
+      item.description,
+      item.rozeh,
+      item.thumbnail_alt_text,
+      item.extra_data_json,
     ]);
 
     // 5. درج داده‌ها در جدول posts
     if (dataToInsert.length > 0) {
       console.log("در حال درج داده‌ها در جدول 'posts'...");
       await db.query(
-        `REPLACE INTO posts (id, status, title, content, date, thumbnail, link, type, name, comments_count, comment_status, excerpt, author, last_update, view) VALUES ?`,
+        `REPLACE INTO posts (id, status, title, content, date, thumbnail, thumbnail_alt, link, type, name, comments_count, comment_status, author, last_update, view, description, rozeh, thumbnail_image_alt, extra_metadata) VALUES ?`,
         [dataToInsert]
       );
       console.log("درج داده‌ها با موفقیت انجام شد.");
@@ -113,8 +150,8 @@ export const recreateAndPopulatePostsTable = async () => {
   } catch (error) {
     console.error("خطا در بازسازی و پر کردن جدول 'posts':", error);
   } finally {
-    // بستن اتصال به دیتابیس در صورت نیاز (اینجا از connection pool استفاده می‌شود)
-    // db.end(); // برای pool معمولاً نیاز به end نیست مگر در انتهای برنامه
+    // در محیط تولیدی، معمولاً pool رو در انتهای برنامه می‌بندید نه در هر اجرای تابع
+    // await db.end();
   }
 };
 
