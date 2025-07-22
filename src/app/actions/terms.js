@@ -10,7 +10,7 @@ export default async function getTerms(params) {
 
   try {
     const [data] = await db.query(`
-      select * from terms ${where}`);
+      select * from terms ${where} order by name asc`);
     return data;
   } catch (error) {
     console.error("MySQL Error:", error);

@@ -23,7 +23,7 @@ import {
   Pilcrow,
 } from "lucide-react";
 
-// کامپوننت دکمه برای نوار ابزار با استفاده از کلاس‌های CSS
+// کامپوننت دکمه برای نوار ابزار (بدون تغییر)
 const ToolbarButton = ({ onClick, isActive, title, children }) => (
   <button
     type="button"
@@ -35,15 +35,38 @@ const ToolbarButton = ({ onClick, isActive, title, children }) => (
   </button>
 );
 
-// نوار ابزار حرفه‌ای با Tailwind برای چیدمان
+// نوار ابزار اصلاح‌شده
 const Toolbar = ({ editor }) => {
-  if (!editor) return null;
-
+  // --- شروع تغییر ---
+  // هوک useCallback به ابتدای کامپوننت منتقل شد تا همیشه فراخوانی شود
   const setLink = useCallback(() => {
-    const url = window.prompt("آدرس لینک:", editor.getAttributes("link").href);
-    if (url === null) return;
+    // برای اطمینان بیشتر، وجود editor در داخل تابع نیز بررسی می‌شود
+    if (!editor) {
+      return;
+    }
+    const previousUrl = editor.getAttributes("link").href;
+    const url = window.prompt("آدرس لینک:", previousUrl);
+
+    // اگر کاربر پنجره را ببندد یا خالی رها کند
+    if (url === null) {
+      return;
+    }
+
+    // اگر کاربر آدرس را پاک کند، لینک حذف می‌شود
+    if (url === "") {
+      editor.chain().focus().extendMarkRange("link").unsetLink().run();
+      return;
+    }
+
+    // در غیر این صورت، لینک ایجاد یا به‌روزرسانی می‌شود
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
   }, [editor]);
+
+  // اکنون شرط بازگشت زودهنگام بعد از تعریف هوک‌ها قرار دارد و مشکلی ایجاد نمی‌کند
+  if (!editor) {
+    return null;
+  }
+  // --- پایان تغییر ---
 
   return (
     <div className="tiptap-toolbar flex items-center flex-wrap gap-1 p-2">
@@ -151,7 +174,7 @@ const Toolbar = ({ editor }) => {
   );
 };
 
-// کامپوننت اصلی و کامل ویرایشگر
+// کامپوننت اصلی و کامل ویرایشگر (بدون تغییر)
 export default function TiptapEditor({ value, onChange }) {
   const editor = useEditor({
     extensions: [
@@ -163,9 +186,8 @@ export default function TiptapEditor({ value, onChange }) {
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
     editorProps: {
       attributes: {
-        class: "tiptap-editor-field", // کلاس اصلی برای استایل‌دهی از فایل CSS
+        class: "tiptap-editor-field",
       },
-      // قابلیت تشخیص هوشمند محتوای پیست شده توسط StarterKit مدیریت می‌شود
     },
     immediatelyRender: false,
   });

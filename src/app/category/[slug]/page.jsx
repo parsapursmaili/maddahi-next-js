@@ -1,163 +1,186 @@
 // app/maddah/[slug]/page.js
 
 import Link from "next/link";
+import Image from "next/image";
 import Slider from "@/app/componenet/slider";
 import { db } from "@/app/lib/db/mysql";
-import getPosts from "@/app/actions/getPost"; // این خط در پروژه واقعی باید فعال باشد
+import getPosts from "@/app/actions/getPost";
 import { FiMic, FiHeadphones, FiChevronLeft } from "react-icons/fi";
+import { notFound } from "next/navigation";
 
 // =================================================================
-// کامپوننت‌های جدید و اصلاح‌شده
+// ★★ کامپوننت‌های نهایی - بازطراحی شده بر اساس استایل شما ★★
 // =================================================================
 
-// ۱. هدر اصلاح‌شده: فقط آواتار و نام
-const MaddahHeader = ({ name }) => (
-  <header className="relative overflow-hidden pt-12 md:pt-20">
+const MaddahHeader = ({ name, imageUrl }) => (
+  <header className="relative overflow-hidden pt-16 md:pt-24 pb-8">
+    <div className="absolute inset-0 bg-gradient-to-b from-[var(--accent-primary)]/10 via-transparent to-transparent -z-10"></div>
     <div className="container mx-auto px-4 text-center">
-      <div className="relative inline-flex items-center justify-center w-40 h-40 sm:w-48 sm:h-48 mb-6">
-        {/* افکت چرخش و گرادینت پس‌زمینه */}
-        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[var(--accent-primary)] via-[var(--background-tertiary)] to-[var(--background-secondary)] animate-spin-slow"></div>
-        <div className="relative w-[95%] h-[95%] bg-[var(--background-primary)] rounded-full flex items-center justify-center p-2">
-          {/* آیکون اصلی */}
-          <div className="w-full h-full rounded-full border border-[var(--border-primary)] flex items-center justify-center bg-[var(--background-secondary)]/50">
-            <FiMic className="text-6xl sm:text-7xl text-[var(--accent-crystal-highlight)]/80" />
+      <div className="relative inline-block group mb-6">
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent-primary)] to-[var(--success)] rounded-full blur-xl opacity-20 group-hover:opacity-30 transition-opacity duration-500"></div>
+        <div className="relative w-48 h-48 sm:w-56 sm:h-56 p-2 bg-gradient-to-br from-[var(--background-secondary)] to-[var(--background-primary)] rounded-full shadow-2xl">
+          <div className="w-full h-full rounded-full border-2 border-[var(--border-primary)]/50 flex items-center justify-center bg-[var(--background-secondary)] overflow-hidden">
+            {imageUrl ? (
+              <Image
+                src={imageUrl}
+                alt={`تصویر پروفایل ${name}`}
+                width={240}
+                height={240}
+                className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                priority
+              />
+            ) : (
+              <FiMic className="text-8xl text-[var(--foreground-muted)]" />
+            )}
           </div>
         </div>
       </div>
-      <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-[var(--foreground-primary)] to-[var(--foreground-secondary)] bg-clip-text text-transparent">
+      <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[var(--foreground-primary)]">
         {name}
       </h1>
     </div>
-    {/* المان تزئینی پس‌زمینه */}
-    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200%] h-[150%] bg-gradient-radial from-[var(--accent-primary)]/10 via-[var(--accent-primary)]/0 to-transparent -z-10"></div>
   </header>
 );
 
-// ★★ جدید: کامپوننت خلاقانه آمار (Crystal Stats)
 const CreativeStats = ({ trackCount, totalPlays }) => (
   <div className="container mx-auto px-4 my-12 sm:my-16">
-    <div className="relative grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-      {/* کارت تعداد آثار */}
-      <div className="relative p-6 bg-[var(--background-secondary)]/50 backdrop-blur-sm rounded-2xl overflow-hidden clip-shard-right">
-        <div className="relative z-10 flex flex-col items-center justify-center text-center h-full">
-          <FiMic className="text-4xl text-[var(--accent-primary)] mb-3" />
-          <p className="text-5xl lg:text-6xl font-extrabold text-[var(--foreground-primary)]">
-            {trackCount}
-          </p>
-          <p className="text-md text-[var(--foreground-secondary)] mt-1">
-            قطعه اثر
-          </p>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+      {[
+        { icon: FiMic, value: trackCount, label: "قطعه اثر" },
+        { icon: FiHeadphones, value: totalPlays, label: "مرتبه شنیده شده" },
+      ].map((stat, index) => (
+        <div
+          key={index}
+          className="relative p-6 rounded-2xl bg-[var(--background-secondary)]/50 backdrop-blur-lg ring-1 ring-[var(--border-primary)] transition-all duration-300 hover:ring-[var(--accent-primary)]/50 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[var(--accent-primary)]/10"
+        >
+          <div className="flex flex-col items-center justify-center text-center h-full">
+            <stat.icon className="text-4xl text-[var(--accent-primary)] mb-3" />
+            <p className="text-5xl lg:text-6xl font-extrabold text-[var(--foreground-primary)]">
+              {stat.value}
+            </p>
+            <p className="text-md text-[var(--foreground-secondary)] mt-1">
+              {stat.label}
+            </p>
+          </div>
         </div>
-        {/* افکت درخشش */}
-        <div className="absolute -inset-2 bg-gradient-to-br from-[var(--accent-crystal-highlight)]/10 via-transparent to-transparent opacity-50"></div>
-      </div>
-
-      {/* کارت مجموع بازدیدها */}
-      <div className="relative p-6 bg-[var(--background-secondary)]/50 backdrop-blur-sm rounded-2xl overflow-hidden clip-shard-left">
-        <div className="relative z-10 flex flex-col items-center justify-center text-center h-full">
-          <FiHeadphones className="text-4xl text-[var(--accent-primary)] mb-3" />
-          <p className="text-5xl lg:text-6xl font-extrabold text-[var(--foreground-primary)]">
-            {totalPlays}
-          </p>
-          <p className="text-md text-[var(--foreground-secondary)] mt-1">
-            مرتبه شنیده شده
-          </p>
-        </div>
-        {/* افکت درخشش */}
-        <div className="absolute -inset-2 bg-gradient-to-tl from-[var(--accent-primary)]/10 via-transparent to-transparent opacity-50"></div>
-      </div>
+      ))}
     </div>
   </div>
 );
 
-// ★★ جدید: کامپوننت بیوگرافی (که در انتهای صفحه قرار می‌گیرد)
-const MaddahBio = ({ name, description }) => (
-  <section className="container mx-auto px-4 mt-16 sm:mt-24">
-    <div className="max-w-4xl mx-auto bg-[var(--background-secondary)]/40 border border-[var(--border-primary)] rounded-2xl p-6 sm:p-8 text-center">
-      <h2 className="text-2xl font-bold mb-4">درباره {name}</h2>
-      <p className="text-[var(--foreground-secondary)] leading-loose">
-        {description}
-      </p>
-    </div>
-  </section>
-);
+// ★★ کامپوننت بیوگرافی که از کلاس سفارشی CSS استفاده می‌کند
+const MaddahBio = ({ name, rawHtml }) => {
+  if (!rawHtml) {
+    return null;
+  }
+  return (
+    <section className="container mx-auto px-4 mt-16 sm:mt-24">
+      <div className="w-full max-w-5xl mx-auto rounded-2xl bg-[var(--background-secondary)]/50 shadow-2xl shadow-[var(--accent-primary)]/10 backdrop-blur-lg ring-1 ring-[var(--border-primary)] overflow-hidden">
+        <div className="p-6 sm:p-8 md:p-10">
+          <h2 className="text-3xl font-bold mb-8 text-center text-[var(--foreground-primary)]">
+            درباره {name}
+          </h2>
+          {/* فقط از یک کلاس استفاده می‌کنیم که در globals.css تعریف شده است */}
+          <div
+            className="prose-content"
+            dangerouslySetInnerHTML={{ __html: rawHtml }}
+          />
+        </div>
+      </div>
+    </section>
+  );
+};
 
 export default async function MaddahCategoryPage({ params }) {
-  let [maddah] = await db.query(`select * from terms where slug=?`, [
-    params.slug,
-  ]);
+  const siteUrl = process.env.SITE_URL || "http://localhost:3000";
+  const uploadsPath = process.env.NEXT_PUBLIC_UPLOADS_BASE_PATH || "/uploads";
 
-  maddah = maddah[0];
+  const [maddahResult] = await db.query(
+    `SELECT t.ID, t.name, t.slug, tm.image_url, tm.biography FROM terms AS t LEFT JOIN terms_metadata AS tm ON t.ID = tm.term_id WHERE t.slug = ? AND t.taxonomy = 'category'`,
+    [params.slug]
+  );
+
+  if (!maddahResult || maddahResult.length === 0) {
+    notFound();
+  }
+
+  const maddah = maddahResult[0];
   const MADDAS_ID = maddah.ID;
 
+  const fullImageUrl = maddah.image_url
+    ? new URL(`${uploadsPath}/${maddah.image_url}`, siteUrl).href
+    : null;
+  const eulogistBiographyHtml = maddah.biography || null;
+
   const [latestPostsData, popularPostsData] = await Promise.all([
-    getPosts({ maddah: MADDAS_ID, rand: 0, limit: 15, view: 1 }), // 0 برای جدیدترین‌ها
-    getPosts({ maddah: MADDAS_ID, rand: 2, limit: 15 }), // 2 برای محبوب‌ترین‌ها
+    getPosts({ maddah: MADDAS_ID, rand: 0, limit: 15, view: 1 }),
+    getPosts({ maddah: MADDAS_ID, rand: 2, limit: 15 }),
   ]);
 
   const latestSlides = latestPostsData.post || [];
   const popularSlides = popularPostsData.post || [];
-
   const eulogistName = maddah.name;
-  const eulogistDescription =
-    "این یک متن نمونه طولانی برای بخش معرفی و بیوگرافی مداح است. این بخش حالا به انتهای صفحه منتقل شده تا کاربر در ابتدا با آثار و آمار کلیدی مواجه شود. می‌توانید این متن را با محتوای داینامیک و کامل از پایگاه داده خود پر کنید. استفاده از متنی با طول بیشتر در اینجا به درک بهتر چیدمان نهایی کمک می‌کند.";
 
-  let totalview = String(latestPostsData.totalview) || "";
+  let totalview = String(latestPostsData.totalview) || "0";
   let itotalview = parseInt(latestPostsData.totalview) || 0;
-
-  if (totalview.length > 3 && totalview.length < 7) {
-    totalview = `${parseInt(itotalview / 1000)}K`;
-  } else if (totalview.length >= 7) {
-    totalview = `${parseInt(itotalview / 1000000)}M`;
+  if (itotalview >= 1000000) {
+    totalview = `${(itotalview / 1000000).toFixed(1).replace(".0", "")}M`;
+  } else if (itotalview >= 1000) {
+    totalview = `${Math.floor(itotalview / 1000)}K`;
   }
 
-  // آمار استاتیک برای نمایش
   const stats = {
-    trackCount: latestPostsData.total || 1000, // استرینگ برای فرمت‌دهی دلخواه (مثلا: "۴۱۰+")
+    trackCount: latestPostsData.total || 0,
   };
 
   return (
-    <main className="min-h-screen pb-20">
-      {/* ترتیب جدید المان‌ها */}
-      <MaddahHeader name={eulogistName} />
-
+    <main className="min-h-screen pb-20 animate-fade-in">
+      <MaddahHeader name={eulogistName} imageUrl={fullImageUrl} />
       <CreativeStats trackCount={stats.trackCount} totalPlays={totalview} />
 
-      <div className="space-y-16 sm:space-y-20">
-        <section>
-          <div className="container mx-auto px-4">
-            <div className="flex justify-between items-baseline mb-6">
-              <h2 className="text-2xl sm:text-3xl font-bold">جدیدترین آثار</h2>
-              <Link
-                href="#"
-                className="group flex items-center gap-2 text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-crystal-highlight)] transition-colors duration-300"
-              >
-                <span>بیشتر ببینید</span>
-                <FiChevronLeft className="transition-transform duration-300 group-hover:-translate-x-1" />
-              </Link>
+      <div className="space-y-20">
+        {latestSlides.length > 0 && (
+          <section>
+            <div className="container mx-auto px-4">
+              <div className="flex justify-between items-baseline mb-6">
+                <h2 className="text-2xl sm:text-3xl font-bold text-[var(--foreground-primary)]">
+                  جدیدترین آثار
+                </h2>
+                <Link
+                  href="#"
+                  className="group flex items-center gap-2 text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-crystal-highlight)] transition-colors duration-300"
+                >
+                  <span>مشاهده همه</span>
+                  <FiChevronLeft className="transition-transform duration-300 group-hover:-translate-x-1" />
+                </Link>
+              </div>
+              <Slider slides={latestSlides} sliderId="latest-eulogies" />
             </div>
-            <Slider slides={latestSlides} sliderId="latest-eulogies" />
-          </div>
-        </section>
+          </section>
+        )}
 
-        <section>
-          <div className="container mx-auto px-4">
-            <div className="flex justify-between items-baseline mb-6">
-              <h2 className="text-2xl sm:text-3xl font-bold">محبوب‌ترین‌ها</h2>
-              <Link
-                href="#"
-                className="group flex items-center gap-2 text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-crystal-highlight)] transition-colors duration-300"
-              >
-                <span>بیشتر ببینید</span>
-                <FiChevronLeft className="transition-transform duration-300 group-hover:-translate-x-1" />
-              </Link>
+        {popularSlides.length > 0 && (
+          <section>
+            <div className="container mx-auto px-4">
+              <div className="flex justify-between items-baseline mb-6">
+                <h2 className="text-2xl sm:text-3xl font-bold text-[var(--foreground-primary)]">
+                  محبوب‌ترین‌ها
+                </h2>
+                <Link
+                  href="#"
+                  className="group flex items-center gap-2 text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-crystal-highlight)] transition-colors duration-300"
+                >
+                  <span>مشاهده همه</span>
+                  <FiChevronLeft className="transition-transform duration-300 group-hover:-translate-x-1" />
+                </Link>
+              </div>
+              <Slider slides={popularSlides} sliderId="popular-eulogies" />
             </div>
-            <Slider slides={popularSlides} sliderId="popular-eulogies" />
-          </div>
-        </section>
+          </section>
+        )}
       </div>
 
-      <MaddahBio name={eulogistName} description={eulogistDescription} />
+      <MaddahBio name={eulogistName} rawHtml={eulogistBiographyHtml} />
     </main>
   );
 }

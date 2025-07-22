@@ -1,14 +1,11 @@
 import { verifyAdmin } from "@/app/actions/auth"; // <-- از اکشن مرکزی استفاده می‌کنیم
 import { getTermsForAdmin } from "@/app/actions/termActions";
 
-
-import PasswordPrompt from "@/app/componenet/admin/PasswordPrompt";
-import TermManager from "@/app/componenet/admin/TermManager";
+import PasswordPrompt from "@/app/componenet/admin/terms/PasswordPrompt";
+import TermManager from "@/app/componenet/admin/terms/TermManager";
 
 export default async function AdminPage() {
-
   const hasAccess = await verifyAdmin();
-
 
   if (!hasAccess) {
     return <PasswordPrompt />;

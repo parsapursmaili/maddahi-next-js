@@ -1,13 +1,15 @@
-// /components/admin/PasswordPrompt.js
+// /app/components/admin/PasswordPrompt.js (یا مسیر مشابه)
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation"; // <-- ایمپورت useRouter
 import { checkPassword } from "@/app/actions/auth";
 
-export default function PasswordPrompt({ onCorrectPassword }) {
+export default function PasswordPrompt() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter(); // <-- استفاده از هوک
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,11 +17,17 @@ export default function PasswordPrompt({ onCorrectPassword }) {
     setIsLoading(true);
 
     try {
+      // اکشن جدید شما یک آبجکت برمی‌گرداند
       const result = await checkPassword(password);
-      if (result === 1) {
-        onCorrectPassword();
+
+      // <<-- شرط حیاتی: بررسی پراپرتی success
+      if (result.success) {
+        // پس از ورود موفق، به جای تغییر state، صفحه را رفرش می‌کنیم.
+        // این کار باعث می‌شود کامپوننت سرور والد دوباره اجرا شود و وضعیت
+        // احراز هویت را بر اساس کوکی جدید بررسی کند.
+        router.refresh();
       } else {
-        setError("رمز عبور وارد شده اشتباه است.");
+        setError(result.message || "رمز عبور وارد شده اشتباه است.");
         setPassword("");
       }
     } catch (err) {
@@ -29,6 +37,7 @@ export default function PasswordPrompt({ onCorrectPassword }) {
     }
   };
 
+  // کدهای JSX فرم بدون تغییر باقی می‌ماند
   return (
     <div className="flex items-center justify-center min-h-screen bg-[var(--background-primary)]">
       <div className="w-full max-w-md p-8 space-y-6 bg-[var(--background-secondary)] rounded-lg shadow-lg border border-[var(--border-primary)]">
