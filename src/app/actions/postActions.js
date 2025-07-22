@@ -1,27 +1,39 @@
-// /app/actions/postActions.js
 "use server";
 
 import { db } from "@/app/lib/db/mysql";
 import { revalidatePath } from "next/cache";
 
-// تابع generateUniqueSlug بدون تغییر باقی می‌ماند
-async function generateUniqueSlug(title, currentId = null) {
-  let slug = title
+// تابع slugify که روی متن decode شده کار می‌کند
+const slugify = (text) => {
+  return text
+    .toString()
     .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
+    .trim()
+    .replace(/[\s_]+/g, "-")
+    .replace(/[^\u0600-\u06FF\uFB8A\u067E\u0686\u06AFa-z0-9-]+/g, "")
+    .replace(/-+/g, "-")
+    .substring(0, 70);
+};
+
+async function generateUniqueSlug(encodedSlugInput, currentId = null) {
+  const decodedSlug = decodeURIComponent(encodedSlugInput);
+  let slug = slugify(decodedSlug);
   let isUnique = false;
   let counter = 1;
   const originalSlug = slug;
+
   while (!isUnique) {
+    const slugToQuery = encodeURIComponent(slug);
     let query = "SELECT ID FROM posts WHERE name = ?";
-    const params = [slug];
+    const params = [slugToQuery];
+
     if (currentId) {
       query += " AND ID != ?";
       params.push(currentId);
     }
+
     const [rows] = await db.query(query, params);
+
     if (rows.length === 0) {
       isUnique = true;
     } else {
@@ -29,10 +41,9 @@ async function generateUniqueSlug(title, currentId = null) {
       counter++;
     }
   }
-  return slug;
+  return encodeURIComponent(slug);
 }
 
-// تابع manageTermRelationships بدون تغییر باقی می‌ماند
 async function manageTermRelationships(postId, categories = [], tags = []) {
   const connection = await db.getConnection();
   await connection.beginTransaction();
@@ -41,7 +52,7 @@ async function manageTermRelationships(postId, categories = [], tags = []) {
       "DELETE FROM wp_term_relationships WHERE object_id = ?",
       [postId]
     );
-    const termIds = [...categories, ...tags].filter((id) => id); // فیلتر کردن مقادیر نامعتبر
+    const termIds = [...categories, ...tags].filter((id) => id);
     if (termIds.length > 0) {
       const values = termIds.map((termId) => [postId, termId]);
       await connection.query(
@@ -59,7 +70,6 @@ async function manageTermRelationships(postId, categories = [], tags = []) {
   }
 }
 
-// <<--- ایجاد پست جدید (اصلاح شده) --->>
 export async function createPost(formData, revalidateUrl) {
   const {
     title,
@@ -74,6 +84,7 @@ export async function createPost(formData, revalidateUrl) {
     rozeh,
     thumbnail_alt,
     comment_status,
+    extra_metadata,
   } = formData;
 
   if (!title) {
@@ -81,26 +92,29 @@ export async function createPost(formData, revalidateUrl) {
   }
 
   try {
-    const slug = name
-      ? await generateUniqueSlug(name, null)
-      : await generateUniqueSlug(title, null);
+    const slugInput = name || encodeURIComponent(title);
+    const uniqueSlug = await generateUniqueSlug(slugInput, null);
 
     const postData = {
       title,
       content: content || "",
       thumbnail: thumbnail || null,
       status: status || "draft",
-      name: slug,
+      name: uniqueSlug,
       link: link || null,
-      description: description || null,
-      rozeh: rozeh || "ندارد", // مقدار پیش‌فرض
+      description: description,
+      rozeh: rozeh || "ندارد",
       thumbnail_alt: thumbnail_alt || null,
       comment_status: comment_status || "open",
+      extra_metadata:
+        extra_metadata && Object.keys(extra_metadata).length > 0
+          ? JSON.stringify(extra_metadata)
+          : null,
       date: new Date(),
       last_update: new Date(),
       type: "post",
       view: 0,
-      author: 1, // یا هر منطق دیگری برای نویسنده
+      author: 1,
     };
 
     const [result] = await db.query("INSERT INTO posts SET ?", postData);
@@ -116,11 +130,10 @@ export async function createPost(formData, revalidateUrl) {
     };
   } catch (error) {
     console.error("Error creating post:", error);
-    return { success: false, message: "خطا در ایجاد پست." };
+    return { success: false, message: `خطا در ایجاد پست: ${error.message}` };
   }
 }
 
-// <<--- به‌روزرسانی پست موجود (اصلاح شده) --->>
 export async function updatePost(postId, formData, revalidateUrl) {
   const {
     title,
@@ -135,6 +148,7 @@ export async function updatePost(postId, formData, revalidateUrl) {
     rozeh,
     thumbnail_alt,
     comment_status,
+    extra_metadata,
   } = formData;
 
   if (!title || !name) {
@@ -151,10 +165,14 @@ export async function updatePost(postId, formData, revalidateUrl) {
       thumbnail: thumbnail || null,
       status: status || "draft",
       link: link || null,
-      description: description || null,
+      description: description,
       rozeh: rozeh || "ندارد",
       thumbnail_alt: thumbnail_alt || null,
       comment_status: comment_status || "open",
+      extra_metadata:
+        extra_metadata && Object.keys(extra_metadata).length > 0
+          ? JSON.stringify(extra_metadata)
+          : null,
       last_update: new Date(),
     };
 
@@ -166,11 +184,13 @@ export async function updatePost(postId, formData, revalidateUrl) {
     return { success: true, message: "پست با موفقیت به‌روزرسانی شد." };
   } catch (error) {
     console.error(`Error updating post ${postId}:`, error);
-    return { success: false, message: "خطا در به‌روزرسانی پست." };
+    return {
+      success: false,
+      message: `خطا در به‌روزرسانی پست: ${error.message}`,
+    };
   }
 }
 
-// تابع deletePost بدون تغییر باقی می‌ماند
 export async function deletePost(postId, revalidateUrl) {
   if (!postId) {
     return { success: false, message: "شناسه پست نامعتبر است." };

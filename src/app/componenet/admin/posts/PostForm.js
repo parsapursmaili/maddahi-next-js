@@ -1,19 +1,18 @@
-// /app/components/admin/posts/PostForm.js
 "use client";
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
+import { ArrowRight } from "lucide-react";
 import { createPost, updatePost, deletePost } from "@/app/actions/postActions";
-import getTerms from "@/app/actions/terms"; // مسیر صحیح را چک کنید
-import ImageUploader from "@/app/componenet/ImageUploader"; // مسیر صحیح را چک کنید
-import TermSelector from "./TermSelector"; // کامپوننت جدید
+import getTerms from "@/app/actions/terms";
+import ImageUploader from "@/app/componenet/ImageUploader";
+import TermSelector from "./TermSelector";
 
 const TiptapEditor = dynamic(() => import("@/app/componenet/TiptapEditor"), {
   ssr: false,
 });
 
-// تعریف مقادیر پیش‌فرض بر اساس ساختار کامل جدول
 const defaultPost = {
   ID: null,
   title: "",
@@ -26,8 +25,20 @@ const defaultPost = {
   status: "publish",
   rozeh: "ندارد",
   link: "",
-  description: "",
+  description: null,
   comment_status: "open",
+  extra_metadata: null,
+};
+
+const generateReadableSlug = (text) => {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/[\s_]+/g, "-")
+    .replace(/[^\u0600-\u06FF\uFB8A\u067E\u0686\u06AFa-z0-9-]+/g, "")
+    .replace(/-+/g, "-")
+    .substring(0, 70);
 };
 
 export default function PostForm({
@@ -38,14 +49,37 @@ export default function PostForm({
   const postForEditing = initialPost?.ID ? initialPost : defaultPost;
   const pathname = usePathname();
 
-  const [formData, setFormData] = useState(postForEditing);
+  const [formData, setFormData] = useState({
+    ...postForEditing,
+    name: postForEditing.name ? decodeURIComponent(postForEditing.name) : "",
+    description: postForEditing.description || null,
+    extra_metadata: postForEditing.extra_metadata || null,
+  });
   const [terms, setTerms] = useState({ categories: [], tags: [] });
   const [message, setMessage] = useState({ type: "", text: "" });
   const [loadingAction, setLoadingAction] = useState(null);
 
   useEffect(() => {
-    // هنگام تغییر پست، فرم را با داده‌های جدید پر می‌کنیم
-    setFormData(initialPost?.ID ? initialPost : defaultPost);
+    const initialData = initialPost?.ID ? initialPost : defaultPost;
+
+    // *** مهم: اصلاحیه اصلی برای خواندن JSON ***
+    // داده‌های extra_metadata از سرور به صورت رشته می‌آیند، باید آنها را parse کرد.
+    let extraData = initialData.extra_metadata;
+    if (typeof extraData === "string") {
+      try {
+        extraData = JSON.parse(extraData);
+      } catch (e) {
+        console.error("Failed to parse extra_metadata:", e);
+        extraData = null; // در صورت خطا، آن را نال می‌کنیم
+      }
+    }
+
+    setFormData({
+      ...initialData,
+      name: initialData.name ? decodeURIComponent(initialData.name) : "",
+      description: initialData.description || null,
+      extra_metadata: extraData || null, // استفاده از داده parse شده
+    });
     setMessage({ type: "", text: "" });
   }, [initialPost]);
 
@@ -60,28 +94,59 @@ export default function PostForm({
     fetchTerms();
   }, []);
 
-  const handleChange = (e) =>
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
   const handleImageChange = (url) =>
     setFormData((prev) => ({ ...prev, thumbnail: url }));
-  const handleContentChange = (content) =>
+
+  const handleSecondImageChange = (url) => {
+    setFormData((prev) => ({
+      ...prev,
+      extra_metadata: { ...prev.extra_metadata, second_thumbnail: url },
+    }));
+  };
+
+  const handleContentChange = (content) => {
     setFormData((prev) => ({ ...prev, content }));
+  };
+
   const handleTermChange = (selectedIds, termType) =>
     setFormData((prev) => ({ ...prev, [termType]: selectedIds }));
+
   const handleBusyState = (isBusy) =>
     setLoadingAction(isBusy ? "upload" : null);
+
+  const handleTitleChange = (e) => {
+    const newTitle = e.target.value;
+    const newSlug = generateReadableSlug(newTitle);
+    setFormData((prev) => ({
+      ...prev,
+      title: newTitle,
+      name: newSlug,
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loadingAction) return;
     setLoadingAction("submit");
+
+    const dataToSend = {
+      ...formData,
+      name: encodeURIComponent(formData.name),
+      description: formData.description?.trim() ? formData.description : null,
+      extra_metadata: formData.extra_metadata,
+    };
+
     const result = postForEditing.ID
-      ? await updatePost(postForEditing.ID, formData, pathname)
-      : await createPost(formData, pathname);
+      ? await updatePost(postForEditing.ID, dataToSend, pathname)
+      : await createPost(dataToSend, pathname);
 
     if (result?.success) {
       setMessage({ type: "success", text: result.message });
-      // ارسال تمام داده‌های فرم به کامپوننت والد برای به‌روزرسانی state
       onFormSubmit({ ...formData, ID: postForEditing.ID || result.newPostId });
     } else {
       setMessage({ type: "error", text: result?.message || "خطایی رخ داد." });
@@ -117,12 +182,20 @@ export default function PostForm({
 
   return (
     <div className="bg-[var(--background-secondary)] h-full flex flex-col">
-      <div className="p-6 border-b border-[var(--border-primary)]">
-        <h2 className="text-2xl font-bold text-[var(--foreground-primary)]">
-          {postForEditing.ID ? `ویرایش پست` : "ایجاد پست جدید"}
-        </h2>
+      <div className="p-6 border-b border-[var(--border-primary)] flex-shrink-0">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-[var(--foreground-primary)] truncate">
+            {postForEditing.ID ? `ویرایش پست` : "ایجاد پست جدید"}
+          </h2>
+          <button
+            onClick={onCancel}
+            className="md:hidden p-2 rounded-md hover:bg-[var(--background-tertiary)]"
+          >
+            <ArrowRight size={20} />
+          </button>
+        </div>
         {postForEditing.ID && (
-          <p className="text-sm text-[var(--foreground-muted)]">
+          <p className="text-sm text-[var(--foreground-muted)] mt-1 truncate">
             {formData.title}
           </p>
         )}
@@ -130,7 +203,7 @@ export default function PostForm({
 
       <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* ستون اصلی برای محتوا */}
+          {/* ستون اصلی */}
           <div className="lg:col-span-2 space-y-6">
             <div>
               <label htmlFor="title" className={labelClasses}>
@@ -141,7 +214,7 @@ export default function PostForm({
                 name="title"
                 id="title"
                 value={formData.title}
-                onChange={handleChange}
+                onChange={handleTitleChange}
                 required
                 className={inputFieldClasses}
               />
@@ -149,6 +222,7 @@ export default function PostForm({
             <div>
               <label className={`${labelClasses} mb-2`}>محتوا</label>
               <TiptapEditor
+                key={formData.ID || "new-post"}
                 value={formData.content || ""}
                 onChange={handleContentChange}
               />
@@ -166,9 +240,23 @@ export default function PostForm({
                 className={inputFieldClasses}
               ></textarea>
             </div>
+            <div>
+              <label htmlFor="link" className={labelClasses}>
+                لینک خارجی (اختیاری)
+              </label>
+              <input
+                type="text"
+                name="link"
+                id="link"
+                value={formData.link || ""}
+                onChange={handleChange}
+                className={inputFieldClasses}
+                dir="ltr"
+              />
+            </div>
           </div>
 
-          {/* ستون کناری برای فراداده */}
+          {/* ستون کناری */}
           <div className="lg:col-span-1 space-y-6">
             <div className="p-4 rounded-lg bg-[var(--background-primary)] border border-[var(--border-secondary)]">
               <h3 className="font-bold mb-4">انتشار</h3>
@@ -238,14 +326,24 @@ export default function PostForm({
             </div>
 
             <ImageUploader
+              title="تصویر شاخص"
               imageUrl={formData.thumbnail}
               onImageChange={handleImageChange}
               onBusyStateChange={handleBusyState}
               revalidatePath={pathname}
             />
+
+            <ImageUploader
+              title="تامبنیل دوم (اختیاری)"
+              imageUrl={formData.extra_metadata?.second_thumbnail || ""}
+              onImageChange={handleSecondImageChange}
+              onBusyStateChange={handleBusyState}
+              revalidatePath={pathname}
+            />
+
             <div>
               <label htmlFor="thumbnail_alt" className={labelClasses}>
-                متن جایگزین تصویر
+                متن جایگزین تصویر شاخص
               </label>
               <input
                 type="text"
@@ -278,8 +376,8 @@ export default function PostForm({
         </div>
       </form>
 
-      {/* فوتر فرم برای دکمه‌ها */}
-      <div className="p-4 border-t border-[var(--border-primary)] bg-[var(--background-secondary)]">
+      {/* فوتر */}
+      <div className="p-4 border-t border-[var(--border-primary)] bg-[var(--background-secondary)] flex-shrink-0">
         {message.text && (
           <p
             className={`text-sm text-center mb-4 p-3 rounded-md ${
@@ -309,7 +407,7 @@ export default function PostForm({
               type="button"
               onClick={onCancel}
               disabled={!!loadingAction}
-              className="px-6 py-2 text-sm transition-colors rounded-md bg-[var(--background-tertiary)] hover:bg-[var(--foreground-muted)]"
+              className="px-6 py-2 text-sm transition-colors rounded-md bg-[var(--background-tertiary)] hover:bg-[var(--foreground-muted)] hidden md:block"
             >
               انصراف
             </button>

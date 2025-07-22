@@ -3,19 +3,6 @@
 
 import { Search, PlusCircle, ArrowDownUp } from "lucide-react";
 
-/**
- * کامپوننتی برای نمایش، جستجو و مرتب‌سازی لیست پست‌ها
- * @param {object} props
- * @param {Array} props.posts - لیست پست‌ها برای نمایش
- * @param {number|null} props.selectedPostId - شناسه پست انتخاب شده برای هایلایت کردن
- * @param {boolean} props.isLoading - وضعیت در حال بارگذاری بودن لیست
- * @param {string} props.searchQuery - مقدار فعلی فیلد جستجو
- * @param {function(string):void} props.onSearchChange - تابع برای تغییر مقدار جستجو
- * @param {string} props.sortBy - مقدار فعلی فیلد مرتب‌سازی
- * @param {function(string):void} props.onSortChange - تابع برای تغییر مقدار مرتب‌سازی
- * @param {function(object):void} props.onSelectPost - تابع برای انتخاب یک پست
- * @param {function():void} props.onNewPost - تابع برای ایجاد یک پست جدید
- */
 export default function PostsList({
   posts,
   selectedPostId,
@@ -30,10 +17,12 @@ export default function PostsList({
   const inputClasses =
     "w-full bg-[var(--background-tertiary)] border border-[var(--border-primary)] rounded-md text-[var(--foreground-primary)] focus:outline-none focus:border-[var(--accent-primary)] focus:ring-1 focus:ring-[var(--accent-primary)]";
 
+  // *** تغییر اصلی اینجاست ***
+  // کلاس md:w-1/3 حذف شد تا این کامپوننت همیشه عرض والد خود را بگیرد.
   return (
-    <div className="w-full md:w-1/3 border-r border-[var(--border-primary)] flex flex-col h-full">
+    <div className="w-full border-r border-[var(--border-primary)] flex flex-col h-full bg-[var(--background-secondary)]">
       {/* هدر */}
-      <div className="p-4 border-b border-[var(--border-primary)]">
+      <div className="p-4 border-b border-[var(--border-primary)] flex-shrink-0">
         <h2 className="text-xl font-bold mb-4">مدیریت پست‌ها</h2>
         <div className="relative mb-3">
           <Search
@@ -66,7 +55,7 @@ export default function PostsList({
           </div>
           <button
             onClick={onNewPost}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-primary)] text-black rounded-md hover:bg-[var(--accent-crystal-highlight)] transition-colors text-sm font-semibold"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-primary)] text-black rounded-md hover:bg-[var(--accent-crystal-highlight)] transition-colors text-sm font-semibold flex-shrink-0"
           >
             <PlusCircle size={16} />
             <span>پست جدید</span>
@@ -80,6 +69,10 @@ export default function PostsList({
           <p className="p-4 text-center text-[var(--foreground-muted)]">
             در حال بارگذاری...
           </p>
+        ) : posts.length === 0 ? (
+          <p className="p-4 text-center text-[var(--foreground-muted)]">
+            هیچ پستی یافت نشد.
+          </p>
         ) : (
           <ul>
             {posts.map((post) => (
@@ -92,8 +85,8 @@ export default function PostsList({
                     : "hover:bg-[var(--background-tertiary)]"
                 }`}
               >
-                <h3 className="font-semibold text-md">{post.title}</h3>
-                <p className="text-xs text-[var(--foreground-muted)]">
+                <h3 className="font-semibold text-md truncate">{post.title}</h3>
+                <p className="text-xs text-[var(--foreground-muted)] mt-1">
                   ID: {post.ID} - بازدید: {post.view}
                 </p>
               </li>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import Image from "next/image";
 import { getMediaLibrary, deleteImage } from "@/app/actions/uploadActions";
 
 export default function MediaLibraryModal({
@@ -11,7 +12,7 @@ export default function MediaLibraryModal({
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isClosing, setIsClosing] = useState(false); // State برای انیمیشن خروج
+  const [isClosing, setIsClosing] = useState(false);
 
   const UPLOADS_BASE_PATH =
     process.env.NEXT_PUBLIC_UPLOADS_BASE_PATH || "/uploads";
@@ -19,18 +20,22 @@ export default function MediaLibraryModal({
   useEffect(() => {
     const fetchMedia = async () => {
       setLoading(true);
-      const media = await getMediaLibrary();
-      setImages(media);
-      setLoading(false);
+      try {
+        const media = await getMediaLibrary();
+        setImages(media);
+      } catch (error) {
+        console.error("Failed to fetch media:", error);
+        alert("خطا در بارگذاری رسانه‌ها.");
+      } finally {
+        setLoading(false);
+      }
     };
     fetchMedia();
   }, []);
 
   const handleClose = () => {
     setIsClosing(true);
-    setTimeout(() => {
-      onClose();
-    }, 200); // این زمان باید با زمان transition در CSS هماهنگ باشد
+    setTimeout(() => onClose(), 200);
   };
 
   const handleDelete = async (e, imagePath) => {
@@ -42,7 +47,6 @@ export default function MediaLibraryModal({
     ) {
       return;
     }
-    // ارسال مسیر revalidate به action
     const result = await deleteImage(imagePath, revalidatePath);
     if (result.success) {
       setImages((prev) => prev.filter((img) => img !== imagePath));
@@ -72,7 +76,6 @@ export default function MediaLibraryModal({
         }`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* هدر و جستجو بدون تغییر */}
         <div className="p-4 border-b border-[var(--border-primary)] flex justify-between items-center">
           <h3 className="text-xl font-bold">کتابخانه رسانه</h3>
           <button
@@ -111,11 +114,12 @@ export default function MediaLibraryModal({
                   >
                     ×
                   </button>
-                  <img
+                  <Image
+                    fill
                     src={`${UPLOADS_BASE_PATH}/${path}`}
-                    alt={path.split("/").pop()}
-                    loading="lazy"
-                    className="w-full h-full object-cover rounded-md border-2 border-[var(--border-secondary)] group-hover:border-[var(--accent-primary)] transition-all"
+                    alt={path.split("/").pop() || "تصویر رسانه"}
+                    sizes="(max-width: 640px) 25vw, (max-width: 768px) 16.6vw, 12.5vw"
+                    className="object-cover rounded-md border-2 border-[var(--border-secondary)] group-hover:border-[var(--accent-primary)] transition-all"
                   />
                 </div>
               ))}

@@ -3,7 +3,7 @@
 import { db } from "@/app/lib/db/mysql";
 
 export default async function getPosts(params) {
-  const {
+  let {
     page = 1,
     maddah = 0,
     monasebat = 0,
@@ -13,6 +13,7 @@ export default async function getPosts(params) {
     view = 0, // این پارامتر کنترل می‌کند که آیا مجموع بازدیدها (totalview) محاسبه شود یا خیر.
   } = params;
 
+  rand = parseInt(rand);
   // تعیین ترتیب مرتب‌سازی بر اساس پارامتر 'rand'
   let orderby = "";
   switch (rand) {
