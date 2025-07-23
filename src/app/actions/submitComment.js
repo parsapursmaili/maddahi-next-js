@@ -1,3 +1,5 @@
+// app/actions/submitComment.js
+
 "use server";
 
 import { db } from "@/app/lib/db/mysql";
@@ -14,23 +16,25 @@ export async function submitComment(formData) {
   const name = formData.get("name");
   const email = formData.get("email");
   const commentText = formData.get("commentText");
-  const postId = formData.get("postId"); // فرض می‌کنیم postId از فرم ارسال می‌شود
+  const postId = formData.get("postId");
+  const parentId = formData.get("parentId") || null; // برای پشتیبانی از پاسخ به کامنت‌ها
 
   // اعتبارسنجی اولیه
   if (!name || !commentText || !postId) {
     return { success: false, message: "نام، متن نظر و شناسه پست الزامی است." };
   }
 
-  // گرفتن اطلاعات کاربر از هدرها (اختیاری اما مفید)
+  // گرفتن اطلاعات کاربر از هدرها
   const ip_address = headers().get("x-forwarded-for") || "unknown";
   const user_agent = headers().get("user-agent") || "unknown";
 
   try {
     // درج کامنت جدید با وضعیت "در حال انتظار" (status = 0)
     await db.query(
-      `INSERT INTO comments (parent_id, name, email, text, ip_address, user_agent, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
+      `INSERT INTO comments (post_id, parent_id, name, email, text, ip_address, user_agent, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
-        null, // در این فرم ساده، کامنت‌ها والد ندارند. برای پاسخ‌ها باید parent_id ارسال شود.
+        postId, // <-- شناسه پست اضافه شد
+        parentId,
         name,
         email,
         commentText,
@@ -40,9 +44,9 @@ export async function submitComment(formData) {
       ]
     );
 
-    // بسیار مهم: کش صفحه‌ی پست را خالی می‌کند تا کامنت جدید (پس از تایید) نمایش داده شود.
-    // مسیر را بر اساس الگوی URL پست‌های خود تنظیم کنید.
-    revalidatePath(`/blog/${postId}`);
+    // کش صفحه‌ی پست را خالی می‌کند تا کامنت جدید (پس از تایید) نمایش داده شود.
+    // مطمئن شوید که مسیر صفحه پست با الگوی شما مطابقت دارد.
+    revalidatePath(`/posts/${postId}`); // مسیر را بر اساس ساختار URL خود تنظیم کنید
 
     return {
       success: true,

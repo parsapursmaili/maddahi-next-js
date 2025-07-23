@@ -1,14 +1,17 @@
-import { verifyAdmin } from "@/app/actions/auth"; // <-- از اکشن مرکزی استفاده می‌کنیم
-import { getTermsForAdmin } from "@/app/actions/termActions";
+// /app/admin/terms/page.js
 
-import PasswordPrompt from "@/app/componenet/admin/terms/PasswordPrompt";
+import { isAuthenticated } from "@/app/actions/auth"; // <-- استفاده از اکشن جدید و استاندارد
+import { redirect } from "next/navigation"; // <-- ایمپورت redirect برای هدایت کاربر
+import { getTermsForAdmin } from "@/app/actions/termActions";
 import TermManager from "@/app/componenet/admin/terms/TermManager";
 
 export default async function AdminPage() {
-  const hasAccess = await verifyAdmin();
+  // ۱. وضعیت احراز هویت را بررسی می‌کنیم
+  const isAuth = await isAuthenticated();
 
-  if (!hasAccess) {
-    return <PasswordPrompt />;
+  // ۲. اگر کاربر احراز هویت نشده بود، او را به صفحه ورود هدایت می‌کنیم
+  if (!isAuth) {
+    redirect("/login");
   }
 
   // اگر کاربر احراز هویت شده بود، ادامه بده...
@@ -22,6 +25,5 @@ export default async function AdminPage() {
     );
   }
 
-  // داده‌ها را به کامپوننت مدیریت ارسال کن
   return <TermManager initialTerms={result.data} />;
 }

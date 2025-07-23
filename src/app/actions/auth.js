@@ -1,57 +1,48 @@
+// app/actions/auth.js
 "use server";
 
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-// خواندن متغیرها از فایل .env.local
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-const ADMIN_AUTH_SECRET = process.env.ADMIN_AUTH_SECRET;
 const COOKIE_NAME = "admin-auth-token";
 
+export async function isAuthenticated() {
+  const cookieStore = cookies();
+  const authToken = cookieStore.get(COOKIE_NAME)?.value;
+  return authToken === process.env.ADMIN_AUTH_SECRET;
+}
+
 /**
- * رمز عبور ورودی کاربر را بررسی کرده و در صورت صحت، یک کوکی امن تنظیم می‌کند.
+ * Server Action برای ورود کاربر با قابلیت بازگرداندن وضعیت خطا.
+ * @param {object} prevState - وضعیت قبلی فرم (برای useFormState).
+ * @param {FormData} formData - داده‌های فرم ارسالی.
  */
-export async function checkPassword(password) {
-  if (password !== ADMIN_PASSWORD) {
+export async function login(prevState, formData) {
+  const password = formData.get("password");
+  const rememberMe = formData.get("remember-me");
+
+  // ۱. بررسی رمز عبور
+  if (password !== process.env.ADMIN_PASSWORD) {
+    // بازگرداندن پیام خطا برای نمایش در فرم
     return { success: false, message: "رمز عبور وارد شده اشتباه است." };
   }
 
-  const cookieStore = cookies();
-  cookieStore.set(COOKIE_NAME, ADMIN_AUTH_SECRET, {
-    // HttpOnly: مهم‌ترین ویژگی امنیتی در این روش!
-    // از دسترسی کدهای جاوااسکریپت (مانند حملات XSS) به کوکی جلوگیری می‌کند.
+  // ۲. تعیین زمان انقضای کوکی
+  const maxAgeInSeconds = rememberMe === "on" ? 720 * 60 * 60 : 1 * 60 * 60; // 30 روز یا 1 ساعت
+
+  // ۳. تنظیم کوکی
+  cookies().set(COOKIE_NAME, process.env.ADMIN_AUTH_SECRET, {
     httpOnly: true,
-
-    // Secure: کوکی فقط از طریق اتصال امن HTTPS ارسال شود.
-    // در محیط پروداکشن برای جلوگیری از حملات مرد میانی (MitM) حیاتی است.
     secure: process.env.NODE_ENV === "production",
-
     sameSite: "strict",
-
     path: "/",
-
-    maxAge: 60 * 60 * 24 * 30,
+    maxAge: maxAgeInSeconds,
   });
 
-  return { success: true };
+  // ۴. هدایت کاربر فقط در صورت موفقیت
+  redirect("/admin");
 }
 
-export async function verifyAdmin() {
-  const cookieStore = cookies();
-  const authToken = cookieStore.get(COOKIE_NAME)?.value;
-
-  // اگر توکن وجود نداشت یا با کلید مخفی ما برابر نبود، کاربر احراز هویت نشده است.
-  if (!authToken || authToken !== ADMIN_AUTH_SECRET) {
-    return false;
-  }
-
-  // اگر همه چیز درست بود، کاربر مجاز است.
-  return true;
-}
-
-/**
- * کاربر را با حذف کوکی از سیستم خارج می‌کند.
- */
 export async function logout() {
-  const cookieStore = cookies();
-  cookieStore.delete(COOKIE_NAME);
+  cookies().delete(COOKIE_NAME);
 }

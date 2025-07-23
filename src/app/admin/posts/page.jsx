@@ -1,18 +1,18 @@
 // /app/admin/posts/page.js
 
-import { verifyAdmin } from "@/app/actions/auth"; // اکشن احراز هویت
-import PasswordPrompt from "@/app/componenet/admin/terms/PasswordPrompt"; // کامپوننت فرم رمز (مسیر را چک کنید)
-import PostsManager from "@/app/componenet/admin/posts/PostsManager"; // کامپوننت کلاینت جدید
+import { isAuthenticated } from "@/app/actions/auth"; // <-- اکشن احراز هویت جدید
+import { redirect } from "next/navigation"; // <-- ایمپورت redirect
+import PostsManager from "@/app/componenet/admin/posts/PostsManager";
 
-// این کامپوننت اصلی، یک Server Component است
 export default async function AdminPostsPage() {
-  const hasAccess = await verifyAdmin();
+  // ۱. بررسی وضعیت لاگین
+  const isAuth = await isAuthenticated();
 
-  if (!hasAccess) {
-    return <PasswordPrompt />;
+  // ۲. هدایت کاربر لاگین نکرده به صفحه ورود
+  if (!isAuth) {
+    redirect("/login");
   }
 
-  // 3. اگر کاربر دسترسی داشت، کامپوننت اصلی مدیریت پست‌ها را رندر می‌کنیم
-  // این کامپوننت یک Client Component است که تمام منطق تعاملی را در خود دارد
+  // ۳. اگر کاربر دسترسی داشت، کامپوننت اصلی را رندر می‌کنیم
   return <PostsManager />;
 }

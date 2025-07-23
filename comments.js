@@ -1,3 +1,7 @@
+// migrateComments.js
+
+"use server";
+
 import mysql from "mysql2/promise";
 
 // استفاده از الگوی Singleton برای ایجاد و مدیریت یک Pool دیتابیس
@@ -46,7 +50,7 @@ const convertCommentStatus = (wpStatus) => {
 
 /**
  * این تابع جدول کامنت‌های جدید را ایجاد کرده و داده‌ها را از جدول قدیمی وردپرس منتقل می‌کند،
- * و ارتباط والد-فرزندی بین کامنت‌ها را حفظ می‌کند.
+ * و ارتباط والد-فرزندی و ارتباط با پست‌ها را حفظ می‌کند.
  */
 export const migrateCommentsTable = async () => {
   const db = await getDb();
@@ -61,6 +65,7 @@ export const migrateCommentsTable = async () => {
     await connection.query(`
       CREATE TABLE comments (
         id INT AUTO_INCREMENT PRIMARY KEY,
+        post_id INT NOT NULL,
         parent_id INT NULL DEFAULT NULL,
         name VARCHAR(255) NOT NULL,
         email VARCHAR(255),
@@ -70,15 +75,17 @@ export const migrateCommentsTable = async () => {
         status TINYINT NOT NULL DEFAULT 0,
         created_at TIMESTAMP,
         FOREIGN KEY (parent_id) REFERENCES comments(id) ON DELETE SET NULL,
+        INDEX (post_id),
         INDEX (parent_id)
       )
     `);
-    console.log("New 'comments' table created.");
+    console.log("New 'comments' table created with 'post_id'.");
 
-    // 2. گرفتن داده‌ها از جدول wp_comments
+    // 2. گرفتن داده‌ها از جدول wp_comments (شامل comment_post_ID)
     const [wpComments] = await connection.query(`
       SELECT
         comment_ID,
+        comment_post_ID,
         comment_parent,
         comment_author,
         comment_author_email,
@@ -100,14 +107,15 @@ export const migrateCommentsTable = async () => {
     const oldIdToNewIdMap = new Map();
     const insertPromises = [];
 
-    // 3. مرحله اول: درج کامنت‌ها و ساخت نقشه ID (اجرای موازی درج‌ها)
+    // 3. مرحله اول: درج کامنت‌ها و ساخت نقشه ID (با post_id)
     for (const comment of wpComments) {
       const status = convertCommentStatus(comment.comment_approved);
       insertPromises.push(
         connection
           .query(
-            `INSERT INTO comments (name, email, text, ip_address, user_agent, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO comments (post_id, name, email, text, ip_address, user_agent, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [
+              comment.comment_post_ID, // <-- ستون جدید اضافه شد
               comment.comment_author,
               comment.comment_author_email,
               comment.comment_content,
@@ -125,7 +133,7 @@ export const migrateCommentsTable = async () => {
     await Promise.all(insertPromises);
     console.log(`Inserted ${wpComments.length} comments.`);
 
-    // 4. مرحله دوم: به‌روزرسانی parent_id برای پاسخ‌ها با استفاده از نقشه (اجرای موازی به‌روزرسانی‌ها)
+    // 4. مرحله دوم: به‌روزرسانی parent_id برای پاسخ‌ها با استفاده از نقشه
     const updatePromises = [];
     for (const comment of wpComments) {
       if (comment.comment_parent && Number(comment.comment_parent) > 0) {
@@ -144,24 +152,24 @@ export const migrateCommentsTable = async () => {
     await Promise.all(updatePromises);
     console.log(`Updated ${updatePromises.length} parent-child relationships.`);
 
-    await connection.commit(); // اگر همه چیز موفق بود، ترنزاکشن را commit کن
+    await connection.commit();
     console.log("Comment migration completed successfully.");
   } catch (error) {
-    await connection.rollback(); // در صورت بروز خطا، تمام تغییرات را لغو کن
+    await connection.rollback();
     console.error("Migration failed, transaction rolled back:", error.message);
     throw error;
   } finally {
     if (connection) {
-      connection.release(); // اتصال را به Pool برگردان
+      connection.release();
     }
   }
 };
 
-// اجرای تابع اصلی و مدیریت بسته شدن اتصال به دیتابیس
+// اجرای تابع اصلی
 migrateCommentsTable()
   .catch((err) => {
     console.error("Script execution failed:", err.message);
-    process.exit(1); // خروج با کد خطا
+    process.exit(1);
   })
   .finally(async () => {
     if (dbInstance) {
