@@ -1,32 +1,30 @@
 "use client";
+
+import { useTransition } from "react";
+import { submitComment } from "@/app/actions/submitComment"; // مسیر را چک کنید
 import { useState } from "react";
 
 const Comment = ({ postId }) => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [commentText, setCommentText] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submissionStatus, setSubmissionStatus] = useState(""); // success, error, ''
+  // useTransition برای مدیریت حالت pending بدون بلاک کردن UI
+  const [isPending, startTransition] = useTransition();
+  const [submissionStatus, setSubmissionStatus] = useState(null); // { success: boolean, message: string }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setSubmissionStatus("");
+    const formData = new FormData(e.target);
+    formData.append("postId", postId); // شناسه پست را به داده‌های فرم اضافه می‌کنیم
 
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log("Comment Submitted:", { postId, name, email, commentText });
+    setSubmissionStatus(null); // پاک کردن پیام قبلی
 
-      setSubmissionStatus("success");
-      setName("");
-      setEmail("");
-      setCommentText("");
-    } catch (error) {
-      console.error("Error submitting comment:", error);
-      setSubmissionStatus("error");
-    } finally {
-      setIsSubmitting(false);
-    }
+    startTransition(async () => {
+      const result = await submitComment(formData);
+      setSubmissionStatus(result);
+
+      // اگر ارسال موفقیت‌آمیز بود، فرم را ریست کن
+      if (result.success) {
+        e.target.reset();
+      }
+    });
   };
 
   return (
@@ -46,8 +44,7 @@ const Comment = ({ postId }) => {
             <input
               type="text"
               id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              name="name" // پراپرتی name برای FormData ضروری است
               required
               className="w-full px-4 py-2.5 bg-[var(--background-secondary)] border border-[var(--border-primary)] rounded-lg text-[var(--foreground-primary)] placeholder-[var(--foreground-muted)] focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--background-primary)] focus:ring-[var(--accent-primary)] focus:border-[var(--accent-primary)] transition-all duration-200 outline-none"
               placeholder="نام خود را وارد کنید"
@@ -63,8 +60,7 @@ const Comment = ({ postId }) => {
             <input
               type="email"
               id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email" // پراپرتی name برای FormData ضروری است
               className="w-full px-4 py-2.5 bg-[var(--background-secondary)] border border-[var(--border-primary)] rounded-lg text-[var(--foreground-primary)] placeholder-[var(--foreground-muted)] focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--background-primary)] focus:ring-[var(--accent-primary)] focus:border-[var(--accent-primary)] transition-all duration-200 outline-none"
               placeholder="example@email.com"
             />
@@ -80,8 +76,7 @@ const Comment = ({ postId }) => {
           </label>
           <textarea
             id="commentText"
-            value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
+            name="commentText" // پراپرتی name برای FormData ضروری است
             rows="5"
             required
             className="w-full px-4 py-2.5 bg-[var(--background-secondary)] border border-[var(--border-primary)] rounded-lg text-[var(--foreground-primary)] placeholder-[var(--foreground-muted)] focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--background-primary)] focus:ring-[var(--accent-primary)] focus:border-[var(--accent-primary)] transition-all duration-200 outline-none resize-y"
@@ -92,36 +87,17 @@ const Comment = ({ postId }) => {
         <div>
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isPending}
             className={`w-full flex justify-center py-3 px-5 border border-transparent rounded-lg shadow-md text-base font-semibold text-[var(--background-primary)] transition-all duration-300 ease-in-out transform hover:-translate-y-1
               ${
-                isSubmitting
+                isPending
                   ? "bg-[var(--accent-primary)/70] cursor-not-allowed"
                   : "bg-[var(--accent-primary)] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--background-primary)] focus:ring-[var(--accent-primary)]"
               }`}
           >
-            {isSubmitting ? (
+            {isPending ? (
               <span className="flex items-center">
-                <svg
-                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
+                {/* SVG for loading indicator */}
                 در حال ارسال...
               </span>
             ) : (
@@ -133,14 +109,12 @@ const Comment = ({ postId }) => {
         {submissionStatus && (
           <p
             className={`mt-4 text-center font-medium text-sm ${
-              submissionStatus === "success"
+              submissionStatus.success
                 ? "text-[var(--success)]"
                 : "text-[var(--error)]"
             }`}
           >
-            {submissionStatus === "success"
-              ? "نظر شما با موفقیت ارسال شد!"
-              : "خطایی در ارسال نظر رخ داد. لطفا دوباره تلاش کنید."}
+            {submissionStatus.message}
           </p>
         )}
       </form>

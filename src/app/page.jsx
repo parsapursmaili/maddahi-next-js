@@ -36,6 +36,12 @@ export default function Home() {
   const router = useRouter();
 
   function set(phaze) {
+    if (
+      phaze == 0 &&
+      squery == "" &&
+      (rand != 0 || selectedUser.ID != 0 || reason.ID != 0)
+    )
+      return;
     if (phaze == 1) {
       control.current.squery = "";
       setSQuery("");
