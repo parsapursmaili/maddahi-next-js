@@ -1,209 +1,291 @@
-import { db } from "@/app/lib/db/mysql";
-import { notFound } from "next/navigation";
-import MusicPlayer from "../componenet/singleplayer";
+// app/posts/[slug]/page.jsx
+
 import Image from "next/image";
-import Comment from "@/app/componenet/comments";
-import Slider from "@/app/componenet/slider";
+import { notFound } from "next/navigation";
+import { getPostPageData } from "./post";
+import MusicPlayer from "@/app/componenet/singleplayer";
+import Slider from "@/app/componenet/slider"; // فرض بر این است که این همان SliderConcept11 است
+import Comment from "./CommentForm";
+import CommentThread from "./CommentThread";
 import ServerViewCounter from "@/app/componenet/incview";
-export const revalidate = 6000;
+import {
+  BookOpen,
+  Sparkles,
+  Users,
+  MessageSquarePlus,
+  Eye,
+  ShieldAlert,
+  ImageIcon,
+} from "lucide-react";
 
-export async function generateStaticParams() {
-  return [];
-}
+export const revalidate = 3600;
 
+// تابع generateMetadata بدون تغییر باقی می‌ماند...
 export async function generateMetadata({ params }) {
-  const id = params.slug;
-  const [rows] = await db.query("SELECT * FROM posts WHERE name = ?", [id]);
-  console.log("rows: ", rows);
+  const { slug } = params;
+  const { post } = await getPostPageData(slug);
 
-  if (!rows || rows.length === 0) {
+  if (!post) {
     return {
-      title: "صفحه یافت نشد",
-      description: "محتوایی برای این شناسه یافت نشد.",
+      title: "پست یافت نشد",
+      description: "محتوایی برای این آدرس یافت نشد.",
     };
   }
 
-  const post = rows[0];
-  const defaultDescription =
-    post.content?.substring(0, 150) || "محتوایی برای این صفحه در دسترس نیست.";
-  const defaultKeywords = post.title?.split(" ").join(",") || "";
+  const description =
+    post.description ||
+    post.content?.substring(0, 150) ||
+    "محتوای این صفحه را مشاهده کنید.";
+
   const imageUrl = post.thumbnail
     ? `https://besooyeto.ir/maddahi/wp-content/uploads/${post.thumbnail}`
     : "/default-og-image.jpg";
 
   return {
-    title: post.title || "عنوان نامشخص",
-    description: post.excerpt || defaultDescription,
-    keywords: post.tags?.split(",").join(",") || defaultKeywords,
+    title: post.title,
+    description: description,
     openGraph: {
-      title: post.title || "عنوان نامشخص",
-      description: post.excerpt || defaultDescription,
+      title: post.title,
+      description: description,
       images: [imageUrl],
-      url: `https://besooyeto.ir/posts/${post.id}`,
+      url: `https://besooyeto.ir/posts/${slug}`,
       type: "article",
     },
     twitter: {
       card: "summary_large_image",
-      title: post.title || "عنوان نامشخص",
-      description: post.excerpt || defaultDescription,
+      title: post.title,
+      description: description,
       images: [imageUrl],
     },
   };
 }
 
 export default async function ProductPage({ params }) {
-  const id = params.slug;
+  const { slug } = params;
+  const {
+    post,
+    maddah,
+    monasebat,
+    moshabeh,
+    latestFromMaddah, // <-- متغیر جدید
+    comments,
+    totalCommentsCount,
+  } = await getPostPageData(slug);
+  // --- پایان تغییرات ---
 
-  const [postRows] = await db.query("SELECT * FROM posts WHERE name = ?", [id]);
-  const post = postRows[0];
-  const [maddahRows, monasebatRows, commentsRows] = await Promise.all([
-    db.query(
-      `SELECT t.ID, t.name, t.slug FROM wp_term_relationships wtr INNER JOIN terms t ON t.ID = wtr.term_taxonomy_id AND t.taxonomy = 'category' WHERE object_id = ?`,
-      [post.ID]
-    ),
-    db.query(
-      `SELECT t.ID, t.name, t.slug FROM wp_term_relationships wtr INNER JOIN terms t ON t.ID = wtr.term_taxonomy_id AND t.taxonomy = 'post_tag' WHERE object_id = ?`,
-      [post.ID]
-    ),
-    [], //db.query(`SELECT * FROM comments WHERE post_id = ?`, [id]),
-  ]);
+  if (!post) notFound();
 
-  const maddah = maddahRows[0];
-  const monasebat = monasebatRows[0];
-  const comments = commentsRows[0];
-  const monasebatIds = monasebat.map((tag) => tag.ID);
-
-  let moshabeh = [];
-  if (monasebatIds.length > 0) {
-    [moshabeh] = await db.query(
-      `
-      SELECT DISTINCT p.* FROM posts AS p
-      JOIN wp_term_relationships AS wtr ON p.ID = wtr.object_id
-      WHERE wtr.term_taxonomy_id IN (?) AND p.ID != ?
-      ORDER BY RAND() LIMIT 20;
-    `,
-      [monasebatIds[0], post.ID]
-    );
+  let parsedMetadata = null;
+  if (post.extra_metadata) {
+    try {
+      parsedMetadata =
+        typeof post.extra_metadata === "string"
+          ? JSON.parse(post.extra_metadata)
+          : post.extra_metadata;
+    } catch (error) {
+      console.error(
+        "Failed to parse extra_metadata JSON:",
+        post.extra_metadata,
+        error
+      );
+    }
   }
-
-  if (!post) {
-    notFound();
-  }
+  const secondThumbnail = parsedMetadata?.second_thumbnail;
 
   return (
-    <div className="flex min-h-screen flex-col items-center bg-[var(--background-primary)] py-16 px-4 sm:px-6 lg:px-8">
-      <article className="relative w-full max-w-5xl rounded-2xl bg-[var(--background-secondary)]/50 shadow-2xl shadow-[var(--accent-primary)]/10 backdrop-blur-lg ring-1 ring-[var(--border-primary)] overflow-hidden">
-        <div className="flex flex-col md:flex-row items-center p-6 sm:p-8 md:p-10 gap-8">
+    <main className="relative flex min-h-screen flex-col items-center bg-[#0a0a0a] py-16 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
+      <article className="relative z-10 w-full max-w-5xl rounded-2xl bg-[#171717]/50 shadow-2xl shadow-black/40 backdrop-blur-2xl ring-1 ring-[#262626]">
+        {/* این دیواره‌ی درخشان کریستالی، یک لایه ظریف برای زیبایی بیشتر است */}
+        <div
+          className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-[#a3fff4]/10 pointer-events-none"
+          aria-hidden="true"
+        ></div>
+
+        <header className="relative flex flex-col md:flex-row items-center p-6 sm:p-8 md:p-12 gap-8">
           {post.thumbnail && (
-            <div className="group relative h-52 w-52 md:h-64 md:w-64 flex-shrink-0">
-              <div className="absolute inset-0 z-0 -m-3 rounded-2xl bg-gradient-to-br from-[var(--accent-primary)] to-[var(--success)] opacity-20 blur-xl transition-all duration-700 group-hover:opacity-30 group-hover:blur-2xl"></div>
+            <div className="group relative h-48 w-48 md:h-56 md:w-56 flex-shrink-0">
+              <div className="absolute inset-0 z-0 -m-3 rounded-2xl bg-gradient-to-br from-[#a3fff4] to-[#00b4a0] opacity-0 blur-xl transition-all duration-700 group-hover:opacity-20 group-hover:blur-2xl"></div>
               <Image
                 src={`https://besooyeto.ir/maddahi/wp-content/uploads/${post.thumbnail}`}
-                alt={post.title || "تصویر بندانگشتی پست"}
-                layout="fill"
-                objectFit="cover"
+                alt={post.thumbnail_alt || post.title}
+                fill
+                sizes="(max-width: 768px) 192px, 224px"
                 priority
-                className="rounded-2xl shadow-lg shadow-black/50 transition-transform duration-500 ease-in-out group-hover:scale-105"
+                className="rounded-2xl shadow-lg shadow-black/60 transition-transform duration-500 ease-in-out group-hover:scale-105"
               />
             </div>
           )}
-          <div className="flex flex-col items-center md:items-start text-center md:text-right flex-grow mt-4 md:mt-0">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-[var(--foreground-primary)] to-[var(--foreground-secondary)] bg-clip-text text-transparent mb-4 leading-tight">
+          <div className="flex flex-col items-center md:items-start text-center md:text-left flex-grow">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-[#f5f6f7] to-[#a3fff4] bg-clip-text text-transparent mb-4 leading-tight text-right">
               {post.title}
             </h1>
-            {maddah && maddah.length > 0 && (
-              <div className="flex flex-wrap gap-3 mb-4 justify-center md:justify-start">
-                {maddah.map((maddahh) => (
+            {maddah.length > 0 && (
+              <div className="flex flex-wrap gap-3 mb-5 justify-center md:justify-start">
+                {maddah.map((m) => (
                   <a
-                    key={maddahh.slug}
-                    href={`/category/${maddahh.slug}`}
-                    className="text-sm bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] px-4 py-1.5 rounded-full font-medium transition-all duration-300 border border-[var(--accent-primary)]/30 hover:bg-[var(--accent-primary)]/20 hover:border-[var(--accent-primary)]/50 hover:shadow-md hover:shadow-[var(--accent-primary)]/10"
+                    key={m.slug}
+                    href={`/category/${m.slug}`}
+                    className="text-sm bg-[#00b4a0]/10 text-[#00b4a0] px-4 py-1.5 rounded-full font-medium transition-all duration-300 border border-transparent hover:border-[#a3fff4]/50 hover:bg-[#00b4a0]/20 hover:shadow-lg hover:shadow-[#00b4a0]/10"
                   >
-                    {maddahh.name}
+                    {m.name}
                   </a>
                 ))}
               </div>
             )}
-            {monasebat && monasebat.length > 0 && (
+
+            {monasebat.length > 0 && (
               <div className="flex flex-wrap gap-x-4 gap-y-2 mb-6 justify-center md:justify-start">
-                {monasebat.map((monasebatItem) => (
+                {monasebat.map((item) => (
                   <a
-                    key={monasebatItem.slug}
-                    href={`/tag/${monasebatItem.slug}`}
-                    className="text-xs text-[var(--foreground-secondary)]/80 transition-colors duration-200 hover:text-[var(--foreground-secondary)] hover:underline underline-offset-4"
+                    key={item.slug}
+                    href={`/tag/${item.slug}`}
+                    className="text-xs text-[#a3a3a3] transition-colors duration-300 hover:text-[#a3fff4] hover:underline underline-offset-4"
                   >
-                    #{monasebatItem.name.replace(/\s/g, "_")}
+                    #{item.name.replace(/\s/g, "_")}
                   </a>
                 ))}
               </div>
             )}
-            <ServerViewCounter postId={parseInt(post.ID)} />
-          </div>
-        </div>
 
-        {post.link && (
-          <div className="flex items-center justify-center p-4">
-            <MusicPlayer audioSrc={post.link} />
-          </div>
-        )}
-        <div className="mt-10">
-          <Slider slides={moshabeh} />
-        </div>
-        {post.content && (
-          <div
-            className="prose prose-lg prose-invert max-w-none p-6 sm:p-8 md:p-10 border-t border-[var(--border-primary)]
-                           prose-p:text-[var(--foreground-secondary)] prose-p:leading-8
-                           prose-a:text-[var(--accent-primary)] prose-a:transition-colors hover:prose-a:opacity-80 prose-a:font-semibold
-                           prose-strong:text-[var(--foreground-primary)]
-                           prose-li:marker:text-[var(--accent-primary)]
-                           prose-blockquote:border-r-4 prose-blockquote:border-[var(--accent-primary)]/80 prose-blockquote:pr-4 prose-blockquote:text-[var(--foreground-muted)] prose-blockquote:font-normal prose-blockquote:bg-[var(--background-tertiary)]/40 prose-blockquote:rounded-r-lg"
-            dangerouslySetInnerHTML={{ __html: post.content }}
-          />
-        )}
-
-        <div className="p-6 sm:p-8 md:p-10 border-t border-[var(--border-primary)]">
-          <div className="max-w-3xl mx-auto">
-            {comments && comments.length > 0 && (
-              <div className="mb-12">
-                <h2 className="text-2xl font-bold text-[var(--foreground-primary)] mb-8 text-center md:text-right">
-                  نظرات ({comments.length.toLocaleString("fa-IR")})
-                </h2>
-                <div className="space-y-6">
-                  {comments.map((comment) => (
-                    <div key={comment.id} className="group flex gap-4">
-                      <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-[var(--success)] text-xl font-bold text-white ring-2 ring-[var(--foreground-primary)]/20">
-                        {comment.author_name
-                          ? comment.author_name.charAt(0)
-                          : "؟"}
-                      </span>
-                      <div className="flex-grow rounded-xl bg-[var(--background-primary)]/60 p-4 border border-[var(--border-primary)] transition-colors duration-300 group-hover:border-[var(--accent-primary)]/40">
-                        <div className="flex items-baseline justify-between mb-2">
-                          <p className="font-semibold text-[var(--accent-primary)] text-base">
-                            {comment.author_name || "کاربر ناشناس"}
-                          </p>
-                          <p className="text-[var(--foreground-muted)] text-xs font-mono">
-                            {new Date(comment.created_at).toLocaleDateString(
-                              "fa-IR",
-                              { year: "numeric", month: "long", day: "numeric" }
-                            )}
-                          </p>
-                        </div>
-                        <p className="text-[var(--foreground-secondary)] leading-relaxed text-sm whitespace-pre-wrap">
-                          {comment.comment_content}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="rounded-xl border border-dashed border-[var(--border-secondary)] p-6 bg-[var(--background-primary)]/30">
-              <Comment postId={post.ID} />
+            <div className="flex items-center gap-2 text-[#a3a3a3]">
+              <Eye className="w-5 h-5 text-[#00b4a0]/80" />
+              <ServerViewCounter postId={parseInt(post.ID)} />
             </div>
           </div>
+        </header>
+
+        {post.rozeh === "هست" && (
+          <section className="px-6 sm:px-8 md:px-12 py-6">
+            <div className="flex items-center gap-4 rounded-lg bg-[#262626]/50 p-4 border-r-4 border-[#ef4444]">
+              <ShieldAlert className="h-8 w-8 flex-shrink-0 text-[#ef4444]" />
+              <div>
+                <h3 className="font-bold text-[#f5f6f7]">
+                  توجه: این قطعه صوتی حاوی روضه است
+                </h3>
+                <p className="text-sm text-[#a3a3a3]">
+                  پیشنهاد می‌شود برای حفظ حال معنوی، در شرایط مناسب شنیده شود.
+                </p>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {post.link && (
+          <section className="px-5 flex justify-center items-center">
+            <MusicPlayer audioSrc={post.link} />
+          </section>
+        )}
+
+        {secondThumbnail && (
+          <>
+            <SectionDivider />
+            <section className="px-6 sm:px-8 md:px-12 py-8 flex flex-col items-center">
+              <SectionTitle
+                icon={<ImageIcon />}
+                title="تصویر دوم"
+                className="mb-6"
+              />
+              <div className="group relative h-52 w-52 flex-shrink-0">
+                <Image
+                  src={`https://besooyeto.ir/maddahi/wp-content/uploads/${secondThumbnail}`}
+                  alt={`تصویر دوم برای ${post.title}`}
+                  fill
+                  sizes="208px"
+                  className="rounded-xl shadow-md shadow-black/25 transition-transform duration-500 group-hover:scale-105 ring-1 ring-white/10"
+                />
+              </div>
+            </section>
+          </>
+        )}
+
+        {moshabeh.length > 0 && (
+          <>
+            <SectionDivider />
+            <section className="py-8">
+              <SectionTitle
+                icon={<Sparkles />}
+                title="از همین مناسبت"
+                className="px-6 sm:px-8 md:px-12 mb-6"
+              />
+              <Slider slides={moshabeh} sliderId="similar-posts" />
+            </section>
+          </>
+        )}
+
+        {post.content && (
+          <>
+            <SectionDivider />
+            <section className="px-6 sm:px-8 md:px-12 py-8">
+              <SectionTitle icon={<BookOpen />} title="متن و اشعار" />
+              <div
+                className="prose prose-lg prose-invert max-w-none mt-6 text-[#a3a3a3] prose-headings:text-[#f5f6f7] prose-strong:text-[#f5f6f7] prose-a:text-[#a3fff4] prose-a:transition-colors hover:prose-a:text-[#00b4a0] prose-blockquote:border-r-[#00b4a0]"
+                dangerouslySetInnerHTML={{ __html: post.content }}
+              />
+            </section>
+          </>
+        )}
+        {latestFromMaddah.length > 0 && (
+          <>
+            <SectionDivider />
+            <section className="py-8">
+              <SectionTitle
+                icon={<Sparkles />} // می‌توانید آیکون را تغییر دهید
+                title="آخرین مداحی ها از همین مداح"
+                className="px-6 sm:px-8 md:px-12 mb-6"
+              />
+              <Slider slides={latestFromMaddah} sliderId="latest-from-maddah" />
+            </section>
+          </>
+        )}
+
+        {/* بخش نظرات با پس‌زمینه و جداکننده واضح‌تر */}
+        <div className="border-t border-[#262626] bg-[#0a0a0a]/30 rounded-b-2xl">
+          <section className="p-6 sm:p-8 md:p-12">
+            <div className="max-w-3xl mx-auto">
+              <SectionTitle
+                icon={<Users />}
+                title={`نظرات کاربران (${totalCommentsCount.toLocaleString(
+                  "fa-IR"
+                )})`}
+                className="mb-8"
+              />
+              <div className="mb-10">
+                {comments.length > 0 ? (
+                  <CommentThread comments={comments} postId={post.ID} />
+                ) : (
+                  <div className="text-center py-10 px-4 text-[#525252] bg-[#171717]/50 rounded-lg ring-1 ring-[#333333]">
+                    <MessageSquarePlus className="w-10 h-10 mx-auto mb-4 text-[#00b4a0]/50" />
+                    <p>هنوز نظری ثبت نشده است. اولین نفر باشید!</p>
+                  </div>
+                )}
+              </div>
+              <div
+                id="comment-form"
+                className="rounded-xl border border-dashed border-[#333333] p-6 bg-[#171717]/50 scroll-mt-20 transition-all duration-300 ring-2 ring-transparent focus-within:ring-[#00b4a0]/50 focus-within:border-solid focus-within:border-[#00b4a0]/30"
+              >
+                <Comment postId={post.ID} />
+              </div>
+            </div>
+          </section>
         </div>
       </article>
-    </div>
+    </main>
+  );
+}
+
+function SectionTitle({ icon, title, className = "" }) {
+  return (
+    <h2
+      className={`flex items-center justify-center gap-3 text-2xl font-bold text-[#f5f6f7] ${className}`}
+    >
+      {icon && <span className="text-[#00b4a0]">{icon}</span>}
+      <span>{title}</span>
+    </h2>
+  );
+}
+
+function SectionDivider() {
+  return (
+    <div className="w-1/2 h-px mx-auto bg-gradient-to-r from-transparent via-[#00b4a0]/30 to-transparent" />
   );
 }

@@ -1,62 +1,40 @@
-// app/actions/submitComment.js
-
+// app/lib/actions/commentActions.js
 "use server";
 
 import { db } from "@/app/lib/db/mysql";
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
 
-/**
- * این Server Action یک کامنت جدید را در دیتابیس ذخیره می‌کند.
- * @param {FormData} formData - داده‌های ارسالی از فرم کامنت.
- * @returns {Promise<{success: boolean, message: string}>} - نتیجه عملیات.
- */
 export async function submitComment(formData) {
-  // استخراج داده‌ها از FormData
-  const name = formData.get("name");
-  const email = formData.get("email");
-  const commentText = formData.get("commentText");
-  const postId = formData.get("postId");
-  const parentId = formData.get("parentId") || null; // برای پشتیبانی از پاسخ به کامنت‌ها
+  const name = formData.get("name")?.toString();
+  const email = formData.get("email")?.toString();
+  const text = formData.get("commentText")?.toString();
+  const postId = formData.get("postId")?.toString();
+  const parentId = formData.get("parentId")?.toString() || null; // دریافت parentId
 
   // اعتبارسنجی اولیه
-  if (!name || !commentText || !postId) {
-    return { success: false, message: "نام، متن نظر و شناسه پست الزامی است." };
+  if (!name || !text || !postId) {
+    return { success: false, message: "لطفاً تمام فیلدهای ضروری را پر کنید." };
   }
 
-  // گرفتن اطلاعات کاربر از هدرها
-  const ip_address = headers().get("x-forwarded-for") || "unknown";
-  const user_agent = headers().get("user-agent") || "unknown";
-
   try {
-    // درج کامنت جدید با وضعیت "در حال انتظار" (status = 0)
     await db.query(
-      `INSERT INTO comments (post_id, parent_id, name, email, text, ip_address, user_agent, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
-      [
-        postId, // <-- شناسه پست اضافه شد
-        parentId,
-        name,
-        email,
-        commentText,
-        ip_address,
-        user_agent,
-        0, // وضعیت 0 به معنای "در حال انتظار"
-      ]
+      `INSERT INTO comments (post_id, parent_id, name, email, text, status, created_at) 
+       VALUES (?, ?, ?, ?, ?, ?, NOW())`,
+      [postId, parentId, name, email, text, 0] // status=0 یعنی در انتظار تایید
     );
 
-    // کش صفحه‌ی پست را خالی می‌کند تا کامنت جدید (پس از تایید) نمایش داده شود.
-    // مطمئن شوید که مسیر صفحه پست با الگوی شما مطابقت دارد.
-    revalidatePath(`/posts/${postId}`); // مسیر را بر اساس ساختار URL خود تنظیم کنید
+    // بعد از ثبت موفق، کش صفحه را پاک می‌کنیم تا کامنت جدید (بعد از تایید مدیر) نمایش داده شود
+    revalidatePath(`/posts/${postId}`); // postId اینجا باید اسلاگ پست باشد
 
     return {
       success: true,
-      message: "نظر شما با موفقیت ارسال شد و پس از تایید نمایش داده خواهد شد.",
+      message: "نظر شما با موفقیت ثبت شد و پس از تایید نمایش داده خواهد شد.",
     };
   } catch (error) {
     console.error("Error submitting comment:", error);
     return {
       success: false,
-      message: "خطایی در ارسال نظر رخ داد. لطفا دوباره تلاش کنید.",
+      message: "خطایی در ثبت نظر رخ داد. لطفاً دوباره تلاش کنید.",
     };
   }
 }

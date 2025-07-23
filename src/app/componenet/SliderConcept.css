@@ -1,0 +1,63 @@
+/* app/globals.css یا یک فایل CSS مشترک دیگر */
+
+/* 
+  این پراپرتی سفارشی به مرورگر اجازه می‌دهد تا زاویه گرادینت را انیمیت کند.
+  این قابلیت با Tailwind قابل پیاده‌سازی نیست.
+*/
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* 
+  انیمیشن چرخش برای افکت نئونی.
+  از animate-spin خود Tailwind استفاده نشده تا بتوانیم سرعت را کنترل کرده
+  و انیمیشن را در حالت عادی متوقف (paused) نگه داریم.
+*/
+@keyframes spin {
+  to {
+    --angle: 360deg;
+  }
+}
+
+/* 
+  کلاس کمکی برای اعمال انیمیشن.
+  کلاس [animation-play-state:running] در group-hover اعمال می‌شود.
+*/
+.animate-spin-slow {
+  animation: spin 5s linear infinite paused;
+}
+
+/* 
+  استایل دکمه‌های ناوبری اسلایدر که با Tailwind پیاده‌سازی شده
+  اما برای خوانایی بهتر می‌توان بخشی از آن را اینجا نگه داشت یا کاملا به JSX منتقل کرد.
+  در کد بالا، این کلاس‌ها به طور کامل با Tailwind در JSX پیاده‌سازی شده‌اند.
+  این بخش صرفا جهت نمایش استایل قبلی است.
+*/
+.slider-nav-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(23, 23, 23, 0.7);
+  backdrop-filter: blur(5px);
+  border-radius: 9999px; /* rounded-full */
+  color: #f5f6f7; /* text-foreground-primary */
+  cursor: pointer;
+  z-index: 10;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.group-hover\/slider .slider-nav-button {
+  opacity: 1;
+}
+
+.slider-nav-button:hover {
+  background-color: #00b4a0; /* hover:bg-accent-primary */
+}
