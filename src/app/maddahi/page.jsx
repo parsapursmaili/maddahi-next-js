@@ -1,6 +1,6 @@
 // app/page.js
-import Slider from "@/app/componenet/slider";
-import { db } from "@/app/lib/db/mysql";
+import Slider from "@/app/maddahi/componenet/slider";
+import { db } from "@/app/maddahi/lib/db/mysql";
 
 export const revalidate = 3600;
 

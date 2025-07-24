@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { logout } from "@/app/actions/auth";
+import { logout } from "@/app/maddahi/actions/auth";
 import {
   LayoutDashboard,
   FileText,

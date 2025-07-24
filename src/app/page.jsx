@@ -1,199 +1,253 @@
-// app/page.tsx
-"use client";
-import "./css/home.css";
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import Maddahan from "./componenet/maddahiha/maddahan";
-import Pagination from "./componenet/maddahiha/pagination";
-import MusicPlayer from "./componenet/maddahiha/musicPlayer";
-import Posts from "./componenet/maddahiha/posts";
-import Reason from "./componenet/maddahiha/monasebatha";
-import Random from "./componenet/maddahiha/random";
-import Search from "./componenet/maddahiha/search";
-import getPosts from "@/app/actions/getPost";
-export default function Home() {
-  const [posts, setPosts] = useState([]);
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [index, setIndex] = useState(-1);
-  const [isPlay, setIsPlaying] = useState(false);
-  const [selectedUser, setSelectedUser] = useState({ ID: 0 });
-  const [reason, setReason] = useState({ ID: 0 });
-  const [handle, setHnadle] = useState("");
-  const [rand, setRand] = useState(0);
-  const [squery, setSQuery] = useState("");
-  const [PID, setPID] = useState(0);
+// app/page.js
 
-  const control = useRef({
-    page: 1,
-    selectedUser: 0,
-    reason: 0,
-    rand: 0,
-    squery: "",
-    index: 0,
-  });
-  const c = control.current;
-  
-  const control2 = useRef({
-    squery: "",
-  });
-  const c2 = control2.current;
-  const router = useRouter();
+import Link from "next/link";
+import Image from "next/image";
+import { FiMic, FiArrowLeft, FiPlayCircle } from "react-icons/fi";
 
-  function set(phaze) {
-    if (phaze == 1) {
-      control.current.squery = "";
-      setSQuery("");
-    }
-    if (phaze == 2) {
-      control.current.selectedUser = 0;
-      setSelectedUser({ ID: 0 });
-      control.current.reason = 0;
-      setReason({ ID: 0 });
-      control.current.rand = 0;
-      setRand(0);
-    }
-    if (phaze != 3) {
-      control.current.page = 1;
-      setPage(1);
-    }
-    control.current.index = -1;
-    setIndex(-1);
-    fetchPosts();
+import Slider from "@/app/maddahi/componenet/slider";
+import { db } from "@/app/maddahi/lib/db/mysql";
+
+// =================================================================
+//  بخش واکشی اطلاعات برای اسلایدرها
+// =================================================================
+export const revalidate = 3600; // رفرش داده‌ها هر یک ساعت
+
+async function fetchPosts(orderby = "date desc") {
+  try {
+    const [data] = await db.query(
+      `select ID,title,thumbnail,name from posts where type='post' and status='publish' order by ${orderby}  limit 20`
+    );
+    return data;
+  } catch (error) {
+    console.error("خطا در واکشی اطلاعات:", error);
+    return [];
   }
+}
 
-  async function fetchPosts() {
-    const filter = {
-      page: control.current.page,
-      maddah: control.current.selectedUser,
-      monasebat: control.current.reason,
-      rand: control.current.rand,
-      s: control.current.squery,
-      terms: 1,
-    };
-    c2.squery = c.squery;
-    try {
-      const response = await getPosts(filter);
+// =================================================================
+//  داده‌های ثابت برای کارت‌های معرفی مداحان
+// =================================================================
+// این داده‌ها به صورت ثابت تعریف شده‌اند تا نیازی به کوئری اضافه نباشد.
+// شما می‌توانید slug و imageUrl را بر اساس ساختار سایت اصلی خود در آینده تکمیل کنید.
+const featuredMaddahs = [
+  {
+    id: 108,
+    name: "حاج مهدی رسولی",
+    slug: "mahdi-rasouli", // این slug باید با صفحه دسته‌بندی ایشان یکی باشد
+    // نکته: برای نمایش تصویر، باید URL کامل تصویر پروفایل ایشان را اینجا قرار دهید.
+    // این URL از همان منطق صفحه دسته‌بندی پیروی می‌کند.
+    imageUrl:
+      "https://besooyeto.ir/maddahi/wp-content/uploads/2024/07/rasooli-profile.jpg", // مسیر تصویر را بروزرسانی کنید
+  },
+  {
+    id: 24,
+    name: "محمدحسین پویانفر",
+    slug: "mohammadhossein-poyanfar",
+    imageUrl:
+      "https://besooyeto.ir/maddahi/wp-content/uploads/2024/07/pouyanfar-profile.jpg", // مسیر تصویر را بروزرسانی کنید
+  },
+  {
+    id: 2,
+    name: "کربلایی حسین طاهری",
+    slug: "hossein-taheri",
+    imageUrl:
+      "https://besooyeto.ir/maddahi/wp-content/uploads/2024/07/taheri-profile.jpg", // مسیر تصویر را بروزرسانی کنید
+  },
+  {
+    id: 10,
+    name: "حاج حسن عطایی",
+    slug: "hasan-ataei",
+    imageUrl:
+      "https://besooyeto.ir/maddahi/wp-content/uploads/2024/07/ataee-profile.jpg", // مسیر تصویر را بروزرسانی کنید
+  },
+];
 
-      setPosts(response.post || []);
-      setTotal(response.total || 0);
+// =================================================================
+//  کامپوننت‌های داخلی صفحه اصلی
+// =================================================================
 
-      if (control.current.n == 1) {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-        setHnadle(response.post[0].link);
-        setPID(response.post[0].ID);
-      }
+// 1. هدر موقت (طراحی شده در داخل صفحه)
+const TemporaryHeader = () => (
+  <header className="absolute top-0 left-0 right-0 z-30">
+    <div className="container mx-auto flex items-center justify-between p-6 text-[var(--foreground-primary)]">
+      <Link href="/maddahi" className="text-2xl font-bold relative group">
+        <span className="bg-clip-text text-transparent bg-gradient-to-r from-[var(--accent-crystal-highlight)] to-[var(--accent-primary)]">
+          به سوی تو
+        </span>
+        <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[var(--accent-primary)] transition-all duration-300 group-hover:w-full"></span>
+      </Link>
+      <nav className="hidden md:flex items-center gap-8">
+        <Link
+          href="/maddahi"
+          className="text-base text-[var(--foreground-secondary)] hover:text-[var(--foreground-primary)] transition-colors duration-300"
+        >
+          به سوی تو مداحی
+        </Link>
+        <Link
+          href="/maddahi/archive"
+          className="text-base text-[var(--foreground-secondary)] hover:text-[var(--foreground-primary)] transition-colors duration-300"
+        >
+          تمام مداحی‌ها
+        </Link>
+        <Link
+          href="/contact-us"
+          className="text-base text-[var(--foreground-secondary)] hover:text-[var(--foreground-primary)] transition-colors duration-300"
+        >
+          تماس با ما
+        </Link>
+      </nav>
+      {/* منوی موبایل را می‌توان در اینجا اضافه کرد */}
+    </div>
+  </header>
+);
 
-      control.current.n = 0;
-    } catch (error) {
-      console.error("Fetch Error:", error);
-    }
-  }
+// 2. بخش Hero (معرفی اصلی)
+const HeroSection = () => (
+  <section className="relative flex items-center justify-center h-[60vh] min-h-[400px] text-center overflow-hidden">
+    <div className="absolute inset-0 bg-[var(--background-primary)] z-10">
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[var(--background-primary)] to-[var(--background-primary)]"></div>
+    </div>
+    <div className="absolute inset-[-20%] w-[140%] h-[140%] bg-[conic-gradient(from_45deg_at_50%_50%,_var(--accent-primary)_0deg,_#0a0a0a_70deg,_#0a0a0a_290deg,_var(--accent-primary)_360deg)] opacity-15 animate-[spin_30s_linear_infinite] -z-1"></div>
+    <div className="container mx-auto px-4 relative z-20 flex flex-col items-center">
+      <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-[var(--foreground-primary)]">
+        قلب تپنده نواهای آسمانی
+      </h1>
+      <p className="mt-6 max-w-2xl text-lg md:text-xl text-[var(--foreground-secondary)]">
+        صفحه اصلی وب‌سایت در دست طراحی است. تا آن زمان، شما را به گنجینه ارزشمند
+        مداحی و نماهنگ‌های "به سوی تو" دعوت می‌کنیم.
+      </p>
+      <Link
+        href="/maddahi"
+        className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 mt-10 text-lg font-bold text-[var(--background-primary)] bg-[var(--accent-primary)] rounded-full overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-[var(--accent-primary)]/40"
+      >
+        <FiPlayCircle className="text-2xl transition-transform duration-300 group-hover:scale-110" />
+        <span>ورود به بخش مداحی</span>
+      </Link>
+    </div>
+  </section>
+);
 
-  useEffect(() => {
-    const params = new URLSearchParams();
-    page != 1 ? params.set("page", page) : params.delete("page");
-    rand ? params.set("rand", rand) : params.delete("rand");
-    selectedUser.ID != 0
-      ? params.set("maddah", selectedUser.ID)
-      : params.delete("maddah");
-    reason.ID != 0
-      ? params.set("monasebatha", reason.ID)
-      : params.delete("monasebatha");
+// 3. کارت معرفی مداح
+const MaddahCard = ({ name, slug, imageUrl }) => (
+  <Link
+    href={`/maddah/${slug}`}
+    className="group relative block bg-[var(--background-secondary)] rounded-2xl overflow-hidden aspect-[3/4] transition-all duration-500 ease-out hover:!scale-105"
+  >
+    <div className="absolute inset-0 z-0">
+      <Image
+        src={imageUrl}
+        alt={`تصویر ${name}`}
+        fill
+        className="object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+    </div>
+    <div className="absolute inset-0 p-6 flex flex-col justify-end z-10">
+      <div className="border-l-2 border-[var(--accent-primary)] pl-4 transform transition-transform duration-300 group-hover:translate-x-1">
+        <h3 className="text-2xl font-bold text-[var(--foreground-primary)]">
+          {name}
+        </h3>
+        <p className="text-sm text-[var(--accent-crystal-highlight)] opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+          مشاهده آثار
+        </p>
+      </div>
+    </div>
+    {/* افکت نور کریستالی */}
+    <div className="absolute top-0 left-0 w-full h-full rounded-2xl ring-1 ring-inset ring-[var(--border-primary)/50] transition-all duration-300 group-hover:ring-[var(--accent-crystal-highlight)]/70"></div>
+  </Link>
+);
 
-    squery != "" ? params.set("s", squery) : params.delete("s");
+// 4. بخش مداحان ویژه
+const FeaturedMaddahsSection = () => (
+  <section className="container mx-auto px-4 py-20">
+    <div className="text-center mb-12">
+      <h2 className="text-3xl md:text-4xl font-bold text-[var(--foreground-primary)]">
+        گلچین آثار برترین مداحان
+      </h2>
+      <p className="mt-3 text-lg text-[var(--foreground-secondary)]">
+        مجموعه‌ای از بهترین آثار مداحان اهل بیت
+      </p>
+    </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+      {featuredMaddahs.map((maddah) => (
+        <MaddahCard key={maddah.id} {...maddah} />
+      ))}
+    </div>
+  </section>
+);
 
-    router.replace(`?${params.toString()}`);
-  }, [posts]);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (Number(params.get("page"))) {
-      control.current.page = Number(params.get("page"));
-      setPage(control.current.page);
-    }
-    if (Number(params.get("rand"))) {
-      control.current.rand = Number(params.get("rand"));
-      setRand(control.current.rand);
-    }
-    if (Number(params.get("maddah"))) {
-      control.current.selectedUser = Number(params.get("maddah"));
-      setSelectedUser({ ID: control.current.selectedUser });
-    }
-    if (Number(params.get("monasebatha"))) {
-      control.current.reason = Number(params.get("monasebatha"));
-      setReason({ ID: control.current.reason });
-    }
-    if (params.get("s")) {
-      control.current.squery = params.get("s");
-      setSQuery(control.current.squery);
-    }
-
-    fetchPosts();
-  }, []);
-
-  const totalPages = Math.ceil(total / 20);
+// =================================================================
+//  کامپوننت اصلی صفحه
+// =================================================================
+export default async function TemporaryHomePage() {
+  // واکشی داده‌ها برای هر دو اسلایدر
+  const latestSlides = await fetchPosts("date desc");
+  const popularSlides = await fetchPosts("CAST(view AS UNSIGNED) desc");
 
   return (
-    <div className="pb-50 container mx-auto p-4">
-      <Pagination
-        control={control}
-        set={set}
-        setIndex={setIndex}
-        page={page}
-        setPage={setPage}
-        totalPages={totalPages}
-      />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-        <Maddahan
-          control={control}
-          selectedUser={selectedUser}
-          setSelectedUser={setSelectedUser}
-          set={set}
-        />
-        <Reason
-          control={control}
-          reason={reason}
-          setReason={setReason}
-          set={set}
-        />
-        <Random control={control} rand={rand} setRand={setRand} set={set} />
-        <Search
-          c2={c2}
-          control={control}
-          setSQuery={setSQuery}
-          squery={squery}
-          set={set}
-        />
-      </div>
+    <div className="bg-[var(--background-primary)] text-[var(--foreground-primary)]">
+      <TemporaryHeader />
 
-      <MusicPlayer
-        control={control}
-        page={page}
-        setPage={setPage}
-        index={index}
-        setIndex={setIndex}
-        totalPages={totalPages}
-        posts={posts}
-        handle={handle}
-        setHandle={setHnadle}
-        isPlay={isPlay}
-        setIsPlaying={setIsPlaying}
-        setPID={setPID}
-        set={set}
-      />
+      <main className="w-full">
+        <HeroSection />
 
-      <Posts
-        posts={posts}
-        setIndex={setIndex}
-        index={index}
-        setHnadle={setHnadle}
-        isPlay={isPlay}
-        setIsPlaying={setIsPlaying}
-        PID={PID}
-        setPID={setPID}
-        set={set}
-      />
+        <FeaturedMaddahsSection />
+
+        {/* بخش اسلایدرها */}
+        <div className="space-y-20 py-20 bg-[var(--background-secondary)]/30">
+          {latestSlides.length > 0 && (
+            <section>
+              <div className="container mx-auto px-4">
+                <div className="flex justify-between items-baseline mb-6">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-[var(--foreground-primary)]">
+                    جدیدترین آثار
+                  </h2>
+                  <Link
+                    href={`/maddahi`}
+                    className="group flex items-center gap-2 text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-crystal-highlight)] transition-colors duration-300"
+                  >
+                    <span>مشاهده همه</span>
+                    <FiArrowLeft className="transition-transform duration-300 group-hover:-translate-x-1" />
+                  </Link>
+                </div>
+                {/* از همان کامپوننت اسلایدر موجود استفاده می‌کنیم */}
+                <Slider slides={latestSlides} sliderId="temp-latest-eulogies" />
+              </div>
+            </section>
+          )}
+
+          {popularSlides.length > 0 && (
+            <section>
+              <div className="container mx-auto px-4">
+                <div className="flex justify-between items-baseline mb-6">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-[var(--foreground-primary)]">
+                    محبوب‌ترین‌ها
+                  </h2>
+                  <Link
+                    href={`/maddahi?sort=popular`}
+                    className="group flex items-center gap-2 text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-crystal-highlight)] transition-colors duration-300"
+                  >
+                    <span>مشاهده همه</span>
+                    <FiArrowLeft className="transition-transform duration-300 group-hover:-translate-x-1" />
+                  </Link>
+                </div>
+                {/* ID اسلایدر باید منحصر به فرد باشد */}
+                <Slider
+                  slides={popularSlides}
+                  sliderId="temp-popular-eulogies"
+                />
+              </div>
+            </section>
+          )}
+        </div>
+      </main>
+
+      {/* فوتر ساده */}
+      <footer className="bg-[var(--background-secondary)] py-8 text-center">
+        <p className="text-[var(--foreground-secondary)]">
+          کلیه حقوق این وب‌سایت متعلق به "به سوی تو" می‌باشد.
+        </p>
+      </footer>
     </div>
   );
 }

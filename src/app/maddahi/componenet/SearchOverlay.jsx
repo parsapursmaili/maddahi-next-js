@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { FaTimes, FaSearch } from "react-icons/fa";
-import getPost from "@/app/actions/getPost";
+import getPost from "@/app/maddahi/actions/getPost";
 import SearchResults from "./SearchResults";
 
 const POSTS_PER_PAGE = 20;

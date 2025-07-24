@@ -3,6 +3,10 @@
 import "./globals.css";
 import { Geist, Geist_Mono } from "next/font/google";
 import { vazir } from "./font";
+import Header from "@/app/maddahi/componenet/Header";
+// Suspense دیگر لازم نیست
+// import { isAuthenticated } from "@/app/actions/auth"; // حذف شد
+import AuthWrapper from "@/app/maddahi/componenet/AuthWrapper"; // کامپوننت جدید
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,6 +41,10 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* به جای بررسی مستقیم، کامپوننت کلاینت را قرار میدهیم */}
+        <AuthWrapper />
+
+        <Header />
         <main>{children}</main>
       </body>
     </html>

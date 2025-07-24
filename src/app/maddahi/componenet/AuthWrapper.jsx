@@ -2,8 +2,8 @@
 "use client"; // <-- مهم: این یک کامپوننت کلاینت است
 
 import { useState, useEffect } from "react";
-import { isAuthenticated } from "@/app/actions/auth"; // همان Server Action قبلی
-import AdminToolbar from "@/app/componenet/admin/AdminToolbar";
+import { isAuthenticated } from "@/app/maddahi/actions/auth"; // همان Server Action قبلی
+import AdminToolbar from "@/app/maddahi/componenet/admin/AdminToolbar";
 
 export default function AuthWrapper() {
   const [isAuth, setIsAuth] = useState(false);
