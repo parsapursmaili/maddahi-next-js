@@ -1,8 +1,8 @@
 // /app/admin/posts/page.js
 
-import { isAuthenticated } from "@/app/actions/auth"; // <-- اکشن احراز هویت جدید
+import { isAuthenticated } from "@/app/maddahi/actions/auth"; // <-- اکشن احراز هویت جدید
 import { redirect } from "next/navigation"; // <-- ایمپورت redirect
-import PostsManager from "@/app/componenet/admin/posts/PostsManager";
+import PostsManager from "@/app/maddahi/componenet/admin/posts/PostsManager";
 
 export default async function AdminPostsPage() {
   // ۱. بررسی وضعیت لاگین

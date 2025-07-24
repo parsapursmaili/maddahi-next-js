@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image"; // همچنان از Image برای تصاویر ذخیره شده استفاده می‌کنیم
-import { uploadImage } from "@/app/actions/uploadActions";
+import { uploadImage } from "@/app/maddahi/actions/uploadActions";
 import MediaLibraryModal from "./MediaLibraryModal";
 
 export default function ImageUploader({

@@ -29,7 +29,7 @@ const Posts = ({ posts, setHnadle, isPlay, setIndex, setPID, PID }) => {
             <div className="relative flex items-center p-4">
               {/* Thumbnail */}
               <Link
-                href={`/${post.name}`}
+                href={`/maddahi/${post.name}`}
                 className="block flex-shrink-0 w-20 h-20 relative rounded-lg overflow-hidden"
               >
                 {post.thumbnail ? (

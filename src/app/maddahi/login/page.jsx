@@ -1,7 +1,7 @@
 // app/login/page.jsx
 "use client";
 
-import { login } from "@/app/actions/auth";
+import { login } from "@/app/maddahi/actions/auth";
 import { useFormState, useFormStatus } from "react-dom";
 
 // --- کامپوننت‌های داخلی برای ساختار تمیزتر ---

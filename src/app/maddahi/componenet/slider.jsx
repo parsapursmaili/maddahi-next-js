@@ -39,7 +39,7 @@ const SliderConcept11 = ({ slides, sliderId }) => {
         {slides.map((post) => (
           <SwiperSlide key={post.ID}>
             <Link
-              href={`/${post.name}`}
+              href={`/maddahi/${post.name}`}
               // group اصلی برای کنترل تمام افکت‌های هاور داخلی
               className="group relative block rounded-2xl bg-[#171717] p-1 overflow-hidden z-[1]"
             >

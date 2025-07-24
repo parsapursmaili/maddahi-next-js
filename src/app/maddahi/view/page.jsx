@@ -1,5 +1,5 @@
 // app/view/page.jsx
-import { db } from "@/app/lib/db/mysql";
+import { db } from "@/app/maddahi/lib/db/mysql";
 import { unstable_noStore as noStore } from "next/cache"; // 👈 ایمپورت صحیح noStore
 
 export default async function Page() {

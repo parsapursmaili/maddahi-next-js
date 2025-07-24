@@ -2,7 +2,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { submitComment } from "@/app/actions/submitComment";
+import { submitComment } from "@/app/maddahi/actions/submitComment";
 import { useState } from "react";
 import {
   Send,

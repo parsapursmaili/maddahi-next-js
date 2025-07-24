@@ -6,8 +6,8 @@ import { Newspaper } from "lucide-react";
 
 import PostForm from "./PostForm";
 import PostsList from "./PostsList";
-import getPosts from "@/app/actions/getPost";
-import getPostById from "@/app/actions/getPostById";
+import getPosts from "@/app/maddahi/actions/getPost";
+import getPostById from "@/app/maddahi/actions/getPostById";
 
 export default function PostsManager() {
   const [posts, setPosts] = useState([]);

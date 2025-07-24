@@ -1,7 +1,7 @@
 // app/lib/actions/commentActions.js
 "use server";
 
-import { db } from "@/app/lib/db/mysql";
+import { db } from "@/app/maddahi/lib/db/mysql";
 import { revalidatePath } from "next/cache";
 
 export async function submitComment(formData) {

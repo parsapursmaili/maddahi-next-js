@@ -10,7 +10,7 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
-import CustomTooltip from "@/app/componenet/admin/statistics/charts/CustomTooltip"; // ۱. وارد کردن کامپوننت سفارشی
+import CustomTooltip from "@/app/maddahi/componenet/admin/statistics/charts/CustomTooltip"; // ۱. وارد کردن کامپوننت سفارشی
 
 const PostDailyViewsChart = ({ data }) => {
   // اگر داده‌ای برای نمایش وجود نداشته باشد، یک پیام مناسب نمایش داده می‌شود

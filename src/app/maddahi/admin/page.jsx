@@ -1,8 +1,8 @@
 // /app/admin/page.js
 
-import { isAuthenticated } from "@/app/actions/auth";
+import { isAuthenticated } from "@/app/maddahi/actions/auth";
 import { redirect } from "next/navigation";
-import { getAdminStats } from "@/app/actions/getAdminStats";
+import { getAdminStats } from "@/app/maddahi/actions/getAdminStats";
 import "./admin.css";
 import Link from "next/link";
 import {

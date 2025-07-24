@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, memo } from "react";
-import getTerms from "@/app/actions/terms";
+import getTerms from "@/app/maddahi/actions/terms";
 const Maddahan = ({ selectedUser, setSelectedUser, control, set }) => {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);

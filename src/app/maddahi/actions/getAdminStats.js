@@ -1,6 +1,6 @@
 // /app/actions/getAdminStats.js
 "use server";
-import { db } from "@/app/lib/db/mysql"; // فرض بر اینکه getDb را در این مسیر قرار داده‌ای
+import { db } from "@/app/maddahi/lib/db/mysql"; // فرض بر اینکه getDb را در این مسیر قرار داده‌ای
 
 export async function getAdminStats() {
   try {

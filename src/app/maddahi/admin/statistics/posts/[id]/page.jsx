@@ -1,7 +1,7 @@
 // /app/admin/statistics/posts/[id]/page.js
-import { isAuthenticated } from "@/app/actions/auth";
+import { isAuthenticated } from "@/app/maddahi/actions/auth";
 import { redirect } from "next/navigation";
-import { getPostMonthlyStats } from "@/app/actions/getStatistics";
+import { getPostMonthlyStats } from "@/app/maddahi/actions/getStatistics";
 import PostDailyViewsChart from "./PostDailyViewsChart"; // کامپوننت جدید
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";

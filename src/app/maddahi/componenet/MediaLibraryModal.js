@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
-import { getMediaLibrary, deleteImage } from "@/app/actions/uploadActions";
+import { getMediaLibrary, deleteImage } from "@/app/maddahi/actions/uploadActions";
 
 export default function MediaLibraryModal({
   onClose,

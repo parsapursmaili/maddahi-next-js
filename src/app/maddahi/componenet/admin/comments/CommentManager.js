@@ -16,7 +16,7 @@ import {
 import {
   updateCommentStatus,
   updateCommentDetails,
-} from "@/app/actions/commentActions";
+} from "@/app/maddahi/actions/commentActions";
 import EditCommentModal from "./EditCommentModal";
 
 const STATUS = {

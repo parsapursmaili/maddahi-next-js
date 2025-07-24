@@ -1,5 +1,5 @@
 "use server";
-import { db } from "@/app/lib/db/mysql";
+import { db } from "@/app/maddahi/lib/db/mysql";
 
 export default async function getTerms(params) {
   let { req = 2 } = params;

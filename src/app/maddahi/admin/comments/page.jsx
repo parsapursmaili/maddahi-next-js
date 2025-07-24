@@ -1,7 +1,7 @@
-import { isAuthenticated } from "@/app/actions/auth"; // فرض بر اینکه این فایل را دارید
+import { isAuthenticated } from "@/app/maddahi/actions/auth"; // فرض بر اینکه این فایل را دارید
 import { redirect } from "next/navigation";
-import { getCommentsForAdmin } from "@/app/actions/commentActions";
-import CommentManager from "@/app/componenet/admin/comments/CommentManager";
+import { getCommentsForAdmin } from "@/app/maddahi/actions/commentActions";
+import CommentManager from "@/app/maddahi/componenet/admin/comments/CommentManager";
 import { AlertTriangle } from "lucide-react";
 export default async function AdminCommentsPage() {
   const isAuth = await isAuthenticated();

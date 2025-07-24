@@ -1,7 +1,7 @@
 // /app/actions/getPostById.js
 "use server";
 
-import { db } from "@/app/lib/db/mysql";
+import { db } from "@/app/maddahi/lib/db/mysql";
 
 export default async function getPostById(postId) {
   if (!postId) {

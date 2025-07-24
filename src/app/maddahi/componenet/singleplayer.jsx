@@ -1,5 +1,5 @@
 "use client";
-import "@/app/css/singlepost.css";
+import "@/app/maddahi/css/singlepost.css";
 import React, { useRef, useState, useEffect } from "react";
 
 const MusicPlayer = ({ audioSrc }) => {

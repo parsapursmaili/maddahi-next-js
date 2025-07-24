@@ -1,11 +1,11 @@
 "use server";
 
 // ۱. وارد کردن دیتابیس طبق الگوی شما
-import { db } from "@/app/lib/db/mysql";
+import { db } from "@/app/maddahi/lib/db/mysql";
 import { revalidatePath } from "next/cache";
 // <<<<<<< شروع تغییرات >>>>>>>>>
 // ۲. وارد کردن ابزار تبدیل تاریخ
-import { timeAgo } from "@/app/lib/utils/formatDate";
+import { timeAgo } from "@/app/maddahi/lib/utils/formatDate";
 // <<<<<<< پایان تغییرات >>>>>>>>>
 
 /**

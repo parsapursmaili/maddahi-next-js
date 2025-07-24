@@ -1,16 +1,16 @@
 // app/page.tsx
 "use client";
-import "@/app/css/home.css";
+import "@/app/maddahi/css/home.css";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import Maddahan from "@/app/componenet/maddahiha/maddahan";
-import Pagination from "@/app/componenet/maddahiha/pagination";
-import MusicPlayer from "@/app/componenet/maddahiha/musicPlayer";
-import Posts from "@/app/componenet/maddahiha/posts";
-import Reason from "@/app/componenet/maddahiha/monasebatha";
-import Random from "@/app/componenet/maddahiha/random";
-import Search from "@/app/componenet/maddahiha/search";
-import getPosts from "@/app/actions/getPost";
+import Maddahan from "@/app/maddahi/componenet/maddahiha/maddahan";
+import Pagination from "@/app/maddahi/componenet/maddahiha/pagination";
+import MusicPlayer from "@/app/maddahi/componenet/maddahiha/musicPlayer";
+import Posts from "@/app/maddahi/componenet/maddahiha/posts";
+import Reason from "@/app/maddahi/componenet/maddahiha/monasebatha";
+import Random from "@/app/maddahi/componenet/maddahiha/random";
+import Search from "@/app/maddahi/componenet/maddahiha/search";
+import getPosts from "@/app/maddahi/actions/getPost";
 export default function Home() {
   const [posts, setPosts] = useState([]);
   const [total, setTotal] = useState(0);

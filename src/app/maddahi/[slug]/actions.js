@@ -1,7 +1,7 @@
 // app/posts/[id]/actions.js
 "use server"; // 👈 این خط رو حتماً بذارید
 
-import { db } from "@/app/lib/db/mysql"; // مسیر صحیح دیتابیس
+import { db } from "@/app/maddahi/lib/db/mysql"; // مسیر صحیح دیتابیس
 
 export async function incrementView(postId) {
   try {

@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
 import { ArrowRight } from "lucide-react";
-import { createPost, updatePost, deletePost } from "@/app/actions/postActions";
-import getTerms from "@/app/actions/terms";
-import ImageUploader from "@/app/componenet/ImageUploader";
+import { createPost, updatePost, deletePost } from "@/app/maddahi/actions/postActions";
+import getTerms from "@/app/maddahi/actions/terms";
+import ImageUploader from "@/app/maddahi/componenet/ImageUploader";
 import TermSelector from "./TermSelector";
 
-const TiptapEditor = dynamic(() => import("@/app/componenet/TiptapEditor"), {
+const TiptapEditor = dynamic(() => import("@/app/maddahi/componenet/TiptapEditor"), {
   ssr: false,
 });
 

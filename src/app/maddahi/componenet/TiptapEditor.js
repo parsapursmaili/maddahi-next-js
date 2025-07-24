@@ -5,7 +5,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import TextAlign from "@tiptap/extension-text-align";
 import { useCallback } from "react";
-import "@/app/css/Tiptap.css";
+import "@/app/maddahi/css/Tiptap.css";
 import {
   Bold,
   Italic,

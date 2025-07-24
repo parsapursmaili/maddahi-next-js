@@ -2,7 +2,7 @@
 
 "use server";
 
-import { db } from "@/app/lib/db/mysql";
+import { db } from "@/app/maddahi/lib/db/mysql";
 import { notFound } from "next/navigation";
 
 // تابع nestComments بدون تغییر باقی می‌ماند...

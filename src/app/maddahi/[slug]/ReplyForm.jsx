@@ -2,7 +2,7 @@
 "use client";
 
 import { useTransition, useState } from "react";
-import { submitComment } from "@/app/actions/submitComment";
+import { submitComment } from "@/app/maddahi/actions/submitComment";
 import { Send, Loader2 } from "lucide-react";
 
 export default function ReplyForm({ postId, parentId, onSubmitted }) {

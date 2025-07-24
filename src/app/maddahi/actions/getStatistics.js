@@ -1,8 +1,8 @@
 "use server";
 
-import { db } from "@/app/lib/db/mysql";
+import { db } from "@/app/maddahi/lib/db/mysql";
 // ۱. وارد کردن ابزار اصلاح‌شده و سرور-فرندلی
-import { toShamsi } from "@/app/lib/utils/formatDate";
+import { toShamsi } from "@/app/maddahi/lib/utils/formatDate";
 
 /**
  * آمار کلی داشبورد را واکشی می‌کند.
