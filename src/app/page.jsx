@@ -32,16 +32,14 @@ export default function Home() {
     squery: "",
     index: 0,
   });
-
+  const c = control.current;
+  const control2 = useRef({
+    squery: "",
+  });
+  const c2 = control2.current;
   const router = useRouter();
 
   function set(phaze) {
-    if (
-      phaze == 0 &&
-      squery == "" &&
-      (rand != 0 || selectedUser.ID != 0 || reason.ID != 0)
-    )
-      return;
     if (phaze == 1) {
       control.current.squery = "";
       setSQuery("");
@@ -72,6 +70,7 @@ export default function Home() {
       s: control.current.squery,
       terms: 1,
     };
+    c2.squery = c.squery;
     try {
       const response = await getPosts(filter);
 
@@ -159,6 +158,7 @@ export default function Home() {
         />
         <Random control={control} rand={rand} setRand={setRand} set={set} />
         <Search
+          c2={c2}
           control={control}
           setSQuery={setSQuery}
           squery={squery}

@@ -4,9 +4,10 @@ import "./globals.css";
 import { Geist, Geist_Mono } from "next/font/google";
 import { vazir } from "./font";
 import Header from "@/app/componenet/Header";
-import { Suspense } from "react";
-import { isAuthenticated } from "@/app/actions/auth";
-import AdminToolbar from "@/app/componenet/admin/AdminToolbar";
+// Suspense دیگر لازم نیست
+// import { isAuthenticated } from "@/app/actions/auth"; // حذف شد
+import AuthWrapper from "@/app/componenet/AuthWrapper"; // کامپوننت جدید
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -20,12 +21,11 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "به سوی تو - موزیک پلیر",
   description: "پخش و دانلود جدیدترین نماهنگ‌ها",
-  robots: "noindex, nofollow",
+  // robots را میتوانید برای محیط پروداکشن بردارید
 };
 
-export default async function RootLayout({ children }) {
-  // ۱. وضعیت احراز هویت را یک بار در سرور با حداکثر سرعت بررسی می‌کنیم.
-  const isAuth = await isAuthenticated();
+// تابع دیگر async نیست و کاملاً استاتیک است
+export default function RootLayout({ children }) {
   return (
     <html lang="fa" dir="rtl" className={vazir.variable}>
       <head>
@@ -41,7 +41,9 @@ export default async function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {isAuth && <AdminToolbar />}
+        {/* به جای بررسی مستقیم، کامپوننت کلاینت را قرار میدهیم */}
+        <AuthWrapper />
+
         <Header />
         <main>{children}</main>
       </body>

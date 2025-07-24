@@ -153,7 +153,7 @@ const MusicPlayer = ({
           first ? "translate-y-full" : "translate-y-0"
         }`}
       >
-        <div className="relative w-full px-4  ">
+        <div className="relative w-full px-4 main-music ">
           <input
             ref={timeLine}
             onChange={() => {
@@ -162,9 +162,9 @@ const MusicPlayer = ({
               updateProgressBar();
             }}
             type="range"
-            className="w-full"
+            className="w-full "
           />
-          <div className="main-music flex justify-between text-xs font-mono text-[var(--foreground-muted)] px-1 mt-1">
+          <div className=" flex justify-between text-xs font-mono text-[var(--foreground-muted)] px-1 mt-1">
             <span>{formatTime(musicPlayer.duration)}</span>
             <span>{formatTime(musicPlayer.currentTime)}</span>
           </div>

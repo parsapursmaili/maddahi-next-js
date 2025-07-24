@@ -1,10 +1,11 @@
 "use client";
 import { useState, useEffect, memo } from "react";
 
-const Search = ({ setSQuery, squery, control, set }) => {
+const Search = ({ setSQuery, squery, control, set, c2 }) => {
   const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
+    if (squery == "" && inputValue == "") return;
     setInputValue(squery);
   }, [squery]);
 
@@ -12,6 +13,7 @@ const Search = ({ setSQuery, squery, control, set }) => {
     const timer = setTimeout(() => {
       setSQuery(inputValue);
       control.current.squery = inputValue;
+      if (control.current.squery == c2.squery) return;
       if (inputValue != "") set(2);
       else set(0);
     }, 500);

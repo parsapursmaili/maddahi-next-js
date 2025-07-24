@@ -31,7 +31,7 @@
   background: var(--accent-primary); /* استفاده از رنگ اصلی تم */
   border: 3px solid var(--background-secondary); /* حاشیه همرنگ با پس‌زمینه پلیر */
   box-shadow: 0 0 8px rgba(var(--accent-primary-rgb), 0.5); /* افزودن درخشش زیبا */
-  margin-top: -6px; /* تنظیم دقیق‌تر موقعیت عمودی دستگیره */
+  margin-top: -2px; /* تنظیم دقیق‌تر موقعیت عمودی دستگیره */
   transition: transform 0.2s ease;
 }
 
