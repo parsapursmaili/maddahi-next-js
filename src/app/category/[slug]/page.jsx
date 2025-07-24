@@ -12,6 +12,63 @@ import { notFound } from "next/navigation";
 // ★★ کامپوننت‌های نهایی - بازطراحی شده بر اساس استایل شما ★★
 // =================================================================
 
+export async function generateMetadata({ params }) {
+  const siteUrl = process.env.SITE_URL || "http://localhost:3000";
+  const uploadsPath = process.env.NEXT_PUBLIC_UPLOADS_BASE_PATH || "/uploads";
+  const { slug } = params;
+
+  const [maddahResult] = await db.query(
+    `SELECT t.name, t.slug, tm.image_url, tm.biography FROM terms AS t LEFT JOIN terms_metadata AS tm ON t.ID = tm.term_id WHERE t.slug = ? AND t.taxonomy = 'category'`,
+    [slug]
+  );
+
+  if (!maddahResult || maddahResult.length === 0) {
+    return {
+      title: "صفحه یافت نشد",
+      description: "محتوایی برای این آدرس یافت نشد.",
+    };
+  }
+
+  const maddah = maddahResult[0];
+
+  // ساخت عنوان بر اساس نام مداح
+  const title = `گلچین مداحی های ${maddah.name}`;
+
+  // ساخت توضیحات از بیوگرافی (حذف تگ‌های HTML و محدود کردن به ۱۵۰ کاراکتر)
+  let description = `مجموعه بهترین آثار و مداحی‌های ${maddah.name}.`;
+  if (maddah.biography) {
+    const plainBio = maddah.biography
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    description =
+      plainBio.substring(0, 150) + (plainBio.length > 150 ? "..." : "");
+  }
+
+  // ساخت URL کامل برای تصویر
+  const imageUrl = maddah.image_url
+    ? new URL(`${uploadsPath}/${maddah.image_url}`, siteUrl).href
+    : `${siteUrl}/default-og-image.jpg`; // یک تصویر پیش‌فرض برای زمانی که تصویری وجود ندارد
+
+  return {
+    title: title,
+    description: description,
+    openGraph: {
+      title: title,
+      description: description,
+      images: [imageUrl],
+      url: `${siteUrl}/maddah/${slug}`,
+      type: "profile", // "profile" برای صفحه شخص مناسب‌تر است
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: title,
+      description: description,
+      images: [imageUrl],
+    },
+  };
+}
+
 const MaddahHeader = ({ name, imageUrl }) => (
   <header className="relative overflow-hidden pt-16 md:pt-24 pb-8">
     <div className="absolute inset-0 bg-gradient-to-b from-[var(--accent-primary)]/10 via-transparent to-transparent -z-10"></div>
@@ -147,7 +204,7 @@ export default async function MaddahCategoryPage({ params }) {
                   جدیدترین آثار
                 </h2>
                 <Link
-                  href="#"
+                  href={`/?maddah=${maddah.ID}`}
                   className="group flex items-center gap-2 text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-crystal-highlight)] transition-colors duration-300"
                 >
                   <span>مشاهده همه</span>
@@ -167,7 +224,7 @@ export default async function MaddahCategoryPage({ params }) {
                   محبوب‌ترین‌ها
                 </h2>
                 <Link
-                  href="#"
+                  href={`/?maddah=${maddah.ID}&rand=2`}
                   className="group flex items-center gap-2 text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-crystal-highlight)] transition-colors duration-300"
                 >
                   <span>مشاهده همه</span>
