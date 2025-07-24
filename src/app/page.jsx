@@ -33,6 +33,7 @@ export default function Home() {
     index: 0,
   });
   const c = control.current;
+  
   const control2 = useRef({
     squery: "",
   });
