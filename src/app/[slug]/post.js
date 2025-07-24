@@ -4,7 +4,6 @@
 
 import { db } from "@/app/lib/db/mysql";
 import { notFound } from "next/navigation";
-import { unstable_noStore as noStore } from "next/cache";
 
 // تابع nestComments بدون تغییر باقی می‌ماند...
 const nestComments = (comments) => {
@@ -24,9 +23,6 @@ const nestComments = (comments) => {
 };
 
 export async function getPostPageData(slug) {
-  noStore();
-
-  // ۱. دریافت اطلاعات اصلی پست
   const [postRows] = await db.query(
     "SELECT * FROM posts WHERE name = ? AND status = 'publish' LIMIT 1",
     [slug]

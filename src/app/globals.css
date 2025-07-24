@@ -66,28 +66,7 @@ body {
  */
 
 /* رنگ انتخاب متن هماهنگ با رنگ تاکیدی جدید */
-::selection {
-  background-color: var(--accent-primary);
-  color: #000; /* رنگ مشکی برای خوانایی بهتر روی پس‌زمینه فیروزه‌ای */
-}
 
-/* استایل اسکرول‌بار با ظاهر مدرن */
-::-webkit-scrollbar {
-  width: 12px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--background-primary); /* همرنگ پس‌زمینه اصلی */
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: var(--background-tertiary);
-  border-radius: 8px;
-  border: 3px solid var(--background-primary);
-}
-::-webkit-scrollbar-thumb:hover {
-  background-color: var(--border-secondary);
-}
 @layer utilities {
   .clip-shard-left {
     clip-path: polygon(0 0, 100% 0, 100% 100%, 15% 100%, 0 85%);

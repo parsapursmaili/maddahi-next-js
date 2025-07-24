@@ -1,19 +1,14 @@
 /* 
 =================================================================
-  اصلاح استایل‌های صفحه و پست‌ها برای هماهنگی با تم اصلی
+  استایل‌های ایزوله شده برای موزیک پلیر اصلی سایت (main-music)
 =================================================================
 */
 
 /* 
-  به جای استفاده از رنگ ثابت، از متغیر پس‌زمینه ثانویه استفاده می‌کنیم
-  تا این صفحه با سایر بخش‌های سایت هماهنگ شود.
+  این استایل‌ها اکنون فقط به input[type="range"] که فرزندِ
+  یک اِلِمان با کلاس .main-music است، اعمال می‌شوند.
 */
-.container {
-  background-color: var(--background-primary);
-  padding: 2rem; /* افزودن کمی فاصله داخلی برای زیبایی بیشتر */
-}
-
-input[type="range"] {
+.main-music input[type="range"] {
   direction: ltr; /* جهت‌گیری چپ به راست حفظ شده است */
   -webkit-appearance: none;
   appearance: none;
@@ -27,7 +22,7 @@ input[type="range"] {
 }
 
 /* استایل دستگیره (Thumb) برای مرورگرهای Webkit */
-input[type="range"]::-webkit-slider-thumb {
+.main-music input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 18px; /* کمی بزرگ‌تر برای تعامل راحت‌تر */
@@ -36,17 +31,17 @@ input[type="range"]::-webkit-slider-thumb {
   background: var(--accent-primary); /* استفاده از رنگ اصلی تم */
   border: 3px solid var(--background-secondary); /* حاشیه همرنگ با پس‌زمینه پلیر */
   box-shadow: 0 0 8px rgba(var(--accent-primary-rgb), 0.5); /* افزودن درخشش زیبا */
-  margin-top: -2px; /* تنظیم موقعیت عمودی دستگیره */
+  margin-top: -6px; /* تنظیم دقیق‌تر موقعیت عمودی دستگیره */
   transition: transform 0.2s ease;
 }
 
 /* افکت هاور برای دستگیره */
-input[type="range"]::-webkit-slider-thumb:hover {
+.main-music input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.1);
 }
 
 /* استایل دستگیره (Thumb) برای فایرفاکس */
-input[type="range"]::-moz-range-thumb {
+.main-music input[type="range"]::-moz-range-thumb {
   width: 18px;
   height: 18px;
   border-radius: 50%;
@@ -57,17 +52,21 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* 
-  نکته: برای اینکه box-shadow با متغیر رنگی کار کند، 
-  بهتر است یک متغیر RGB از رنگ اصلی خود در :root تعریف کنید:
-  --accent-primary-rgb: 14, 165, 233; 
+  نکته: همانطور که قبلا ذکر شده، برای کار کردن box-shadow با متغیر رنگی،
+  باید متغیر RGB در :root تعریف شده باشد.
+  --accent-primary-rgb: 0, 180, 160; (بر اساس پالت رنگی قبلی شما)
 */
 
 /* 
 =================================================================
-  انیمیشن Bounce
+  انیمیشن و استایل‌های عمومی دیگر (در صورت نیاز می‌توانید اینها را هم ایزوله کنید)
 =================================================================
 */
 
+/* 
+  اگر این انیمیشن هم مختص پلیر دوم است، بهتر است آن را نیز ایزوله کنید.
+  مثال: .main-music .bounce { ... }
+*/
 @keyframes bounce {
   0%,
   100% {
@@ -82,6 +81,17 @@ input[type="range"]::-moz-range-thumb {
   animation: bounce 3s ease-in-out infinite;
 }
 
+/* 
+  استایل زیر برای تمام تگ‌های <i> اعمال می‌شود. اگر می‌خواهید فقط
+  آیکون‌های داخل پلیر دوم این استایل را بگیرند، آن را به این شکل تغییر دهید:
+  .main-music i { cursor: pointer; }
+*/
 i {
   cursor: pointer;
+}
+
+/* استایل کانتینر عمومی، اگر لازم است می‌تواند باقی بماند */
+.container {
+  background-color: var(--background-primary);
+  padding: 2rem;
 }

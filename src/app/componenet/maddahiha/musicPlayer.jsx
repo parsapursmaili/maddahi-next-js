@@ -164,7 +164,7 @@ const MusicPlayer = ({
             type="range"
             className="w-full"
           />
-          <div className="flex justify-between text-xs font-mono text-[var(--foreground-muted)] px-1 mt-1">
+          <div className="main-music flex justify-between text-xs font-mono text-[var(--foreground-muted)] px-1 mt-1">
             <span>{formatTime(musicPlayer.duration)}</span>
             <span>{formatTime(musicPlayer.currentTime)}</span>
           </div>

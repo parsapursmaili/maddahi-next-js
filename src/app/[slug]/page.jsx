@@ -8,6 +8,7 @@ import Slider from "@/app/componenet/slider"; // فرض بر این است که 
 import Comment from "./CommentForm";
 import CommentThread from "./CommentThread";
 import ServerViewCounter from "@/app/componenet/incview";
+import Link from "next/link";
 import {
   BookOpen,
   Sparkles,
@@ -19,6 +20,9 @@ import {
 } from "lucide-react";
 
 export const revalidate = 3600;
+export async function generateStaticParams() {
+  return [];
+}
 
 // تابع generateMetadata بدون تغییر باقی می‌ماند...
 export async function generateMetadata({ params }) {
@@ -122,13 +126,13 @@ export default async function ProductPage({ params }) {
             {maddah.length > 0 && (
               <div className="flex flex-wrap gap-3 mb-5 justify-center md:justify-start">
                 {maddah.map((m) => (
-                  <a
+                  <Link
                     key={m.slug}
                     href={`/category/${m.slug}`}
                     className="text-sm bg-[#00b4a0]/10 text-[#00b4a0] px-4 py-1.5 rounded-full font-medium transition-all duration-300 border border-transparent hover:border-[#a3fff4]/50 hover:bg-[#00b4a0]/20 hover:shadow-lg hover:shadow-[#00b4a0]/10"
                   >
                     {m.name}
-                  </a>
+                  </Link>
                 ))}
               </div>
             )}
@@ -136,13 +140,13 @@ export default async function ProductPage({ params }) {
             {monasebat.length > 0 && (
               <div className="flex flex-wrap gap-x-4 gap-y-2 mb-6 justify-center md:justify-start">
                 {monasebat.map((item) => (
-                  <a
+                  <Link
                     key={item.slug}
-                    href={`/tag/${item.slug}`}
+                    href={`/?monasebatha=${item.ID}`}
                     className="text-xs text-[#a3a3a3] transition-colors duration-300 hover:text-[#a3fff4] hover:underline underline-offset-4"
                   >
                     #{item.name.replace(/\s/g, "_")}
-                  </a>
+                  </Link>
                 ))}
               </div>
             )}
