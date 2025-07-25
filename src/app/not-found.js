@@ -43,7 +43,7 @@ export default function NotFound() {
 
         {/* دکمه بازگشت به صفحه اصلی */}
         <Link
-          href="/"
+          href="/maddahi/"
           className="group relative mt-10 inline-block w-full max-w-xs rounded-md px-6 py-3 font-bold transition-all duration-300
                      bg-[var(--background-secondary)] 
                      text-[var(--foreground-primary)]

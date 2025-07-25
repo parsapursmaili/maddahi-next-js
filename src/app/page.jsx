@@ -2,199 +2,179 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { FiMic, FiArrowLeft, FiPlayCircle } from "react-icons/fi";
+import { FiArrowLeft, FiGrid } from "react-icons/fi";
 
+// وارد کردن کامپوننت‌های مورد نیاز
+// مسیرها را بر اساس ساختار پروژه خودتان تنظیم کنید
 import Slider from "@/app/maddahi/componenet/slider";
 import { db } from "@/app/maddahi/lib/db/mysql";
 
+export const revalidate = 3600;
+
 // =================================================================
-//  بخش واکشی اطلاعات برای اسلایدرها
+//  بخش واکشی اطلاعات (بدون تغییر)
 // =================================================================
-export const revalidate = 3600; // رفرش داده‌ها هر یک ساعت
+
+async function fetchFeaturedMaddahs() {
+  const siteUrl = process.env.SITE_URL || "http://localhost:3000";
+  const uploadsPath = process.env.NEXT_PUBLIC_UPLOADS_BASE_PATH || "/uploads";
+  const featuredIds = [108, 24, 2, 10];
+
+  try {
+    const [results] = await db.query(
+      `SELECT t.ID, t.name, t.slug, tm.image_url 
+       FROM terms AS t 
+       LEFT JOIN terms_metadata AS tm ON t.ID = tm.term_id 
+       WHERE t.taxonomy = 'category' AND t.ID IN (?)`,
+      [featuredIds]
+    );
+    const sortedResults = featuredIds.map((id) =>
+      results.find((r) => r.ID === id)
+    );
+    return sortedResults.map((maddah) => ({
+      ...maddah,
+      fullImageUrl: maddah.image_url
+        ? new URL(`${uploadsPath}/${maddah.image_url}`, siteUrl).href
+        : "/default-maddah-image.jpg",
+    }));
+  } catch (error) {
+    console.error("خطا در واکشی اطلاعات مداحان:", error);
+    return [];
+  }
+}
 
 async function fetchPosts(orderby = "date desc") {
   try {
     const [data] = await db.query(
-      `select ID,title,thumbnail,name from posts where type='post' and status='publish' order by ${orderby}  limit 20`
+      `SELECT ID, title, thumbnail, name FROM posts WHERE type='post' AND status='publish' ORDER BY ${orderby} LIMIT 20`
     );
     return data;
   } catch (error) {
-    console.error("خطا در واکشی اطلاعات:", error);
+    console.error("خطا در واکشی پست‌ها:", error);
     return [];
   }
 }
 
 // =================================================================
-//  داده‌های ثابت برای کارت‌های معرفی مداحان
-// =================================================================
-// این داده‌ها به صورت ثابت تعریف شده‌اند تا نیازی به کوئری اضافه نباشد.
-// شما می‌توانید slug و imageUrl را بر اساس ساختار سایت اصلی خود در آینده تکمیل کنید.
-const featuredMaddahs = [
-  {
-    id: 108,
-    name: "حاج مهدی رسولی",
-    slug: "mahdi-rasouli", // این slug باید با صفحه دسته‌بندی ایشان یکی باشد
-    // نکته: برای نمایش تصویر، باید URL کامل تصویر پروفایل ایشان را اینجا قرار دهید.
-    // این URL از همان منطق صفحه دسته‌بندی پیروی می‌کند.
-    imageUrl:
-      "https://besooyeto.ir/maddahi/wp-content/uploads/2024/07/rasooli-profile.jpg", // مسیر تصویر را بروزرسانی کنید
-  },
-  {
-    id: 24,
-    name: "محمدحسین پویانفر",
-    slug: "mohammadhossein-poyanfar",
-    imageUrl:
-      "https://besooyeto.ir/maddahi/wp-content/uploads/2024/07/pouyanfar-profile.jpg", // مسیر تصویر را بروزرسانی کنید
-  },
-  {
-    id: 2,
-    name: "کربلایی حسین طاهری",
-    slug: "hossein-taheri",
-    imageUrl:
-      "https://besooyeto.ir/maddahi/wp-content/uploads/2024/07/taheri-profile.jpg", // مسیر تصویر را بروزرسانی کنید
-  },
-  {
-    id: 10,
-    name: "حاج حسن عطایی",
-    slug: "hasan-ataei",
-    imageUrl:
-      "https://besooyeto.ir/maddahi/wp-content/uploads/2024/07/ataee-profile.jpg", // مسیر تصویر را بروزرسانی کنید
-  },
-];
-
-// =================================================================
-//  کامپوننت‌های داخلی صفحه اصلی
+//      کامپوننت‌های اصلاح‌شده
 // =================================================================
 
-// 1. هدر موقت (طراحی شده در داخل صفحه)
-const TemporaryHeader = () => (
-  <header className="absolute top-0 left-0 right-0 z-30">
-    <div className="container mx-auto flex items-center justify-between p-6 text-[var(--foreground-primary)]">
-      <Link href="/maddahi" className="text-2xl font-bold relative group">
+// هدر (بدون تغییر)
+const PortalHeader = () => (
+  <header className="sticky top-0 z-50 w-full bg-[var(--background-primary)]/80 backdrop-blur-lg border-b border-[var(--border-primary)]">
+    <div className="container mx-auto flex items-center justify-between h-20 px-4">
+      <Link href="/" className="text-3xl font-black relative group">
         <span className="bg-clip-text text-transparent bg-gradient-to-r from-[var(--accent-crystal-highlight)] to-[var(--accent-primary)]">
           به سوی تو
         </span>
-        <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[var(--accent-primary)] transition-all duration-300 group-hover:w-full"></span>
       </Link>
-      <nav className="hidden md:flex items-center gap-8">
+      <nav className="hidden md:flex items-center gap-4 bg-[var(--background-secondary)]/50 px-5 py-2 rounded-full border border-[var(--border-primary)]">
         <Link
           href="/maddahi"
-          className="text-base text-[var(--foreground-secondary)] hover:text-[var(--foreground-primary)] transition-colors duration-300"
+          className="px-3 py-1 text-base text-[var(--foreground-secondary)] hover:text-[var(--foreground-primary)] transition-colors duration-300"
         >
-          به سوی تو مداحی
+          مداحی‌ها
         </Link>
+        <div className="w-px h-4 bg-[var(--border-primary)]"></div>
         <Link
-          href="/maddahi/archive"
-          className="text-base text-[var(--foreground-secondary)] hover:text-[var(--foreground-primary)] transition-colors duration-300"
-        >
-          تمام مداحی‌ها
-        </Link>
-        <Link
-          href="/contact-us"
-          className="text-base text-[var(--foreground-secondary)] hover:text-[var(--foreground-primary)] transition-colors duration-300"
+          href="/maddahi/contact-us"
+          className="px-3 py-1 text-base text-[var(--foreground-secondary)] hover:text-[var(--foreground-primary)] transition-colors duration-300"
         >
           تماس با ما
         </Link>
       </nav>
-      {/* منوی موبایل را می‌توان در اینجا اضافه کرد */}
+      <Link
+        href="/maddahi/home"
+        className="hidden md:flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-[var(--foreground-primary)] bg-[var(--background-tertiary)] rounded-full border border-[var(--border-primary)] hover:border-[var(--accent-primary)] transition-all duration-300 hover:shadow-lg hover:shadow-[var(--accent-primary)]/20"
+      >
+        <FiGrid />
+        <span>آرشیو کامل</span>
+      </Link>
+      <button className="md:hidden p-2 text-2xl text-[var(--foreground-primary)]">
+        <FiGrid />
+      </button>
     </div>
   </header>
 );
 
-// 2. بخش Hero (معرفی اصلی)
+// ★★ اصلاح ۱: بخش معرفی با پس‌زمینه یکپارچه ★★
 const HeroSection = () => (
-  <section className="relative flex items-center justify-center h-[60vh] min-h-[400px] text-center overflow-hidden">
-    <div className="absolute inset-0 bg-[var(--background-primary)] z-10">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[var(--background-primary)] to-[var(--background-primary)]"></div>
-    </div>
-    <div className="absolute inset-[-20%] w-[140%] h-[140%] bg-[conic-gradient(from_45deg_at_50%_50%,_var(--accent-primary)_0deg,_#0a0a0a_70deg,_#0a0a0a_290deg,_var(--accent-primary)_360deg)] opacity-15 animate-[spin_30s_linear_infinite] -z-1"></div>
-    <div className="container mx-auto px-4 relative z-20 flex flex-col items-center">
-      <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-[var(--foreground-primary)]">
-        قلب تپنده نواهای آسمانی
+  <section className="relative text-center pt-28 pb-16 md:pt-40 md:pb-24 overflow-hidden">
+    {/* گرادینت پس‌زمینه حذف شد تا با کل صفحه یکپارچه باشد */}
+    <div className="absolute inset-0 w-full h-full opacity-10 bg-[radial-gradient(ellipse_at_top,_rgba(var(--accent-primary-rgb),0.5)_0%,_transparent_50%)] -z-10"></div>
+    <div className="container mx-auto px-4 z-10">
+      <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-[var(--foreground-primary)]">
+        کانون نواهای ماندگار
       </h1>
-      <p className="mt-6 max-w-2xl text-lg md:text-xl text-[var(--foreground-secondary)]">
-        صفحه اصلی وب‌سایت در دست طراحی است. تا آن زمان، شما را به گنجینه ارزشمند
-        مداحی و نماهنگ‌های "به سوی تو" دعوت می‌کنیم.
+      <p className="mt-6 max-w-2xl mx-auto text-lg md:text-xl text-[var(--foreground-secondary)]">
+        جایی که هنر و معنویت در هم تنیده می‌شوند. وارد دنیای شورانگیز مداحی و
+        نماهنگ‌های اهل بیت شوید.
       </p>
-      <Link
-        href="/maddahi"
-        className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 mt-10 text-lg font-bold text-[var(--background-primary)] bg-[var(--accent-primary)] rounded-full overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-[var(--accent-primary)]/40"
-      >
-        <FiPlayCircle className="text-2xl transition-transform duration-300 group-hover:scale-110" />
-        <span>ورود به بخش مداحی</span>
-      </Link>
     </div>
   </section>
 );
 
-// 3. کارت معرفی مداح
-const MaddahCard = ({ name, slug, imageUrl }) => (
-  <Link
-    href={`/maddah/${slug}`}
-    className="group relative block bg-[var(--background-secondary)] rounded-2xl overflow-hidden aspect-[3/4] transition-all duration-500 ease-out hover:!scale-105"
-  >
-    <div className="absolute inset-0 z-0">
-      <Image
-        src={imageUrl}
-        alt={`تصویر ${name}`}
-        fill
-        className="object-cover transition-transform duration-500 ease-out group-hover:scale-110"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-    </div>
-    <div className="absolute inset-0 p-6 flex flex-col justify-end z-10">
-      <div className="border-l-2 border-[var(--accent-primary)] pl-4 transform transition-transform duration-300 group-hover:translate-x-1">
-        <h3 className="text-2xl font-bold text-[var(--foreground-primary)]">
-          {name}
-        </h3>
-        <p className="text-sm text-[var(--accent-crystal-highlight)] opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-          مشاهده آثار
-        </p>
+// کارت افقی مداحان (بدون تغییر)
+const MaddahHorizontalCard = ({ name, slug, fullImageUrl }) => {
+  const creativeText = `مشاهده جدیدترین آثار و نماهنگ‌های ${name}`;
+  return (
+    <Link href={`/maddah/${slug}`} className="group block w-full">
+      <div className="relative flex flex-col md:flex-row items-center bg-[var(--background-secondary)] rounded-2xl overflow-hidden border border-[var(--border-primary)] transition-all duration-300 hover:border-[var(--accent-primary)] hover:shadow-2xl hover:shadow-[var(--accent-primary)]/20">
+        <div className="relative w-full md:w-5/12 h-64 md:h-auto md:aspect-[4/3] overflow-hidden">
+          <Image
+            src={fullImageUrl}
+            alt={`تصویر ${name}`}
+            fill
+            className="object-cover w-full h-full transition-transform duration-500 ease-in-out group-hover:scale-110"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent"></div>
+        </div>
+        <div className="flex flex-col justify-center p-8 md:p-10 w-full md:w-7/12">
+          <h3 className="text-3xl lg:text-4xl font-bold text-[var(--foreground-primary)] mb-4">
+            {name}
+          </h3>
+          <p className="text-base text-[var(--foreground-secondary)] leading-relaxed mb-8 h-12">
+            {creativeText}
+          </p>
+          <div className="flex items-center gap-3 text-lg font-semibold text-[var(--accent-primary)] transition-colors duration-300 group-hover:text-[var(--accent-crystal-highlight)]">
+            <span>ورود به صفحه آثار</span>
+            <FiArrowLeft className="transition-transform duration-300 group-hover:-translate-x-1.5" />
+          </div>
+        </div>
       </div>
-    </div>
-    {/* افکت نور کریستالی */}
-    <div className="absolute top-0 left-0 w-full h-full rounded-2xl ring-1 ring-inset ring-[var(--border-primary)/50] transition-all duration-300 group-hover:ring-[var(--accent-crystal-highlight)]/70"></div>
-  </Link>
-);
-
-// 4. بخش مداحان ویژه
-const FeaturedMaddahsSection = () => (
-  <section className="container mx-auto px-4 py-20">
-    <div className="text-center mb-12">
-      <h2 className="text-3xl md:text-4xl font-bold text-[var(--foreground-primary)]">
-        گلچین آثار برترین مداحان
-      </h2>
-      <p className="mt-3 text-lg text-[var(--foreground-secondary)]">
-        مجموعه‌ای از بهترین آثار مداحان اهل بیت
-      </p>
-    </div>
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-      {featuredMaddahs.map((maddah) => (
-        <MaddahCard key={maddah.id} {...maddah} />
-      ))}
-    </div>
-  </section>
-);
+    </Link>
+  );
+};
 
 // =================================================================
-//  کامپوننت اصلی صفحه
+//      کامپوننت اصلی صفحه (با اصلاحات نهایی)
 // =================================================================
-export default async function TemporaryHomePage() {
-  // واکشی داده‌ها برای هر دو اسلایدر
-  const latestSlides = await fetchPosts("date desc");
-  const popularSlides = await fetchPosts("CAST(view AS UNSIGNED) desc");
+export default async function PrestigeLandingPageV3() {
+  const [featuredMaddahs, latestSlides, popularSlides] = await Promise.all([
+    fetchFeaturedMaddahs(),
+    fetchPosts("date desc"),
+    fetchPosts("CAST(view AS UNSIGNED) desc"),
+  ]);
 
   return (
     <div className="bg-[var(--background-primary)] text-[var(--foreground-primary)]">
-      <TemporaryHeader />
+      <PortalHeader />
 
-      <main className="w-full">
+      <main>
         <HeroSection />
 
-        <FeaturedMaddahsSection />
+        {/* گرید کارت‌های افقی */}
+        {/* ★★ اصلاح ۲: کاهش فاصله پایینی این بخش ★★ */}
+        <section className="container mx-auto px-4 pb-24">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {featuredMaddahs.map((maddah) => (
+              <MaddahHorizontalCard key={maddah.ID} {...maddah} />
+            ))}
+          </div>
+        </section>
 
-        {/* بخش اسلایدرها */}
-        <div className="space-y-20 py-20 bg-[var(--background-secondary)]/30">
+        {/* ★★ اصلاح ۳: بخش اسلایدرها با پس‌زمینه یکپارچه و فاصله بهینه شده ★★ */}
+        <div className="py-24 space-y-20 border-t border-[var(--border-primary)]">
           {latestSlides.length > 0 && (
             <section>
               <div className="container mx-auto px-4">
@@ -203,15 +183,14 @@ export default async function TemporaryHomePage() {
                     جدیدترین آثار
                   </h2>
                   <Link
-                    href={`/maddahi`}
-                    className="group flex items-center gap-2 text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-crystal-highlight)] transition-colors duration-300"
+                    href="/maddahi/archive?sort=newest"
+                    className="group flex items-center gap-2 text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-crystal-highlight)] transition-colors"
                   >
                     <span>مشاهده همه</span>
-                    <FiArrowLeft className="transition-transform duration-300 group-hover:-translate-x-1" />
+                    <FiArrowLeft className="transition-transform group-hover:-translate-x-1" />
                   </Link>
                 </div>
-                {/* از همان کامپوننت اسلایدر موجود استفاده می‌کنیم */}
-                <Slider slides={latestSlides} sliderId="temp-latest-eulogies" />
+                <Slider slides={latestSlides} sliderId="portal-latest-v3" />
               </div>
             </section>
           )}
@@ -224,28 +203,23 @@ export default async function TemporaryHomePage() {
                     محبوب‌ترین‌ها
                   </h2>
                   <Link
-                    href={`/maddahi?sort=popular`}
-                    className="group flex items-center gap-2 text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-crystal-highlight)] transition-colors duration-300"
+                    href="/maddahi/archive?sort=popular"
+                    className="group flex items-center gap-2 text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-crystal-highlight)] transition-colors"
                   >
                     <span>مشاهده همه</span>
-                    <FiArrowLeft className="transition-transform duration-300 group-hover:-translate-x-1" />
+                    <FiArrowLeft className="transition-transform group-hover:-translate-x-1" />
                   </Link>
                 </div>
-                {/* ID اسلایدر باید منحصر به فرد باشد */}
-                <Slider
-                  slides={popularSlides}
-                  sliderId="temp-popular-eulogies"
-                />
+                <Slider slides={popularSlides} sliderId="portal-popular-v3" />
               </div>
             </section>
           )}
         </div>
       </main>
 
-      {/* فوتر ساده */}
-      <footer className="bg-[var(--background-secondary)] py-8 text-center">
+      <footer className="bg-[var(--background-secondary)] py-8 text-center border-t border-[var(--border-primary)]">
         <p className="text-[var(--foreground-secondary)]">
-          کلیه حقوق این وب‌سایت متعلق به "به سوی تو" می‌باشد.
+          © {new Date().getFullYear()} - کلیه حقوق متعلق به "به سوی تو" است.
         </p>
       </footer>
     </div>

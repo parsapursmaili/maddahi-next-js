@@ -1,37 +1,62 @@
-// app/page.js
-import Slider from "@/app/maddahi/componenet/slider";
+import Slider from "@/app/maddahi/componenet/slider"; // این همان SliderConcept11 شماست
+import SliderWithViews from "@/app/maddahi/componenet/SliderWithViews"; // اسلایدر جدید
+import RandomMaddahCard from "@/app/maddahi/componenet/RandomMaddahCard"; // کارت مداح تصادفی
 import { db } from "@/app/maddahi/lib/db/mysql";
 
-export const revalidate = 3600;
+// افزایش زمان revalidate برای صفحه‌ای که محتوای تصادفی دارد منطقی است
+export const revalidate = 1800; // 30 دقیقه
 
-async function fetchPosts(orderby = "date desc") {
+// تابع واکشی پست‌ها کمی انعطاف‌پذیرتر می‌شود
+async function fetchPosts(orderby = "date desc", limit = 20) {
   try {
+    // افزودن فیلد view به کوئری برای استفاده در اسلایدر جدید
     const [data] = await db.query(
-      `select ID,title,thumbnail,name from posts where type='post' and status='publish' order by ${orderby}  limit 20`
+      `SELECT ID, title, thumbnail, name, view FROM posts WHERE type='post' AND status='publish' ORDER BY ${orderby} LIMIT ${limit}`
     );
-
     return data;
   } catch (error) {
     console.error("Fetch Error:", error);
     return [];
   }
 }
+
 export default async function Home() {
-  const slides = await fetchPosts();
-  const slides2 = await fetchPosts("CAST(view AS UNSIGNED) desc");
+  // واکشی موازی تمام داده‌ها برای عملکرد بهتر
+  const [latestSlides, popularSlides, randomSlides] = await Promise.all([
+    fetchPosts("date desc", 20),
+    fetchPosts("CAST(view AS UNSIGNED) desc", 20),
+    fetchPosts("RAND()", 20), // واکشی پست‌های تصادفی
+  ]);
 
   return (
-    <div className="container mx-auto p-4 w-[1350px]">
-      <h3 className="text-2xl text-[var(--foreground-primary)] font-bold mb-4">
-        آخرین نماهنگ ها
-      </h3>
-      {/* تغییر: اضافه کردن شناسه منحصر به فرد برای هر اسلایدر */}
-      <Slider slides={slides} sliderId="latest-clips" />
-      <h3 className="text-2xl text-[var(--foreground-primary)] font-bold mb-4 mt-5">
-        محبوب ترین نماهنگ ها
-      </h3>
-      {/* تغییر: اضافه کردن شناسه منحصر به فرد برای هر اسلایدر */}
-      <Slider slides={slides2} sliderId="popular-clips" />
+    // افزودن یک پدینگ عمودی برای فاصله بهتر
+    <div className="container mx-auto p-4 w-[1350px] space-y-12 md:space-y-16 py-10">
+      {/* بخش آخرین نماهنگ‌ها */}
+      <section>
+        <h3 className="text-2xl text-[var(--foreground-primary)] font-bold mb-4">
+          آخرین نماهنگ ها
+        </h3>
+        <Slider slides={latestSlides} sliderId="latest-clips" />
+      </section>
+
+      {/* بخش محبوب‌ترین نماهنگ‌ها با اسلایدر جدید */}
+      <section>
+        <h3 className="text-2xl text-[var(--foreground-primary)] font-bold mb-4">
+          محبوب ترین نماهنگ ها
+        </h3>
+        <SliderWithViews slides={popularSlides} sliderId="popular-clips" />
+      </section>
+
+      {/* بخش کارت معرفی مداح تصادفی */}
+      <RandomMaddahCard />
+
+      {/* بخش نماهنگ‌های تصادفی */}
+      <section>
+        <h3 className="text-2xl text-[var(--foreground-primary)] font-bold mb-4">
+          نماهنگ های پیشنهادی (تصادفی)
+        </h3>
+        <Slider slides={randomSlides} sliderId="random-clips" />
+      </section>
     </div>
   );
 }

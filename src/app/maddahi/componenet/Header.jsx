@@ -13,10 +13,9 @@ export default function Header() {
   const pathname = usePathname();
 
   const navLinks = [
-    { href: "/home", label: "صفحه اصلی" },
-    { href: "/view", label: "آخرین‌ها" },
-    { href: "/9740", label: "محبوب‌ترین‌ها" },
-    { href: "/about", label: "درباره ما" },
+    { href: "/", label: "صفحه اصلی" },
+    { href: "/home", label: "مداحی ها" },
+    { href: "/contact-us", label: "تماس با ما" },
   ];
 
   // با تغییر مسیر، منو و جستجو را می‌بندیم
@@ -31,7 +30,7 @@ export default function Header() {
         <div className="container mx-auto flex items-center justify-between p-4 h-20 text-[var(--foreground-primary)]">
           {/* لوگو با استایل جدید و انیمیشن درخشش */}
           <Link
-            href="/"
+            href="/maddahi/"
             className="text-3xl lg:text-4xl font-black relative overflow-hidden group"
           >
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-crystal-highlight)]">
@@ -54,7 +53,7 @@ export default function Header() {
                     transition={{ type: "spring", stiffness: 300 }}
                   >
                     <Link
-                      href={link.href}
+                      href={`/maddahi${link.href}`}
                       className={`relative block px-4 py-2 text-base rounded-md transition-colors duration-300 z-10 ${
                         isActive
                           ? "text-[var(--foreground-primary)]"

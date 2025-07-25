@@ -48,7 +48,7 @@ const TopPostsTable = ({ data }) => {
               <td className="p-3">
                 <div className="flex items-center justify-center space-x-4 space-x-reverse">
                   <Link
-                    href={`/admin/statistics/posts/${post.ID}`}
+                    href={`/maddahi/admin/statistics/posts/${post.ID}`}
                     className="text-[var(--foreground-secondary)] hover:text-[var(--accent-crystal-highlight)] transition-colors"
                     title="نمودار جزئیات این پست"
                   >

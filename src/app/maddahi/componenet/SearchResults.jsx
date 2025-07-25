@@ -156,7 +156,7 @@ function PostResultItem({ post }) {
   return (
     <motion.li variants={itemVariants}>
       <Link
-        href={`/${post.name}`}
+        href={`/maddahi/${post.name}`}
         className="block bg-[var(--background-secondary)]/70 rounded-xl p-3 group transition-all duration-300 ease-out hover:bg-[var(--background-tertiary)] hover:shadow-lg hover:shadow-[var(--accent-primary)]/5 hover:translate-y-[-3px] hover:scale-[1.01]"
       >
         <div className="flex items-center gap-4">

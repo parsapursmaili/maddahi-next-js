@@ -14,9 +14,11 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+
 export const metadata = {
-  title: "به سوی تو - موزیک پلیر",
-  description: "پخش و دانلود جدیدترین نماهنگ‌ها",
+  title: "به سوی تو-هیئت شیعیان",
+  description:
+    "وبسایت به سوی تو در زمینه ی مداحی ها و نماهنگ های مداحان اهل بیت فعالیت میکند",
   // robots را میتوانید برای محیط پروداکشن بردارید
 };
 

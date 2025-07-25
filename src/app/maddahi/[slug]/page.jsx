@@ -128,7 +128,7 @@ export default async function ProductPage({ params }) {
                 {maddah.map((m) => (
                   <Link
                     key={m.slug}
-                    href={`/category/${m.slug}`}
+                    href={`/maddahi/category/${m.slug}`}
                     className="text-sm bg-[#00b4a0]/10 text-[#00b4a0] px-4 py-1.5 rounded-full font-medium transition-all duration-300 border border-transparent hover:border-[#a3fff4]/50 hover:bg-[#00b4a0]/20 hover:shadow-lg hover:shadow-[#00b4a0]/10"
                   >
                     {m.name}
@@ -142,7 +142,7 @@ export default async function ProductPage({ params }) {
                 {monasebat.map((item) => (
                   <Link
                     key={item.slug}
-                    href={`/?monasebatha=${item.ID}`}
+                    href={`/maddahi/home/?monasebatha=${item.ID}`}
                     className="text-xs text-[#a3a3a3] transition-colors duration-300 hover:text-[#a3fff4] hover:underline underline-offset-4"
                   >
                     #{item.name.replace(/\s/g, "_")}

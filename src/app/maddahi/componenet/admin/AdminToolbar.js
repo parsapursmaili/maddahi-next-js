@@ -47,7 +47,7 @@ export default function AdminToolbar() {
           {/* بخش راست: لینک‌های سریع */}
           <div className="flex items-center gap-4">
             <Link
-              href="/admin"
+              href="/maddahi/admin"
               className="flex items-center gap-2 text-sm text-[var(--foreground-primary)] font-semibold"
             >
               <ShieldCheck
@@ -61,7 +61,7 @@ export default function AdminToolbar() {
               {adminLinks.map((link) => (
                 <Link
                   key={link.href}
-                  href={link.href}
+                  href={`/maddahi${link.href}`}
                   title={link.label}
                   className="text-[var(--foreground-secondary)] hover:text-[var(--foreground-primary)] transition-colors"
                 >

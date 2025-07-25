@@ -204,7 +204,7 @@ export default async function MaddahCategoryPage({ params }) {
                   جدیدترین آثار
                 </h2>
                 <Link
-                  href={`/?maddah=${maddah.ID}`}
+                  href={`/maddahi/home/?maddah=${maddah.ID}`}
                   className="group flex items-center gap-2 text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-crystal-highlight)] transition-colors duration-300"
                 >
                   <span>مشاهده همه</span>
@@ -224,7 +224,7 @@ export default async function MaddahCategoryPage({ params }) {
                   محبوب‌ترین‌ها
                 </h2>
                 <Link
-                  href={`/?maddah=${maddah.ID}&rand=2`}
+                  href={`/maddahi/home/?maddah=${maddah.ID}&rand=2`}
                   className="group flex items-center gap-2 text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-crystal-highlight)] transition-colors duration-300"
                 >
                   <span>مشاهده همه</span>

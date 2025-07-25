@@ -59,7 +59,7 @@ const Posts = ({ posts, setHnadle, isPlay, setIndex, setPID, PID }) => {
               </Link>
 
               {/* Text Content */}
-              <Link href={`/${post.name}`} className="flex-grow mr-4">
+              <Link href={`/maddahi/${post.name}`} className="flex-grow mr-4">
                 <h3 className="text-base font-bold text-[var(--foreground-primary)] mb-1 transition-colors group-hover:text-[var(--accent-primary)] leading-tight">
                   {post.title}
                 </h3>
