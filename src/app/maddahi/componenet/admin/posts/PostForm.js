@@ -1,17 +1,46 @@
+// /app/maddahi/components/admin/PostForm.js
 "use client";
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
-import { ArrowRight } from "lucide-react";
-import { createPost, updatePost, deletePost } from "@/app/maddahi/actions/postActions";
+import { ChevronUp, Save, AlertCircle } from "lucide-react";
+import {
+  createPost,
+  updatePost,
+  deletePost,
+} from "@/app/maddahi/actions/postActions";
 import getTerms from "@/app/maddahi/actions/terms";
 import ImageUploader from "@/app/maddahi/componenet/ImageUploader";
 import TermSelector from "./TermSelector";
 
-const TiptapEditor = dynamic(() => import("@/app/maddahi/componenet/TiptapEditor"), {
-  ssr: false,
-});
+const TiptapEditor = dynamic(
+  () => import("@/app/maddahi/componenet/TiptapEditor"),
+  {
+    ssr: false,
+  }
+);
+
+const CollapsibleSection = ({ title, children, isOpen, onToggle }) => (
+  <div className="border border-[var(--border-secondary)] rounded-lg bg-[var(--background-primary)]">
+    <h3 className="border-b border-[var(--border-secondary)]">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center justify-between p-3 text-sm font-semibold text-[var(--foreground-primary)]"
+      >
+        <span>{title}</span>
+        <ChevronUp
+          size={18}
+          className={`transition-transform duration-200 ${
+            !isOpen && "rotate-180"
+          }`}
+        />
+      </button>
+    </h3>
+    {isOpen && <div className="p-4 space-y-6">{children}</div>}
+  </div>
+);
 
 const defaultPost = {
   ID: null,
@@ -28,10 +57,11 @@ const defaultPost = {
   description: null,
   comment_status: "open",
   extra_metadata: null,
+  date: null,
 };
 
-const generateReadableSlug = (text) => {
-  return text
+const generateReadableSlug = (text) =>
+  text
     .toString()
     .toLowerCase()
     .trim()
@@ -39,7 +69,6 @@ const generateReadableSlug = (text) => {
     .replace(/[^\u0600-\u06FF\uFB8A\u067E\u0686\u06AFa-z0-9-]+/g, "")
     .replace(/-+/g, "-")
     .substring(0, 70);
-};
 
 export default function PostForm({
   post: initialPost,
@@ -50,37 +79,51 @@ export default function PostForm({
   const pathname = usePathname();
 
   const [formData, setFormData] = useState({
+    ...defaultPost,
     ...postForEditing,
-    name: postForEditing.name ? decodeURIComponent(postForEditing.name) : "",
-    description: postForEditing.description || null,
-    extra_metadata: postForEditing.extra_metadata || null,
   });
   const [terms, setTerms] = useState({ categories: [], tags: [] });
   const [message, setMessage] = useState({ type: "", text: "" });
   const [loadingAction, setLoadingAction] = useState(null);
+  const [isDirty, setIsDirty] = useState(false);
+  const [openSections, setOpenSections] = useState([
+    "publish",
+    "media",
+    "categories",
+  ]);
 
   useEffect(() => {
     const initialData = initialPost?.ID ? initialPost : defaultPost;
 
-    // *** مهم: اصلاحیه اصلی برای خواندن JSON ***
-    // داده‌های extra_metadata از سرور به صورت رشته می‌آیند، باید آنها را parse کرد.
     let extraData = initialData.extra_metadata;
     if (typeof extraData === "string") {
       try {
         extraData = JSON.parse(extraData);
       } catch (e) {
-        console.error("Failed to parse extra_metadata:", e);
-        extraData = null; // در صورت خطا، آن را نال می‌کنیم
+        extraData = null;
       }
     }
 
-    setFormData({
+    // ★★★ اصلاحیه اصلی برای تاریخ ★★★
+    // همیشه اطمینان حاصل می‌کنیم که تاریخ یک رشته ISO باشد یا null
+    let dateValue = initialData.date;
+    if (dateValue) {
+      dateValue = new Date(dateValue).toISOString();
+    } else if (!initialData.ID) {
+      dateValue = new Date().toISOString();
+    }
+
+    const finalData = {
       ...initialData,
       name: initialData.name ? decodeURIComponent(initialData.name) : "",
       description: initialData.description || null,
-      extra_metadata: extraData || null, // استفاده از داده parse شده
-    });
+      extra_metadata: extraData || null,
+      date: dateValue, // استفاده از مقدار تاریخ پردازش‌شده
+    };
+
+    setFormData(finalData);
     setMessage({ type: "", text: "" });
+    setIsDirty(false);
   }, [initialPost]);
 
   useEffect(() => {
@@ -94,39 +137,37 @@ export default function PostForm({
     fetchTerms();
   }, []);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleDataChange = (update) => {
+    setFormData((prev) => ({ ...prev, ...update }));
+    if (!isDirty) setIsDirty(true);
   };
 
-  const handleImageChange = (url) =>
-    setFormData((prev) => ({ ...prev, thumbnail: url }));
-
-  const handleSecondImageChange = (url) => {
-    setFormData((prev) => ({
-      ...prev,
-      extra_metadata: { ...prev.extra_metadata, second_thumbnail: url },
-    }));
-  };
-
-  const handleContentChange = (content) => {
-    setFormData((prev) => ({ ...prev, content }));
-  };
-
+  const handleContentChange = (content) => handleDataChange({ content });
   const handleTermChange = (selectedIds, termType) =>
-    setFormData((prev) => ({ ...prev, [termType]: selectedIds }));
+    handleDataChange({ [termType]: selectedIds });
+  const handleImageChange = (url) => handleDataChange({ thumbnail: url });
+  const handleSecondImageChange = (url) =>
+    handleDataChange({
+      extra_metadata: { ...formData.extra_metadata, second_thumbnail: url },
+    });
+
+  const handleChange = (e) =>
+    handleDataChange({ [e.target.name]: e.target.value });
+
+  const handleTitleChange = (e) => {
+    const newTitle = e.target.value;
+    handleDataChange({ title: newTitle, name: generateReadableSlug(newTitle) });
+  };
 
   const handleBusyState = (isBusy) =>
     setLoadingAction(isBusy ? "upload" : null);
 
-  const handleTitleChange = (e) => {
-    const newTitle = e.target.value;
-    const newSlug = generateReadableSlug(newTitle);
-    setFormData((prev) => ({
-      ...prev,
-      title: newTitle,
-      name: newSlug,
-    }));
+  const toggleSection = (section) => {
+    setOpenSections((prev) =>
+      prev.includes(section)
+        ? prev.filter((s) => s !== section)
+        : [...prev, section]
+    );
   };
 
   const handleSubmit = async (e) => {
@@ -134,13 +175,7 @@ export default function PostForm({
     if (loadingAction) return;
     setLoadingAction("submit");
 
-    const dataToSend = {
-      ...formData,
-      name: encodeURIComponent(formData.name),
-      description: formData.description?.trim() ? formData.description : null,
-      extra_metadata: formData.extra_metadata,
-    };
-
+    const dataToSend = { ...formData, name: encodeURIComponent(formData.name) };
     const result = postForEditing.ID
       ? await updatePost(postForEditing.ID, dataToSend, pathname)
       : await createPost(dataToSend, pathname);
@@ -148,6 +183,7 @@ export default function PostForm({
     if (result?.success) {
       setMessage({ type: "success", text: result.message });
       onFormSubmit({ ...formData, ID: postForEditing.ID || result.newPostId });
+      setIsDirty(false);
     } else {
       setMessage({ type: "error", text: result?.message || "خطایی رخ داد." });
     }
@@ -181,30 +217,13 @@ export default function PostForm({
     "block text-sm font-medium text-[var(--foreground-secondary)]";
 
   return (
-    <div className="bg-[var(--background-secondary)] h-full flex flex-col">
-      <div className="p-6 border-b border-[var(--border-primary)] flex-shrink-0">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-[var(--foreground-primary)] truncate">
-            {postForEditing.ID ? `ویرایش پست` : "ایجاد پست جدید"}
-          </h2>
-          <button
-            onClick={onCancel}
-            className="md:hidden p-2 rounded-md hover:bg-[var(--background-tertiary)]"
-          >
-            <ArrowRight size={20} />
-          </button>
-        </div>
-        {postForEditing.ID && (
-          <p className="text-sm text-[var(--foreground-muted)] mt-1 truncate">
-            {formData.title}
-          </p>
-        )}
-      </div>
-
-      <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* ستون اصلی */}
-          <div className="lg:col-span-2 space-y-6">
+    <form
+      onSubmit={handleSubmit}
+      className="bg-[var(--background-secondary)] h-full flex flex-col"
+    >
+      <div className="flex-grow overflow-y-auto p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-8 xl:col-span-9 space-y-6">
             <div>
               <label htmlFor="title" className={labelClasses}>
                 عنوان
@@ -216,16 +235,18 @@ export default function PostForm({
                 value={formData.title}
                 onChange={handleTitleChange}
                 required
-                className={inputFieldClasses}
+                className={inputFieldClasses + " text-lg font-bold"}
               />
             </div>
             <div>
               <label className={`${labelClasses} mb-2`}>محتوا</label>
-              <TiptapEditor
-                key={formData.ID || "new-post"}
-                value={formData.content || ""}
-                onChange={handleContentChange}
-              />
+              <div className="h-[600px] bg-[var(--background-primary)] rounded-md">
+                <TiptapEditor
+                  key={formData.ID || "new-post"}
+                  value={formData.content || ""}
+                  onChange={handleContentChange}
+                />
+              </div>
             </div>
             <div>
               <label htmlFor="description" className={labelClasses}>
@@ -256,128 +277,154 @@ export default function PostForm({
             </div>
           </div>
 
-          {/* ستون کناری */}
-          <div className="lg:col-span-1 space-y-6">
-            <div className="p-4 rounded-lg bg-[var(--background-primary)] border border-[var(--border-secondary)]">
-              <h3 className="font-bold mb-4">انتشار</h3>
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="status" className={labelClasses}>
-                    وضعیت
-                  </label>
-                  <select
-                    name="status"
-                    id="status"
-                    value={formData.status}
-                    onChange={handleChange}
-                    className={inputFieldClasses}
-                  >
-                    <option value="publish">منتشر شده</option>
-                    <option value="draft">پیش‌نویس</option>
-                    <option value="pending">در انتظار بازبینی</option>
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="name" className={labelClasses}>
-                    نامک (اسلاگ)
-                  </label>
+          <div className="lg:col-span-4 xl:col-span-3 space-y-4">
+            <CollapsibleSection
+              key="publish"
+              title="انتشار"
+              isOpen={openSections.includes("publish")}
+              onToggle={() => toggleSection("publish")}
+            >
+              <div>
+                <label htmlFor="status" className={labelClasses}>
+                  وضعیت
+                </label>
+                <select
+                  name="status"
+                  id="status"
+                  value={formData.status}
+                  onChange={handleChange}
+                  className={inputFieldClasses}
+                >
+                  <option value="publish">منتشر شده</option>
+                  <option value="draft">پیش‌نویس</option>
+                  <option value="pending">در انتظار بازبینی</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="date" className={labelClasses}>
+                  تاریخ انتشار
+                </label>
+                {/* ★★★ شرط دفاعی برای جلوگیری از کرش ★★★ */}
+                {/* فقط زمانی اینپوت را رندر کن که تاریخ وجود دارد و یک رشته است */}
+                {formData.date && typeof formData.date === "string" && (
                   <input
-                    type="text"
-                    name="name"
-                    id="name"
-                    value={formData.name || ""}
+                    type="datetime-local"
+                    name="date"
+                    id="date"
+                    value={formData.date.substring(0, 16)}
                     onChange={handleChange}
                     className={inputFieldClasses}
                     dir="ltr"
                   />
-                </div>
+                )}
               </div>
-            </div>
-
-            <div className="p-4 rounded-lg bg-[var(--background-primary)] border border-[var(--border-secondary)]">
-              <h3 className="font-bold mb-4">ویژگی‌ها</h3>
               <div>
-                <span className={labelClasses}>روضه</span>
-                <div className="mt-2 flex gap-x-6">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="rozeh"
-                      value="دارد"
-                      checked={formData.rozeh === "دارد"}
-                      onChange={handleChange}
-                      className="w-4 h-4 text-[var(--accent-primary)] focus:ring-[var(--accent-primary)]"
-                    />
-                    <span className="mr-2 text-sm">دارد</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="rozeh"
-                      value="ندارد"
-                      checked={formData.rozeh === "ندارد"}
-                      onChange={handleChange}
-                      className="w-4 h-4 text-[var(--accent-primary)] focus:ring-[var(--accent-primary)]"
-                    />
-                    <span className="mr-2 text-sm">ندارد</span>
-                  </label>
-                </div>
+                <label htmlFor="name" className={labelClasses}>
+                  نامک (اسلاگ)
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  id="name"
+                  value={formData.name || ""}
+                  onChange={handleChange}
+                  className={inputFieldClasses}
+                  dir="ltr"
+                />
               </div>
-            </div>
+            </CollapsibleSection>
 
-            <ImageUploader
-              title="تصویر شاخص"
-              imageUrl={formData.thumbnail}
-              onImageChange={handleImageChange}
-              onBusyStateChange={handleBusyState}
-              revalidatePath={pathname}
-            />
-
-            <ImageUploader
-              title="تامبنیل دوم (اختیاری)"
-              imageUrl={formData.extra_metadata?.second_thumbnail || ""}
-              onImageChange={handleSecondImageChange}
-              onBusyStateChange={handleBusyState}
-              revalidatePath={pathname}
-            />
-
-            <div>
-              <label htmlFor="thumbnail_alt" className={labelClasses}>
-                متن جایگزین تصویر شاخص
-              </label>
-              <input
-                type="text"
-                name="thumbnail_alt"
-                id="thumbnail_alt"
-                value={formData.thumbnail_alt || ""}
-                onChange={handleChange}
-                className={inputFieldClasses}
+            <CollapsibleSection
+              key="media"
+              title="رسانه"
+              isOpen={openSections.includes("media")}
+              onToggle={() => toggleSection("media")}
+            >
+              <ImageUploader
+                title="تصویر شاخص"
+                imageUrl={formData.thumbnail}
+                onImageChange={handleImageChange}
+                onBusyStateChange={handleBusyState}
+                revalidatePath={pathname}
               />
-            </div>
+              <ImageUploader
+                title="تامبنیل دوم (اختیاری)"
+                imageUrl={formData.extra_metadata?.second_thumbnail || ""}
+                onImageChange={handleSecondImageChange}
+                onBusyStateChange={handleBusyState}
+                revalidatePath={pathname}
+              />
+              <div>
+                <label htmlFor="thumbnail_alt" className={labelClasses}>
+                  متن جایگزین تصویر شاخص
+                </label>
+                <input
+                  type="text"
+                  name="thumbnail_alt"
+                  id="thumbnail_alt"
+                  value={formData.thumbnail_alt || ""}
+                  onChange={handleChange}
+                  className={inputFieldClasses}
+                />
+              </div>
+            </CollapsibleSection>
 
-            <div className="h-64">
+            <CollapsibleSection
+              key="attributes"
+              title="ویژگی‌ها"
+              isOpen={openSections.includes("attributes")}
+              onToggle={() => toggleSection("attributes")}
+            >
+              <span className={labelClasses}>روضه</span>
+              <div className="mt-2 flex gap-x-6">
+                {["دارد", "ندارد"].map((val) => (
+                  <label key={val} className="flex items-center">
+                    <input
+                      type="radio"
+                      name="rozeh"
+                      value={val}
+                      checked={formData.rozeh === val}
+                      onChange={handleChange}
+                      className="w-4 h-4 text-[var(--accent-primary)] focus:ring-[var(--accent-primary)]"
+                    />
+                    <span className="mr-2 text-sm">{val}</span>
+                  </label>
+                ))}
+              </div>
+            </CollapsibleSection>
+
+            <CollapsibleSection
+              key="categories"
+              title="دسته‌بندی‌ها"
+              isOpen={openSections.includes("categories")}
+              onToggle={() => toggleSection("categories")}
+            >
               <TermSelector
-                title="دسته‌بندی‌ها"
+                title=""
                 terms={terms.categories}
                 selectedTerms={formData.categories}
                 onChange={(ids) => handleTermChange(ids, "categories")}
               />
-            </div>
+            </CollapsibleSection>
 
-            <div className="h-64">
+            <CollapsibleSection
+              key="tags"
+              title="تگ‌ها"
+              isOpen={openSections.includes("tags")}
+              onToggle={() => toggleSection("tags")}
+            >
               <TermSelector
-                title="تگ‌ها"
+                title=""
                 terms={terms.tags}
                 selectedTerms={formData.tags}
                 onChange={(ids) => handleTermChange(ids, "tags")}
               />
-            </div>
+            </CollapsibleSection>
           </div>
         </div>
-      </form>
+      </div>
 
-      {/* فوتر */}
-      <div className="p-4 border-t border-[var(--border-primary)] bg-[var(--background-secondary)] flex-shrink-0">
+      <div className="p-4 border-t border-[var(--border-primary)] bg-[var(--background-primary)] flex-shrink-0">
         {message.text && (
           <p
             className={`text-sm text-center mb-4 p-3 rounded-md ${
@@ -401,27 +448,32 @@ export default function PostForm({
                 {loadingAction === "delete" ? "در حال حذف..." : "حذف"}
               </button>
             )}
+            {isDirty && !loadingAction && (
+              <div className="flex items-center gap-2 text-sm text-yellow-400 animate-pulse ml-4">
+                <AlertCircle size={16} />
+                <span>تغییرات ذخیره‌نشده</span>
+              </div>
+            )}
           </div>
           <div className="flex items-center space-x-4 space-x-reverse">
             <button
               type="button"
               onClick={onCancel}
-              disabled={!!loadingAction}
               className="px-6 py-2 text-sm transition-colors rounded-md bg-[var(--background-tertiary)] hover:bg-[var(--foreground-muted)] hidden md:block"
             >
               انصراف
             </button>
             <button
               type="submit"
-              onClick={handleSubmit}
               disabled={!!loadingAction}
-              className="px-8 py-2 text-sm font-semibold text-black transition-colors rounded-md disabled:opacity-50 bg-[var(--accent-primary)] hover:bg-[var(--accent-crystal-highlight)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--background-secondary)] focus:ring-[var(--accent-primary)]"
+              className="flex items-center gap-2 px-8 py-2 text-sm font-semibold text-black transition-colors rounded-md disabled:opacity-50 bg-[var(--accent-primary)] hover:bg-[var(--accent-crystal-highlight)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--background-secondary)] focus:ring-[var(--accent-primary)]"
             >
+              <Save size={16} />
               {getButtonText()}
             </button>
           </div>
         </div>
       </div>
-    </div>
+    </form>
   );
 }

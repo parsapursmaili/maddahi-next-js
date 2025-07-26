@@ -1,4 +1,4 @@
-// /app/components/admin/PostsManager.js
+// /app/maddahi/components/admin/PostsManager.js
 "use client";
 
 import { useState, useEffect, useCallback, useTransition } from "react";
@@ -69,10 +69,10 @@ export default function PostsManager() {
     <main className="flex w-full h-screen bg-[var(--background-primary)] text-[var(--foreground-primary)] overflow-hidden">
       {/* 
         ستون لیست پست‌ها (سایدبار)
-        *** تغییر اصلی: عرض از 1/3 به 1/4 کاهش یافت ***
+        *** تغییر اصلی: عرض ثابت و بهینه‌تر برای فضای بیشتر فرم ***
       */}
       <div
-        className={`h-full flex-col border-l border-[var(--border-primary)] transition-transform duration-300 ease-in-out w-full md:w-1/4 md:flex-shrink-0 ${
+        className={`h-full flex-col border-l border-[var(--border-primary)] transition-transform duration-300 ease-in-out w-full md:w-[320px] lg:w-[360px] md:flex-shrink-0 ${
           selectedPost ? "hidden md:flex" : "flex"
         }`}
       >
@@ -91,10 +91,10 @@ export default function PostsManager() {
 
       {/* 
         ستون فرم / پیام اولیه (محتوای اصلی)
-        *** تغییر اصلی: عرض از 2/3 به 3/4 افزایش یافت ***
+        *** تغییر اصلی: عرض به صورت flex-1 تنظیم شده تا تمام فضای باقی‌مانده را بگیرد ***
       */}
       <div
-        className={`h-full flex-col w-full md:w-3/4 md:flex-shrink-0 ${
+        className={`h-full flex flex-col flex-1 ${
           selectedPost ? "flex" : "hidden md:flex"
         }`}
       >

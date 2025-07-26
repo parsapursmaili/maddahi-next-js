@@ -5,7 +5,6 @@ import { Navigation } from "swiper/modules";
 import Image from "next/image";
 import Link from "next/link";
 import { FaChevronLeft, FaChevronRight, FaEye } from "react-icons/fa";
-// می‌توانید از همان فایل CSS اسلایدر قبلی برای دکمه‌ها استفاده کنید
 import "./SliderConcept.css";
 import "swiper/css";
 import "swiper/css/navigation";
@@ -15,21 +14,24 @@ const SliderWithViews = ({ slides, sliderId }) => {
   const prevButtonClass = `swiper-button-prev-${sliderId}`;
 
   return (
-    <div className="relative group/slider container mx-auto px-4">
+    // !!! بهینه‌سازی: حذف کلاس‌های container mx-auto px-4 از اینجا !!!
+    <div className="relative group/slider">
       <Swiper
         modules={[Navigation]}
-        spaceBetween={24}
+        spaceBetween={16} // کمی فاصله کمتر در موبایل
         slidesPerView={1.5}
         navigation={{
           nextEl: `.${nextButtonClass}`,
           prevEl: `.${prevButtonClass}`,
         }}
         breakpoints={{
+          // نقاط شکست برای نمایش تعداد اسلاید متفاوت
           640: { slidesPerView: 2, spaceBetween: 20 },
           768: { slidesPerView: 3, spaceBetween: 24 },
           1024: { slidesPerView: 4, spaceBetween: 24 },
+          1280: { slidesPerView: 5, spaceBetween: 24 }, // یک نقطه شکست اضافی برای صفحات بزرگتر
         }}
-        className="!p-1"
+        className="!p-1" // کمی پدینگ برای جلوگیری از بریده شدن ring در حالت hover
         dir="rtl"
       >
         {slides.map((post) => (
@@ -44,6 +46,7 @@ const SliderWithViews = ({ slides, sliderId }) => {
                   src={`https://besooyeto.ir/maddahi/wp-content/uploads/${post.thumbnail}`}
                   alt={post.title}
                   fill
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" // بهینه سازی بارگذاری تصویر
                   className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
                 />
               ) : (
@@ -72,12 +75,12 @@ const SliderWithViews = ({ slides, sliderId }) => {
 
       {/* دکمه‌های ناوبری */}
       <div
-        className={`${nextButtonClass} slider-nav-button left-0 group-hover/slider:-translate-x-4 md:-translate-x-5`}
+        className={`${nextButtonClass} slider-nav-button left-0 opacity-0 group-hover/slider:opacity-100 group-hover/slider:-translate-x-4`}
       >
         <FaChevronLeft />
       </div>
       <div
-        className={`${prevButtonClass} slider-nav-button right-0 group-hover/slider:translate-x-4 md:translate-x-5`}
+        className={`${prevButtonClass} slider-nav-button right-0 opacity-0 group-hover/slider:opacity-100 group-hover/slider:translate-x-4`}
       >
         <FaChevronRight />
       </div>

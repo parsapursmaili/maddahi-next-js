@@ -22,6 +22,16 @@ export const metadata = {
   title: "به سوی تو-مداحی",
   description:
     "مرکز مداحی ها و نماهنگ ها در وبسایت به سوی تو برای علاقه مندان به آثار مداحان اهل بیت",
+  icons: {
+    icon: [
+      {
+        url: "/favicon.webp", // فاوآیکون اصلی WebP
+        type: "image/webp",
+      },
+    ],
+    // می‌تونی آیکون‌های دیگه مثل Apple Touch Icon رو هم اینجا اضافه کنی:
+    // apple: '/apple-touch-icon.png',
+  },
   // robots را میتوانید برای محیط پروداکشن بردارید
 };
 
