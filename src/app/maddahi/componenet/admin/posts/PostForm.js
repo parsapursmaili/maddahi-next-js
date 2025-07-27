@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
+import moment from "jalali-moment";
 import { ChevronUp, Save, AlertCircle } from "lucide-react";
 import {
   createPost,
@@ -13,6 +14,7 @@ import {
 import getTerms from "@/app/maddahi/actions/terms";
 import ImageUploader from "@/app/maddahi/componenet/ImageUploader";
 import TermSelector from "./TermSelector";
+import { toShamsi } from "@/app/maddahi/lib/utils/formatDate";
 
 const TiptapEditor = dynamic(
   () => import("@/app/maddahi/componenet/TiptapEditor"),
@@ -52,7 +54,7 @@ const defaultPost = {
   categories: [],
   tags: [],
   status: "publish",
-  rozeh: "ندارد",
+  rozeh: "نیست",
   link: "",
   description: null,
   comment_status: "open",
@@ -82,14 +84,21 @@ export default function PostForm({
     ...defaultPost,
     ...postForEditing,
   });
+  const [shamsiDate, setShamsiDate] = useState("");
+
+  // ★★★ شروع تغییرات منطق نامک (اسلاگ) ★★★
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
+  // ★★★ پایان تغییرات منطق نامک (اسلاگ) ★★★
+
   const [terms, setTerms] = useState({ categories: [], tags: [] });
   const [message, setMessage] = useState({ type: "", text: "" });
   const [loadingAction, setLoadingAction] = useState(null);
   const [isDirty, setIsDirty] = useState(false);
   const [openSections, setOpenSections] = useState([
     "publish",
-    "media",
+    "attributes",
     "categories",
+    "tags",
   ]);
 
   useEffect(() => {
@@ -104,8 +113,6 @@ export default function PostForm({
       }
     }
 
-    // ★★★ اصلاحیه اصلی برای تاریخ ★★★
-    // همیشه اطمینان حاصل می‌کنیم که تاریخ یک رشته ISO باشد یا null
     let dateValue = initialData.date;
     if (dateValue) {
       dateValue = new Date(dateValue).toISOString();
@@ -113,18 +120,32 @@ export default function PostForm({
       dateValue = new Date().toISOString();
     }
 
-    const finalData = {
+    setFormData({
       ...initialData,
       name: initialData.name ? decodeURIComponent(initialData.name) : "",
       description: initialData.description || null,
       extra_metadata: extraData || null,
-      date: dateValue, // استفاده از مقدار تاریخ پردازش‌شده
-    };
+      date: dateValue,
+    });
 
-    setFormData(finalData);
+    // ★★★ شروع تغییرات منطق نامک (اسلاگ) ★★★
+    // اگر پست موجود باشد (در حال ویرایش)، یعنی نامک آن قبلاً ثبت شده و نباید با تغییر عنوان، عوض شود.
+    if (initialData.ID) {
+      setIsSlugManuallyEdited(true);
+    } else {
+      setIsSlugManuallyEdited(false);
+    }
+    // ★★★ پایان تغییرات منطق نامک (اسلاگ) ★★★
+
     setMessage({ type: "", text: "" });
     setIsDirty(false);
   }, [initialPost]);
+
+  useEffect(() => {
+    if (formData.date) {
+      setShamsiDate(toShamsi(formData.date, "jYYYY/jM/jD HH:mm"));
+    }
+  }, [formData.date]);
 
   useEffect(() => {
     async function fetchTerms() {
@@ -142,6 +163,21 @@ export default function PostForm({
     if (!isDirty) setIsDirty(true);
   };
 
+  const handleShamsiDateChange = (e) => {
+    const shamsiValue = e.target.value;
+    setShamsiDate(shamsiValue);
+    const momentDate = moment(shamsiValue, "jYYYY/jM/jD HH:mm", true);
+    if (momentDate.isValid()) {
+      handleDataChange({ date: momentDate.toISOString() });
+    }
+  };
+
+  const setDateToNow = () => {
+    const now = new Date();
+    handleDataChange({ date: now.toISOString() });
+    setShamsiDate(toShamsi(now, "jYYYY/jM/jD HH:mm"));
+  };
+
   const handleContentChange = (content) => handleDataChange({ content });
   const handleTermChange = (selectedIds, termType) =>
     handleDataChange({ [termType]: selectedIds });
@@ -154,10 +190,34 @@ export default function PostForm({
   const handleChange = (e) =>
     handleDataChange({ [e.target.name]: e.target.value });
 
+  // ★★★ شروع تغییرات منطق نامک (اسلاگ) ★★★
   const handleTitleChange = (e) => {
     const newTitle = e.target.value;
-    handleDataChange({ title: newTitle, name: generateReadableSlug(newTitle) });
+    const updates = { title: newTitle };
+    // فقط در صورتی که کاربر هنوز نامک را دستی ویرایش نکرده، آن را از روی عنوان بساز
+    if (!isSlugManuallyEdited) {
+      updates.name = generateReadableSlug(newTitle);
+    }
+    handleDataChange(updates);
   };
+
+  const handleSlugChange = (e) => {
+    // به محض تایپ کاربر در فیلد نامک، آن را به حالت "ویرایش دستی" ببر
+    if (!isSlugManuallyEdited) {
+      setIsSlugManuallyEdited(true);
+    }
+    handleDataChange({ name: e.target.value });
+  };
+
+  const handleSlugBlur = (e) => {
+    // اگر کاربر فیلد نامک را پاک کرد و از آن خارج شد، دوباره آن را از روی عنوان بساز
+    // و اجازه بده دوباره از عنوان پیروی کند.
+    if (!e.target.value.trim() && formData.title.trim()) {
+      setIsSlugManuallyEdited(false);
+      handleDataChange({ name: generateReadableSlug(formData.title) });
+    }
+  };
+  // ★★★ پایان تغییرات منطق نامک (اسلاگ) ★★★
 
   const handleBusyState = (isBusy) =>
     setLoadingAction(isBusy ? "upload" : null);
@@ -275,71 +335,7 @@ export default function PostForm({
                 dir="ltr"
               />
             </div>
-          </div>
-
-          <div className="lg:col-span-4 xl:col-span-3 space-y-4">
-            <CollapsibleSection
-              key="publish"
-              title="انتشار"
-              isOpen={openSections.includes("publish")}
-              onToggle={() => toggleSection("publish")}
-            >
-              <div>
-                <label htmlFor="status" className={labelClasses}>
-                  وضعیت
-                </label>
-                <select
-                  name="status"
-                  id="status"
-                  value={formData.status}
-                  onChange={handleChange}
-                  className={inputFieldClasses}
-                >
-                  <option value="publish">منتشر شده</option>
-                  <option value="draft">پیش‌نویس</option>
-                  <option value="pending">در انتظار بازبینی</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="date" className={labelClasses}>
-                  تاریخ انتشار
-                </label>
-                {/* ★★★ شرط دفاعی برای جلوگیری از کرش ★★★ */}
-                {/* فقط زمانی اینپوت را رندر کن که تاریخ وجود دارد و یک رشته است */}
-                {formData.date && typeof formData.date === "string" && (
-                  <input
-                    type="datetime-local"
-                    name="date"
-                    id="date"
-                    value={formData.date.substring(0, 16)}
-                    onChange={handleChange}
-                    className={inputFieldClasses}
-                    dir="ltr"
-                  />
-                )}
-              </div>
-              <div>
-                <label htmlFor="name" className={labelClasses}>
-                  نامک (اسلاگ)
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  id="name"
-                  value={formData.name || ""}
-                  onChange={handleChange}
-                  className={inputFieldClasses}
-                  dir="ltr"
-                />
-              </div>
-            </CollapsibleSection>
-
-            <CollapsibleSection
-              key="media"
-              title="رسانه"
-              isOpen={openSections.includes("media")}
-              onToggle={() => toggleSection("media")}
-            >
+            <div className="space-y-6 rounded-lg border border-[var(--border-secondary)] p-4 bg-[var(--background-primary)]">
               <ImageUploader
                 title="تصویر شاخص"
                 imageUrl={formData.thumbnail}
@@ -367,8 +363,76 @@ export default function PostForm({
                   className={inputFieldClasses}
                 />
               </div>
+            </div>
+          </div>
+          <div className="lg:col-span-4 xl:col-span-3 space-y-4">
+            <CollapsibleSection
+              key="publish"
+              title="انتشار"
+              isOpen={openSections.includes("publish")}
+              onToggle={() => toggleSection("publish")}
+            >
+              <div>
+                <label htmlFor="status" className={labelClasses}>
+                  وضعیت
+                </label>
+                <select
+                  name="status"
+                  id="status"
+                  value={formData.status}
+                  onChange={handleChange}
+                  className={inputFieldClasses}
+                >
+                  <option value="publish">منتشر شده</option>
+                  <option value="draft">پیش‌نویس</option>
+                  <option value="pending">در انتظار بازبینی</option>
+                </select>
+              </div>
+              <div>
+                <div className="flex justify-between items-center">
+                  <label htmlFor="shamsi-date" className={labelClasses}>
+                    تاریخ انتشار
+                  </label>
+                  <button
+                    type="button"
+                    onClick={setDateToNow}
+                    className="text-xs text-[var(--accent-primary)] hover:underline"
+                  >
+                    اکنون
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  id="shamsi-date"
+                  name="shamsi-date"
+                  value={shamsiDate}
+                  onChange={handleShamsiDateChange}
+                  className={inputFieldClasses}
+                  dir="ltr"
+                  placeholder="jYYYY/jM/jD HH:mm"
+                />
+                <p className="text-xs text-[var(--foreground-muted)] mt-1 text-center">
+                  مثال: 1403/05/06 15:30
+                </p>
+              </div>
+              <div>
+                <label htmlFor="name" className={labelClasses}>
+                  نامک (اسلاگ)
+                </label>
+                {/* ★★★ شروع تغییرات منطق نامک (اسلاگ) ★★★ */}
+                <input
+                  type="text"
+                  name="name"
+                  id="name"
+                  value={formData.name || ""}
+                  onChange={handleSlugChange}
+                  onBlur={handleSlugBlur}
+                  className={inputFieldClasses}
+                  dir="ltr"
+                />
+                {/* ★★★ پایان تغییرات منطق نامک (اسلاگ) ★★★ */}
+              </div>
             </CollapsibleSection>
-
             <CollapsibleSection
               key="attributes"
               title="ویژگی‌ها"
@@ -377,7 +441,7 @@ export default function PostForm({
             >
               <span className={labelClasses}>روضه</span>
               <div className="mt-2 flex gap-x-6">
-                {["دارد", "ندارد"].map((val) => (
+                {["هست", "نیست"].map((val) => (
                   <label key={val} className="flex items-center">
                     <input
                       type="radio"
@@ -392,7 +456,6 @@ export default function PostForm({
                 ))}
               </div>
             </CollapsibleSection>
-
             <CollapsibleSection
               key="categories"
               title="دسته‌بندی‌ها"
@@ -406,7 +469,6 @@ export default function PostForm({
                 onChange={(ids) => handleTermChange(ids, "categories")}
               />
             </CollapsibleSection>
-
             <CollapsibleSection
               key="tags"
               title="تگ‌ها"
@@ -423,8 +485,7 @@ export default function PostForm({
           </div>
         </div>
       </div>
-
-      <div className="p-4 border-t border-[var(--border-primary)] bg-[var(--background-primary)] flex-shrink-0">
+      <div className="sticky bottom-0 z-10 p-4 border-t border-[var(--border-primary)] bg-[var(--background-primary)]">
         {message.text && (
           <p
             className={`text-sm text-center mb-4 p-3 rounded-md ${

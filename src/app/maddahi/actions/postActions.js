@@ -1,9 +1,10 @@
+// /app/maddahi/actions/postActions.js
 "use server";
 
 import { db } from "@/app/maddahi/lib/db/mysql";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
-// تابع slugify که روی متن decode شده کار می‌کند
+// توابع کمکی slugify, generateUniqueSlug, manageTermRelationships بدون تغییر باقی می‌مانند
 const slugify = (text) => {
   return text
     .toString()
@@ -85,6 +86,7 @@ export async function createPost(formData, revalidateUrl) {
     thumbnail_alt,
     comment_status,
     extra_metadata,
+    date,
   } = formData;
 
   if (!title) {
@@ -103,14 +105,14 @@ export async function createPost(formData, revalidateUrl) {
       name: uniqueSlug,
       link: link || null,
       description: description,
-      rozeh: rozeh || "ندارد",
+      rozeh: rozeh || "نیست",
       thumbnail_alt: thumbnail_alt || null,
       comment_status: comment_status || "open",
       extra_metadata:
         extra_metadata && Object.keys(extra_metadata).length > 0
           ? JSON.stringify(extra_metadata)
           : null,
-      date: new Date(),
+      date: date ? new Date(date) : new Date(),
       last_update: new Date(),
       type: "post",
       view: 0,
@@ -122,7 +124,13 @@ export async function createPost(formData, revalidateUrl) {
 
     await manageTermRelationships(newPostId, categories, tags);
 
+    // ★★★ پاک کردن کش داده و صفحه ★★★
+    revalidateTag("posts");
     revalidatePath(revalidateUrl);
+    if (status === "publish") {
+      revalidatePath(`/maddahi/${decodeURIComponent(uniqueSlug)}`);
+    }
+
     return {
       success: true,
       message: "پست با موفقیت ایجاد شد.",
@@ -149,45 +157,73 @@ export async function updatePost(postId, formData, revalidateUrl) {
     thumbnail_alt,
     comment_status,
     extra_metadata,
+    date,
   } = formData;
 
   if (!title || !name) {
     return { success: false, message: "عنوان و اسلاگ نمی‌توانند خالی باشند." };
   }
 
-  try {
-    const uniqueSlug = await generateUniqueSlug(name, postId);
+  const connection = await db.getConnection();
+  await connection.beginTransaction();
 
+  try {
+    const [oldPostRows] = await connection.query(
+      "SELECT name FROM posts WHERE ID = ?",
+      [postId]
+    );
+    const oldSlugEncoded = oldPostRows.length > 0 ? oldPostRows[0].name : null;
+
+    const uniqueSlugEncoded = await generateUniqueSlug(name, postId);
     const postData = {
       title,
-      name: uniqueSlug,
+      name: uniqueSlugEncoded,
       content: content || "",
       thumbnail: thumbnail || null,
       status: status || "draft",
       link: link || null,
       description: description,
-      rozeh: rozeh || "ندارد",
+      rozeh: rozeh || "نیست",
       thumbnail_alt: thumbnail_alt || null,
       comment_status: comment_status || "open",
       extra_metadata:
         extra_metadata && Object.keys(extra_metadata).length > 0
           ? JSON.stringify(extra_metadata)
           : null,
+      date: date ? new Date(date) : new Date(),
       last_update: new Date(),
     };
-
-    await db.query("UPDATE posts SET ? WHERE ID = ?", [postData, postId]);
+    await connection.query("UPDATE posts SET ? WHERE ID = ?", [
+      postData,
+      postId,
+    ]);
 
     await manageTermRelationships(postId, categories, tags);
 
+    await connection.commit();
+
+    // ★★★ پاک کردن کش داده و سپس کش صفحه ★★★
+    revalidateTag("posts");
+
+    const newSlugDecoded = decodeURIComponent(uniqueSlugEncoded);
+    revalidatePath(`/maddahi/${newSlugDecoded}`);
+
+    if (oldSlugEncoded && oldSlugEncoded !== uniqueSlugEncoded) {
+      const oldSlugDecoded = decodeURIComponent(oldSlugEncoded);
+      revalidatePath(`/maddahi/${oldSlugDecoded}`);
+    }
     revalidatePath(revalidateUrl);
+
     return { success: true, message: "پست با موفقیت به‌روزرسانی شد." };
   } catch (error) {
+    await connection.rollback();
     console.error(`Error updating post ${postId}:`, error);
     return {
       success: false,
       message: `خطا در به‌روزرسانی پست: ${error.message}`,
     };
+  } finally {
+    connection.release();
   }
 }
 
@@ -195,16 +231,32 @@ export async function deletePost(postId, revalidateUrl) {
   if (!postId) {
     return { success: false, message: "شناسه پست نامعتبر است." };
   }
+
   const connection = await db.getConnection();
   await connection.beginTransaction();
+
   try {
+    const [postRows] = await connection.query(
+      "SELECT name FROM posts WHERE ID = ?",
+      [postId]
+    );
+    const slugToDelete =
+      postRows.length > 0 ? decodeURIComponent(postRows[0].name) : null;
+
     await connection.query(
       "DELETE FROM wp_term_relationships WHERE object_id = ?",
       [postId]
     );
     await connection.query("DELETE FROM posts WHERE ID = ?", [postId]);
     await connection.commit();
+
+    // ★★★ پاک کردن کش داده و صفحه ★★★
+    revalidateTag("posts");
     revalidatePath(revalidateUrl);
+    if (slugToDelete) {
+      revalidatePath(`/maddahi/${slugToDelete}`);
+    }
+
     return { success: true, message: "پست با موفقیت حذف شد." };
   } catch (error) {
     await connection.rollback();

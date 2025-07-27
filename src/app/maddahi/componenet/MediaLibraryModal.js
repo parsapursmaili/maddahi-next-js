@@ -1,8 +1,12 @@
+// /app/maddahi/components/admin/MediaLibraryModal.js
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
-import { getMediaLibrary, deleteImage } from "@/app/maddahi/actions/uploadActions";
+import {
+  getMediaLibrary,
+  deleteImage,
+} from "@/app/maddahi/actions/uploadActions";
 
 export default function MediaLibraryModal({
   onClose,
@@ -13,9 +17,6 @@ export default function MediaLibraryModal({
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isClosing, setIsClosing] = useState(false);
-
-  const UPLOADS_BASE_PATH =
-    process.env.NEXT_PUBLIC_UPLOADS_BASE_PATH || "/uploads";
 
   useEffect(() => {
     const fetchMedia = async () => {
@@ -116,7 +117,9 @@ export default function MediaLibraryModal({
                   </button>
                   <Image
                     fill
-                    src={`${UPLOADS_BASE_PATH}/${path}`}
+                    src={`${
+                      process.env.NEXT_PUBLIC_BASE_URL || ""
+                    }/uploads/${path}`} // ★★★ بهینه‌سازی ★★★
                     alt={path.split("/").pop() || "تصویر رسانه"}
                     sizes="(max-width: 640px) 25vw, (max-width: 768px) 16.6vw, 12.5vw"
                     className="object-cover rounded-md border-2 border-[var(--border-secondary)] group-hover:border-[var(--accent-primary)] transition-all"

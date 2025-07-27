@@ -13,10 +13,6 @@ import { db } from "@/app/maddahi/lib/db/mysql";
  */
 export const getTopMaddahs = cache(
   async () => {
-    console.log(
-      "PERFORMANCE HIT: Fetching top 7 maddahs directly from database..."
-    );
-
     const uploadsPath = process.env.NEXT_PUBLIC_UPLOADS_BASE_PATH || "/uploads";
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 

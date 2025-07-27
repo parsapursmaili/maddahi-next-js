@@ -1,32 +1,34 @@
+// /app/maddahi/components/admin/ImageUploader.js
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import Image from "next/image"; // همچنان از Image برای تصاویر ذخیره شده استفاده می‌کنیم
+import Image from "next/image";
 import { uploadImage } from "@/app/maddahi/actions/uploadActions";
 import MediaLibraryModal from "./MediaLibraryModal";
 
 export default function ImageUploader({
+  title,
   imageUrl,
   onImageChange,
   onBusyStateChange,
   revalidatePath,
 }) {
   const [preview, setPreview] = useState(null);
-  const [isLocalPreview, setIsLocalPreview] = useState(false); // <-- نکته کلیدی: برای تشخیص پیش‌نمایش محلی
+  const [isLocalPreview, setIsLocalPreview] = useState(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const fileInputRef = useRef(null);
 
-  const UPLOADS_BASE_PATH =
-    process.env.NEXT_PUBLIC_UPLOADS_BASE_PATH || "/uploads";
-
   useEffect(() => {
     if (imageUrl) {
-      setPreview(`${UPLOADS_BASE_PATH}/${imageUrl}`);
-      setIsLocalPreview(false); // این یک تصویر از سرور است، نه محلی
+      // ★★★ بهینه‌سازی: ساخت URL کامل برای پیش‌نمایش ★★★
+      // استفاده از متغیر محیطی برای انعطاف‌پذیری بین لوکال و پروداکشن
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
+      setPreview(`${baseUrl}/uploads/${imageUrl}`);
+      setIsLocalPreview(false);
     } else {
       setPreview(null);
     }
-  }, [imageUrl, UPLOADS_BASE_PATH]);
+  }, [imageUrl]);
 
   const handleBusy = (isBusy) => onBusyStateChange?.(isBusy);
 
@@ -36,27 +38,23 @@ export default function ImageUploader({
 
     handleBusy(true);
 
-    // ساخت URL موقت فقط برای پیش‌نمایش با <img>
     const localPreviewUrl = URL.createObjectURL(file);
     setPreview(localPreviewUrl);
-    setIsLocalPreview(true); // <-- مهم: به کامپوننت می‌گوییم که از <img> استفاده کند
+    setIsLocalPreview(true);
 
     const formData = new FormData();
     formData.append("file", file);
     formData.append("pathToRevalidate", revalidatePath);
 
     const result = await uploadImage(formData);
-
-    // بعد از آپلود، URL موقت را آزاد می‌کنیم
     URL.revokeObjectURL(localPreviewUrl);
 
     if (result.success && result.relativePath) {
       onImageChange(result.relativePath);
-      // useEffect بالا بقیه کار را انجام می‌دهد (نمایش با <Image>)
     } else {
       alert(result.message || "خطا در آپلود");
-      // در صورت خطا، به پیش‌نمایش قبلی (در صورت وجود) بازگرد
-      setPreview(imageUrl ? `${UPLOADS_BASE_PATH}/${imageUrl}` : null);
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
+      setPreview(imageUrl ? `${baseUrl}/uploads/${imageUrl}` : null);
       setIsLocalPreview(false);
     }
     handleBusy(false);
@@ -72,7 +70,6 @@ export default function ImageUploader({
     setIsLibraryOpen(false);
   };
 
-  // کامپوننت رندر تصویر بر اساس نوع پیش‌نمایش
   const ImagePreview = () => {
     if (!preview) {
       return (
@@ -82,7 +79,6 @@ export default function ImageUploader({
       );
     }
 
-    // اگر پیش‌نمایش یک فایل محلی (blob) بود، از <img> استفاده کن
     if (isLocalPreview) {
       return (
         <img
@@ -93,13 +89,12 @@ export default function ImageUploader({
       );
     }
 
-    // در غیر این صورت (تصویر از سرور)، از next/image بهینه استفاده کن
     return (
       <Image
         src={preview}
-        alt="پیش‌نمایش تصویر شاخص"
-        width={112} // 28 * 4
-        height={112} // 28 * 4
+        alt={title || "پیش‌نمایش تصویر"}
+        width={112}
+        height={112}
         className="object-cover rounded-md border border-[var(--border-secondary)]"
       />
     );
@@ -108,12 +103,11 @@ export default function ImageUploader({
   return (
     <div>
       <label className="block text-sm font-medium text-[var(--foreground-secondary)] mb-2">
-        تصویر شاخص
+        {title}
       </label>
       <div className="mt-1 flex flex-col sm:flex-row items-start gap-4 p-4 border-2 border-dashed border-[var(--border-primary)] rounded-lg bg-[var(--background-primary)]">
         <ImagePreview />
         <div className="flex flex-col gap-3 flex-grow">
-          {/* بقیه کد بدون تغییر باقی می‌ماند */}
           <div className="flex flex-wrap gap-3">
             <button
               type="button"

@@ -4,7 +4,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getPostPageData } from "./post";
 import MusicPlayer from "@/app/maddahi/componenet/singleplayer";
-import Slider from "@/app/maddahi/componenet/slider"; // فرض بر این است که این همان SliderConcept11 است
+import Slider from "@/app/maddahi/componenet/slider";
 import Comment from "./CommentForm";
 import CommentThread from "./CommentThread";
 import ServerViewCounter from "@/app/maddahi/componenet/incview";
@@ -19,12 +19,10 @@ import {
   ImageIcon,
 } from "lucide-react";
 
-export const revalidate = 3600;
 export async function generateStaticParams() {
   return [];
 }
 
-// تابع generateMetadata بدون تغییر باقی می‌ماند...
 export async function generateMetadata({ params }) {
   const { slug } = params;
   const { post } = await getPostPageData(slug);
@@ -52,7 +50,7 @@ export async function generateMetadata({ params }) {
       title: post.title,
       description: description,
       images: [imageUrl],
-      url: `https://besooyeto.ir/posts/${slug}`,
+      url: `https://besooyeto.ir/maddahi/${slug}`,
       type: "article",
     },
     twitter: {
@@ -71,13 +69,16 @@ export default async function ProductPage({ params }) {
     maddah,
     monasebat,
     moshabeh,
-    latestFromMaddah, // <-- متغیر جدید
+    latestFromMaddah,
     comments,
     totalCommentsCount,
   } = await getPostPageData(slug);
-  // --- پایان تغییرات ---
 
   if (!post) notFound();
+
+  const fullThumbnailUrl = post.thumbnail
+    ? `https://besooyeto.ir/maddahi/wp-content/uploads/${post.thumbnail}`
+    : null;
 
   let parsedMetadata = null;
   if (post.extra_metadata) {
@@ -94,23 +95,25 @@ export default async function ProductPage({ params }) {
       );
     }
   }
-  const secondThumbnail = parsedMetadata?.second_thumbnail;
+  const secondThumbnailPath = parsedMetadata?.second_thumbnail;
+  const fullSecondThumbnailUrl = secondThumbnailPath
+    ? `https://besooyeto.ir/maddahi/wp-content/uploads/${secondThumbnailPath}`
+    : null;
 
   return (
     <main className="relative flex min-h-screen flex-col items-center bg-[#0a0a0a] py-16 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
       <article className="relative z-10 w-full max-w-5xl rounded-2xl bg-[#171717]/50 shadow-2xl shadow-black/40 backdrop-blur-2xl ring-1 ring-[#262626]">
-        {/* این دیواره‌ی درخشان کریستالی، یک لایه ظریف برای زیبایی بیشتر است */}
         <div
           className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-[#a3fff4]/10 pointer-events-none"
           aria-hidden="true"
         ></div>
 
         <header className="relative flex flex-col md:flex-row items-center p-6 sm:p-8 md:p-12 gap-8">
-          {post.thumbnail && (
+          {fullThumbnailUrl && (
             <div className="group relative h-48 w-48 md:h-56 md:w-56 flex-shrink-0">
               <div className="absolute inset-0 z-0 -m-3 rounded-2xl bg-gradient-to-br from-[#a3fff4] to-[#00b4a0] opacity-0 blur-xl transition-all duration-700 group-hover:opacity-20 group-hover:blur-2xl"></div>
               <Image
-                src={`https://besooyeto.ir/maddahi/wp-content/uploads/${post.thumbnail}`}
+                src={fullThumbnailUrl}
                 alt={post.thumbnail_alt || post.title}
                 fill
                 sizes="(max-width: 768px) 192px, 224px"
@@ -136,7 +139,6 @@ export default async function ProductPage({ params }) {
                 ))}
               </div>
             )}
-
             {monasebat.length > 0 && (
               <div className="flex flex-wrap gap-x-4 gap-y-2 mb-6 justify-center md:justify-start">
                 {monasebat.map((item) => (
@@ -150,7 +152,6 @@ export default async function ProductPage({ params }) {
                 ))}
               </div>
             )}
-
             <div className="flex items-center gap-2 text-[#a3a3a3]">
               <Eye className="w-5 h-5 text-[#00b4a0]/80" />
               <ServerViewCounter postId={parseInt(post.ID)} />
@@ -180,7 +181,7 @@ export default async function ProductPage({ params }) {
           </section>
         )}
 
-        {secondThumbnail && (
+        {fullSecondThumbnailUrl && (
           <>
             <SectionDivider />
             <section className="px-6 sm:px-8 md:px-12 py-8 flex flex-col items-center">
@@ -191,7 +192,7 @@ export default async function ProductPage({ params }) {
               />
               <div className="group relative h-52 w-52 flex-shrink-0">
                 <Image
-                  src={`https://besooyeto.ir/maddahi/wp-content/uploads/${secondThumbnail}`}
+                  src={fullSecondThumbnailUrl}
                   alt={`تصویر دوم برای ${post.title}`}
                   fill
                   sizes="208px"
@@ -228,12 +229,13 @@ export default async function ProductPage({ params }) {
             </section>
           </>
         )}
+
         {latestFromMaddah.length > 0 && (
           <>
             <SectionDivider />
             <section className="py-8">
               <SectionTitle
-                icon={<Sparkles />} // می‌توانید آیکون را تغییر دهید
+                icon={<Sparkles />}
                 title="آخرین مداحی ها از همین مداح"
                 className="px-6 sm:px-8 md:px-12 mb-6"
               />
@@ -242,7 +244,6 @@ export default async function ProductPage({ params }) {
           </>
         )}
 
-        {/* بخش نظرات با پس‌زمینه و جداکننده واضح‌تر */}
         <div className="border-t border-[#262626] bg-[#0a0a0a]/30 rounded-b-2xl">
           <section className="p-6 sm:p-8 md:p-12">
             <div className="max-w-3xl mx-auto">
