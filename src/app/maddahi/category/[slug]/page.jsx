@@ -50,6 +50,7 @@ export async function generateMetadata({ params }) {
     ? new URL(`${uploadsPath}/${maddah.image_url}`, siteUrl).href
     : `${siteUrl}/default-og-image.jpg`; // یک تصویر پیش‌فرض برای زمانی که تصویری وجود ندارد
 
+  console.log(imageUrl);
   return {
     title: title,
     description: description,

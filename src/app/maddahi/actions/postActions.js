@@ -81,6 +81,7 @@ export async function createPost(formData, revalidateUrl) {
     status,
     name,
     link,
+    video_link, // <-- ویرایش شد
     description,
     rozeh,
     thumbnail_alt,
@@ -104,6 +105,7 @@ export async function createPost(formData, revalidateUrl) {
       status: status || "draft",
       name: uniqueSlug,
       link: link || null,
+      video_link: video_link || null, // <-- ویرایش شد
       description: description,
       rozeh: rozeh || "نیست",
       thumbnail_alt: thumbnail_alt || null,
@@ -113,10 +115,10 @@ export async function createPost(formData, revalidateUrl) {
           ? JSON.stringify(extra_metadata)
           : null,
       date: date ? new Date(date) : new Date(),
-      last_update: new Date(),
+      // last_update: new Date(), // <-- حذف شد
       type: "post",
       view: 0,
-      author: 1,
+      author: 1, // یا هر مقدار پیش‌فرض دیگری برای نویسنده
     };
 
     const [result] = await db.query("INSERT INTO posts SET ?", postData);
@@ -124,7 +126,6 @@ export async function createPost(formData, revalidateUrl) {
 
     await manageTermRelationships(newPostId, categories, tags);
 
-    // ★★★ پاک کردن کش داده و صفحه ★★★
     revalidateTag("posts");
     revalidatePath(revalidateUrl);
     if (status === "publish") {
@@ -152,6 +153,7 @@ export async function updatePost(postId, formData, revalidateUrl) {
     tags,
     status,
     link,
+    video_link, // <-- ویرایش شد
     description,
     rozeh,
     thumbnail_alt,
@@ -161,7 +163,7 @@ export async function updatePost(postId, formData, revalidateUrl) {
   } = formData;
 
   if (!title || !name) {
-    return { success: false, message: "عنوان و اسلاگ نمی‌توانند خالی باشند." };
+    return { success: false, message: "عنوان و نامک نمی‌توانند خالی باشند." };
   }
 
   const connection = await db.getConnection();
@@ -182,6 +184,7 @@ export async function updatePost(postId, formData, revalidateUrl) {
       thumbnail: thumbnail || null,
       status: status || "draft",
       link: link || null,
+      video_link: video_link || null, // <-- ویرایش شد
       description: description,
       rozeh: rozeh || "نیست",
       thumbnail_alt: thumbnail_alt || null,
@@ -191,7 +194,7 @@ export async function updatePost(postId, formData, revalidateUrl) {
           ? JSON.stringify(extra_metadata)
           : null,
       date: date ? new Date(date) : new Date(),
-      last_update: new Date(),
+      // last_update: new Date(), // <-- حذف شد
     };
     await connection.query("UPDATE posts SET ? WHERE ID = ?", [
       postData,
@@ -202,7 +205,6 @@ export async function updatePost(postId, formData, revalidateUrl) {
 
     await connection.commit();
 
-    // ★★★ پاک کردن کش داده و سپس کش صفحه ★★★
     revalidateTag("posts");
 
     const newSlugDecoded = decodeURIComponent(uniqueSlugEncoded);
@@ -250,7 +252,6 @@ export async function deletePost(postId, revalidateUrl) {
     await connection.query("DELETE FROM posts WHERE ID = ?", [postId]);
     await connection.commit();
 
-    // ★★★ پاک کردن کش داده و صفحه ★★★
     revalidateTag("posts");
     revalidatePath(revalidateUrl);
     if (slugToDelete) {

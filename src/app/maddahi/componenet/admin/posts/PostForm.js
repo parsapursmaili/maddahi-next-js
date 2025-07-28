@@ -56,6 +56,7 @@ const defaultPost = {
   status: "publish",
   rozeh: "نیست",
   link: "",
+  video_link: "",
   description: null,
   comment_status: "open",
   extra_metadata: null,
@@ -283,7 +284,7 @@ export default function PostForm({
     >
       <div className="flex-grow overflow-y-auto p-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-8 xl:col-span-9 space-y-6">
+          <div className="lg:col-span-8 xl:col-span-9 space-y-4">
             <div>
               <label htmlFor="title" className={labelClasses}>
                 عنوان
@@ -335,6 +336,23 @@ export default function PostForm({
                 dir="ltr"
               />
             </div>
+            {/* ★★★ این بخش را جایگزین یا اضافه کنید ★★★ */}
+            <div>
+              <label htmlFor="video_link" className={labelClasses}>
+                کد جاسازی ویدیو (Embed)
+              </label>
+              <textarea
+                name="video_link"
+                id="video_link"
+                value={formData.video_link || ""}
+                onChange={handleChange}
+                rows="4" // کمی بزرگتر برای دید بهتر
+                className={inputFieldClasses}
+                dir="ltr"
+                placeholder='مثال: <div id="..."><script src="..."></script></div>'
+              ></textarea>
+            </div>
+            {/* ★★★ پایان تغییرات ★★★ */}
             <div className="space-y-6 rounded-lg border border-[var(--border-secondary)] p-4 bg-[var(--background-primary)]">
               <ImageUploader
                 title="تصویر شاخص"

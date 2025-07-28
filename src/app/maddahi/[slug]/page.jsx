@@ -9,6 +9,7 @@ import Comment from "./CommentForm";
 import CommentThread from "./CommentThread";
 import ServerViewCounter from "@/app/maddahi/componenet/incview";
 import Link from "next/link";
+import ScriptEmbed from "@/app/maddahi/componenet/ScriptEmbed"; // ★★★ ایمپورت کامپوننت جدید ★★★
 import {
   BookOpen,
   Sparkles,
@@ -17,6 +18,7 @@ import {
   Eye,
   ShieldAlert,
   ImageIcon,
+  Film,
 } from "lucide-react";
 
 export async function generateStaticParams() {
@@ -180,6 +182,24 @@ export default async function ProductPage({ params }) {
             <MusicPlayer audioSrc={post.link} />
           </section>
         )}
+
+        {/* ★★★ شروع: بخش نمایش ویدیو با کامپوننت جدید ★★★ */}
+        {post.video_link && (
+          <>
+            <SectionDivider />
+            <section className="px-6 sm:px-8 md:px-12 py-8">
+              <SectionTitle
+                icon={<Film />}
+                title="نماهنگ و ویدیو"
+                className="mb-6"
+              />
+              <div className="w-full max-w-3xl mx-auto">
+                <ScriptEmbed htmlSnippet={post.video_link} />
+              </div>
+            </section>
+          </>
+        )}
+        {/* ★★★ پایان: بخش نمایش ویدیو ★★★ */}
 
         {fullSecondThumbnailUrl && (
           <>

@@ -4,7 +4,7 @@
 
 import { db } from "@/app/maddahi/lib/db/mysql";
 import { notFound } from "next/navigation";
-import { unstable_cache as cache } from "next/cache"; // ★★★ ایمپورت cache ★★★
+import { unstable_cache as cache } from "next/cache";
 
 const nestComments = (comments) => {
   const commentMap = {};
@@ -22,10 +22,9 @@ const nestComments = (comments) => {
   return nestedComments;
 };
 
-// ★★★ راه‌حل نهایی و صحیح: کش کردن داده‌ها با تگ ★★★
-// این تابع حالا نتایج خود را با برچسب 'posts' و یک برچسب منحصر به فرد برای هر اسلاگ کش می‌کند.
 export const getPostPageData = cache(
   async (slug) => {
+    // SELECT * به صورت خودکار فیلد video_link را هم شامل می‌شود
     const [postRows] = await db.query(
       "SELECT * FROM posts WHERE name = ? AND status = 'publish' LIMIT 1",
       [slug]
@@ -98,9 +97,8 @@ export const getPostPageData = cache(
       totalCommentsCount: rawComments.length,
     };
   },
-  ["getPostPageData"], // یک کلید منحصر به فرد برای این تابع کش
+  ["getPostPageData"], // کلید منحصر به فرد برای این تابع کش
   {
-    // به داده‌ها برچسب می‌زنیم تا بعدا بتوانیم آنها را باطل کنیم
-    tags: ["posts"],
+    tags: ["posts"], // برچسب‌گذاری برای باطل‌سازی کش
   }
 );

@@ -3,7 +3,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-
     // بخش remotePatterns برای امنیت همچنان لازم است
     remotePatterns: [
       {
@@ -15,7 +14,7 @@ const nextConfig = {
       {
         protocol: "http",
         hostname: "localhost",
-        port: "",
+        port: "3000",
         pathname: "/**",
       },
     ],
