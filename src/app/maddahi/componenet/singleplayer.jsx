@@ -1,6 +1,7 @@
 "use client";
 import "@/app/maddahi/css/singlepost.css";
 import React, { useRef, useState, useEffect } from "react";
+import { Play, Pause, Download } from "lucide-react"; // وارد کردن آیکون‌ها
 
 const MusicPlayer = ({ audioSrc }) => {
   const audioRef = useRef(null);
@@ -75,15 +76,16 @@ const MusicPlayer = ({ audioSrc }) => {
     >
       {/* Play/Pause Button */}
       <button
-        className="flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 text-xl cursor-pointer rounded-full bg-[var(--accent-primary)] text-[var(--background-primary)] transition-all duration-300 ease-in-out hover:opacity-90 hover:scale-105 shadow-md"
+        className="flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 cursor-pointer rounded-full bg-[var(--accent-primary)] text-[var(--background-primary)] transition-all duration-300 ease-in-out hover:opacity-90 hover:scale-105 shadow-md"
         onClick={handlePlayPause}
         aria-label={isPlaying ? "Pause" : "Play"}
       >
-        <i
-          className={`fas ${isPlaying ? "fa-pause" : "fa-play"} ${
-            !isPlaying && "pl-0.5"
-          }`}
-        ></i>
+        {/* ---- تغییر در این قسمت ---- */}
+        {isPlaying ? (
+          <Pause size={22} fill="currentColor" />
+        ) : (
+          <Play size={22} fill="currentColor" className="ml-1" />
+        )}
       </button>
 
       {/* Current Time */}
@@ -115,11 +117,12 @@ const MusicPlayer = ({ audioSrc }) => {
 
       {/* Download Button */}
       <button
-        className="flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 text-lg flex-shrink-0 cursor-pointer rounded-full bg-[var(--background-tertiary)]/60 text-[var(--foreground-secondary)] transition-all duration-300 ease-in-out hover:bg-[var(--border-secondary)] hover:text-[var(--foreground-primary)]"
+        className="flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0 cursor-pointer rounded-full bg-[var(--background-tertiary)]/60 text-[var(--foreground-secondary)] transition-all duration-300 ease-in-out hover:bg-[var(--border-secondary)] hover:text-[var(--foreground-primary)]"
         onClick={handleDownload}
         aria-label="Download audio"
       >
-        <i className="fas fa-download"></i>
+        {/* ---- تغییر در این قسمت ---- */}
+        <Download size={20} />
       </button>
 
       <audio

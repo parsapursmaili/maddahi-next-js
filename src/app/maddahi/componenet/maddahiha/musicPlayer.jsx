@@ -1,5 +1,14 @@
 "use client";
 import { useState, useEffect, useRef, memo } from "react";
+// وارد کردن آیکون‌های مورد نیاز از lucide-react
+import {
+  Download,
+  SkipBack,
+  SkipForward,
+  Play,
+  Pause,
+  Repeat,
+} from "lucide-react";
 
 const MusicPlayer = ({
   posts,
@@ -170,56 +179,68 @@ const MusicPlayer = ({
           </div>
         </div>
 
-        {/* دکمه‌های کنترل با استایل جدید و انیمیشن‌های بهبود یافته */}
+        {/* دکمه‌های کنترل با آیکون‌های lucide-react */}
         <div className="flex justify-center items-center gap-8 mt-[-10px]">
           {/* دکمه دانلود */}
-          <i
+          <Download
             onClick={handledownload}
-            className="fas fa-download cursor-pointer text-2xl text-[var(--foreground-muted)] transition-all duration-300 ease-in-out hover:text-[var(--foreground-primary)] hover:scale-110 active:scale-95"
+            className="cursor-pointer text-[var(--foreground-muted)] transition-all duration-300 ease-in-out hover:text-[var(--foreground-primary)] hover:scale-110 active:scale-95"
+            size={24}
             title="دانلود"
-          ></i>
+          />
 
-          {/* دکمه آهنگ قبلی (با آیکون fa-forward طبق کد شما) */}
-          <i
+          {/* دکمه آهنگ قبلی */}
+          <SkipBack
             onClick={backward}
-            className="fas fa-forward cursor-pointer text-3xl text-[var(--foreground-secondary)] transition-all duration-300 ease-in-out hover:text-[var(--foreground-primary)] hover:scale-110 active:scale-95"
+            className="cursor-pointer text-[var(--foreground-secondary)] transition-all duration-300 ease-in-out hover:text-[var(--foreground-primary)] hover:scale-110 active:scale-95"
+            size={30}
+            fill="currentColor"
             title="آهنگ قبلی"
-          ></i>
+          />
 
-          {/* دکمه اصلی پخش/توقف - طراحی شده به عنوان نقطه کانونی */}
+          {/* دکمه اصلی پخش/توقف */}
           <button
             onClick={handleIcon}
             className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--accent-primary)] shadow-lg shadow-[var(--accent-primary)/40] transition-all duration-300 ease-in-out hover:scale-105 hover:opacity-90 active:scale-95"
             aria-label={isPlay ? "توقف" : "پخش"}
           >
-            <i
-              className={`fas ${
-                isPlay ? "fa-pause" : "fa-play"
-              } text-3xl text-[var(--background-primary)] transition-transform duration-200 ease-in-out ${
-                !isPlay && "ml-1"
-              }`}
-            ></i>
+            {isPlay ? (
+              <Pause
+                size={32}
+                fill="currentColor"
+                className="text-[var(--background-primary)]"
+              />
+            ) : (
+              <Play
+                size={32}
+                fill="currentColor"
+                className="text-[var(--background-primary)] ml-1"
+              />
+            )}
           </button>
 
-          {/* دکمه آهنگ بعدی (با آیکون fa-backward طبق کد شما) */}
-          <i
+          {/* دکمه آهنگ بعدی */}
+          <SkipForward
             onClick={forward}
-            className="fas fa-backward cursor-pointer text-3xl text-[var(--foreground-secondary)] transition-all duration-300 ease-in-out hover:text-[var(--foreground-primary)] hover:scale-110 active:scale-95"
+            className="cursor-pointer text-[var(--foreground-secondary)] transition-all duration-300 ease-in-out hover:text-[var(--foreground-primary)] hover:scale-110 active:scale-95"
+            size={30}
+            fill="currentColor"
             title="آهنگ بعدی"
-          ></i>
+          />
 
-          {/* دکمه تکرار */}
-          <i
+          {/* دکame تکرار */}
+          <Repeat
             onClick={() =>
               setMusicPlayer((p) => ({ ...p, refresh: !musicPlayer.refresh }))
             }
-            className={`fas fa-sync-alt cursor-pointer text-2xl transition-all duration-300 ease-in-out hover:scale-110 active:scale-95 ${
+            className={`cursor-pointer transition-all duration-300 ease-in-out hover:scale-110 active:scale-95 ${
               musicPlayer.refresh
                 ? "text-[var(--accent-primary)]"
                 : "text-[var(--foreground-muted)] hover:text-[var(--foreground-primary)]"
             }`}
+            size={24}
             title="تکرار"
-          ></i>
+          />
         </div>
       </div>
 
