@@ -51,7 +51,7 @@ const SliderConcept11 = ({ slides, sliderId }) => {
                 <div className="relative w-32 h-32 rounded-full overflow-hidden flex-shrink-0">
                   {post.thumbnail ? (
                     <Image
-                      src={`https://besooyeto.ir/maddahi/wp-content/uploads/${post.thumbnail}`}
+                      src={`/uploads/${encodeURI(post.thumbnail)}`}
                       alt={post.title}
                       fill
                       className="object-cover transition-transform duration-400 ease-in-out group-hover:scale-110"

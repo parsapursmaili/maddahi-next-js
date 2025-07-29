@@ -47,7 +47,7 @@ export async function generateMetadata({ params }) {
 
   // ساخت URL کامل برای تصویر
   const imageUrl = maddah.image_url
-    ? new URL(`${uploadsPath}/${maddah.image_url}`, siteUrl).href
+    ? `/uploads/${maddah.image_url}`
     : `${siteUrl}/default-og-image.jpg`; // یک تصویر پیش‌فرض برای زمانی که تصویری وجود ندارد
 
   console.log(imageUrl);
@@ -166,7 +166,7 @@ export default async function MaddahCategoryPage({ params }) {
   const MADDAS_ID = maddah.ID;
 
   const fullImageUrl = maddah.image_url
-    ? new URL(`${uploadsPath}/${maddah.image_url}`, siteUrl).href
+    ? `${uploadsPath}/${encodeURI(maddah.image_url)}`
     : null;
   const eulogistBiographyHtml = maddah.biography || null;
 

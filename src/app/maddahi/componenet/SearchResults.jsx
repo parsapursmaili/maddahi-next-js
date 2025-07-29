@@ -163,7 +163,7 @@ function PostResultItem({ post }) {
           <div className="flex-shrink-0 w-20 h-20 relative rounded-lg overflow-hidden border-2 border-transparent group-hover:border-[var(--accent-primary)]/50 transition-all duration-300">
             {post.thumbnail ? (
               <Image
-                src={`https://besooyeto.ir/maddahi/wp-content/uploads/${post.thumbnail}`}
+                src={`/uploads/${post.thumbnail}`}
                 alt={post.title}
                 fill
                 sizes="80px"

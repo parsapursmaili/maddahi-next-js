@@ -22,8 +22,8 @@ export default function ImageUploader({
     if (imageUrl) {
       // ★★★ بهینه‌سازی: ساخت URL کامل برای پیش‌نمایش ★★★
       // استفاده از متغیر محیطی برای انعطاف‌پذیری بین لوکال و پروداکشن
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
-      setPreview(`${baseUrl}/uploads/${imageUrl}`);
+
+      setPreview(`/uploads/${imageUrl}`);
       setIsLocalPreview(false);
     } else {
       setPreview(null);

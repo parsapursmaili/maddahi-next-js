@@ -43,7 +43,7 @@ const SliderWithViews = ({ slides, sliderId }) => {
               {/* تصویر پس‌زمینه */}
               {post.thumbnail ? (
                 <Image
-                  src={`https://besooyeto.ir/maddahi/wp-content/uploads/${post.thumbnail}`}
+                  src={`/uploads/${encodeURI(post.thumbnail)}`}
                   alt={post.title}
                   fill
                   sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" // بهینه سازی بارگذاری تصویر

@@ -20,7 +20,7 @@ const getDb = async () => {
       database: "test",
       waitForConnections: true,
       connectionLimit: 100,
-      dateStrings: true, // برای پشتیبانی از فرمت تاریخ وردپرس
+      dateStrings: true,
     });
     console.log("Database pool created.");
   }
@@ -28,23 +28,22 @@ const getDb = async () => {
 };
 
 /**
- * تابعی برای تبدیل وضعیت کامنت از فرمت وردپرس به فرمت عددی سفارشی.
+ * تابعی برای تبدیل وضعیت کامنت از فرمت وردپرس به فرمت عددی جدید.
  * @param {string} wpStatus - وضعیت کامنت از جدول wp_comments.
- * @returns {number} - وضعیت عددی (0: در حال انتظار, 1: انتشار یافته, 2: زباله, 3: اسپم).
+ * @returns {number} - وضعیت عددی (0: در انتظار تایید, 1: منتشر شده, 2: در حال بازبینی).
  */
 const convertCommentStatus = (wpStatus) => {
   switch (wpStatus) {
     case "1":
     case "approve":
-      return 1; // انتشار یافته
+      return 1; // 1: منتشر شده (APPROVED)
     case "trash":
-      return 2; // زباله
     case "spam":
-      return 3; // اسپم
+      return 2; // 2: در حال بازبینی (REVIEWING) - دیدگاه‌های اسپم یا زباله قدیمی نیاز به بازبینی دارند
     case "0":
     case "hold":
     default:
-      return 0; // در حال انتظار
+      return 0; // 0: در انتظار تایید (PENDING)
   }
 };
 
@@ -54,10 +53,10 @@ const convertCommentStatus = (wpStatus) => {
  */
 export const migrateCommentsTable = async () => {
   const db = await getDb();
-  const connection = await db.getConnection(); // گرفتن یک اتصال از Pool برای ترنزاکشن
+  const connection = await db.getConnection();
 
   try {
-    await connection.beginTransaction(); // شروع ترنزاکشن
+    await connection.beginTransaction();
     console.log("Migration transaction started.");
 
     // 1. حذف جدول comments در صورت وجود و ایجاد مجدد آن با ساختار جدید
@@ -72,30 +71,24 @@ export const migrateCommentsTable = async () => {
         text TEXT NOT NULL,
         ip_address VARCHAR(100),
         user_agent TEXT,
-        status TINYINT NOT NULL DEFAULT 0,
+        status TINYINT NOT NULL DEFAULT 0, -- 0: PENDING, 1: APPROVED, 2: REVIEWING
         created_at TIMESTAMP,
-        FOREIGN KEY (parent_id) REFERENCES comments(id) ON DELETE SET NULL,
+        FOREIGN KEY (parent_id) REFERENCES comments(id) ON DELETE CASCADE, -- مهم: با حذف والد، فرزندان هم حذف شوند
         INDEX (post_id),
         INDEX (parent_id)
       )
     `);
-    console.log("New 'comments' table created with 'post_id'.");
+    console.log(
+      "New 'comments' table created with new status logic and ON DELETE CASCADE."
+    );
 
-    // 2. گرفتن داده‌ها از جدول wp_comments (شامل comment_post_ID)
+    // 2. گرفتن داده‌ها از جدول wp_comments
     const [wpComments] = await connection.query(`
       SELECT
-        comment_ID,
-        comment_post_ID,
-        comment_parent,
-        comment_author,
-        comment_author_email,
-        comment_content,
-        comment_author_IP,
-        comment_agent,
-        comment_approved,
-        comment_date
-      FROM
-        wp_comments
+        comment_ID, comment_post_ID, comment_parent, comment_author,
+        comment_author_email, comment_content, comment_author_IP,
+        comment_agent, comment_approved, comment_date
+      FROM wp_comments
     `);
 
     if (wpComments.length === 0) {
@@ -107,7 +100,7 @@ export const migrateCommentsTable = async () => {
     const oldIdToNewIdMap = new Map();
     const insertPromises = [];
 
-    // 3. مرحله اول: درج کامنت‌ها و ساخت نقشه ID (با post_id)
+    // 3. مرحله اول: درج کامنت‌ها و ساخت نقشه ID
     for (const comment of wpComments) {
       const status = convertCommentStatus(comment.comment_approved);
       insertPromises.push(
@@ -115,7 +108,7 @@ export const migrateCommentsTable = async () => {
           .query(
             `INSERT INTO comments (post_id, name, email, text, ip_address, user_agent, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [
-              comment.comment_post_ID, // <-- ستون جدید اضافه شد
+              comment.comment_post_ID,
               comment.comment_author,
               comment.comment_author_email,
               comment.comment_content,
@@ -133,7 +126,7 @@ export const migrateCommentsTable = async () => {
     await Promise.all(insertPromises);
     console.log(`Inserted ${wpComments.length} comments.`);
 
-    // 4. مرحله دوم: به‌روزرسانی parent_id برای پاسخ‌ها با استفاده از نقشه
+    // 4. مرحله دوم: به‌روزرسانی parent_id برای پاسخ‌ها
     const updatePromises = [];
     for (const comment of wpComments) {
       if (comment.comment_parent && Number(comment.comment_parent) > 0) {

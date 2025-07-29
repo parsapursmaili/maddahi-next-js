@@ -34,7 +34,7 @@ const Posts = ({ posts, setHnadle, isPlay, setIndex, setPID, PID }) => {
               >
                 {post.thumbnail ? (
                   <Image
-                    src={`https://besooyeto.ir/maddahi/wp-content/uploads/${post.thumbnail}`}
+                    src={`/uploads/${post.thumbnail}`}
                     alt={post.title}
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-110"

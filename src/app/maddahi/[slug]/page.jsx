@@ -42,7 +42,7 @@ export async function generateMetadata({ params }) {
     "محتوای این صفحه را مشاهده کنید.";
 
   const imageUrl = post.thumbnail
-    ? `https://besooyeto.ir/maddahi/wp-content/uploads/${post.thumbnail}`
+    ? `/uploads/${post.thumbnail}`
     : "/default-og-image.jpg";
 
   return {
@@ -78,9 +78,7 @@ export default async function ProductPage({ params }) {
 
   if (!post) notFound();
 
-  const fullThumbnailUrl = post.thumbnail
-    ? `https://besooyeto.ir/maddahi/wp-content/uploads/${post.thumbnail}`
-    : null;
+  const fullThumbnailUrl = post.thumbnail ? `/uploads/${post.thumbnail}` : null;
 
   let parsedMetadata = null;
   if (post.extra_metadata) {
@@ -99,7 +97,7 @@ export default async function ProductPage({ params }) {
   }
   const secondThumbnailPath = parsedMetadata?.second_thumbnail;
   const fullSecondThumbnailUrl = secondThumbnailPath
-    ? `https://besooyeto.ir/maddahi/wp-content/uploads/${secondThumbnailPath}`
+    ? `/uploads/${secondThumbnailPath}`
     : null;
 
   return (

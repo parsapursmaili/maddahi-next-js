@@ -117,9 +117,7 @@ export default function MediaLibraryModal({
                   </button>
                   <Image
                     fill
-                    src={`${
-                      process.env.NEXT_PUBLIC_BASE_URL || ""
-                    }/uploads/${path}`} // ★★★ بهینه‌سازی ★★★
+                    src={`/uploads/${path}`} // ★★★ بهینه‌سازی ★★★
                     alt={path.split("/").pop() || "تصویر رسانه"}
                     sizes="(max-width: 640px) 25vw, (max-width: 768px) 16.6vw, 12.5vw"
                     className="object-cover rounded-md border-2 border-[var(--border-secondary)] group-hover:border-[var(--accent-primary)] transition-all"

@@ -36,7 +36,7 @@ export default async function RandomMaddahCard() {
             <div className="w-full h-full bg-[var(--background-primary)] rounded-full flex items-center justify-center overflow-hidden">
               {maddah.imageUrl ? (
                 <Image
-                  src={maddah.imageUrl}
+                  src={`${encodeURI(maddah.imageUrl)}`}
                   alt={`تصویر ${maddah.name}`}
                   width={160}
                   height={160}
@@ -62,7 +62,7 @@ export default async function RandomMaddahCard() {
           {/* دکمه فراخوان (Call to Action) */}
           <div className="flex-shrink-0 mt-6 md:mt-0">
             <Link
-              href={`/maddah/${maddah.slug}`}
+              href={`/maddahi/category/${maddah.slug}`}
               className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-[var(--accent-primary)] text-white font-semibold transition-transform duration-300 hover:scale-105 shadow-lg shadow-[var(--accent-primary)]/20"
             >
               <span>مشاهده آثار</span>
