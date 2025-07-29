@@ -2,6 +2,7 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone",
   images: {
     // بخش remotePatterns برای امنیت همچنان لازم است
     remotePatterns: [
