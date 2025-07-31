@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import Image from "next/image";
 import {
   getMediaLibrary,
   deleteImage,
@@ -25,6 +24,7 @@ export default function MediaLibraryModal({
         setImages(media);
       } catch (error) {
         console.error("Failed to fetch media:", error);
+        // نکته: در یک اپلیکیشن واقعی، از یک modal سفارشی به جای alert() استفاده کنید.
         alert("خطا در بارگذاری رسانه‌ها.");
       } finally {
         setLoading(false);
@@ -40,6 +40,7 @@ export default function MediaLibraryModal({
 
   const handleDelete = async (e, imagePath) => {
     e.stopPropagation();
+    // نکته: در یک اپلیکیشن واقعی، از یک modal سفارشی به جای window.confirm() استفاده کنید.
     if (
       !window.confirm(
         `آیا از حذف فایل "${imagePath.split("/").pop()}" مطمئن هستید؟`
@@ -51,6 +52,7 @@ export default function MediaLibraryModal({
     if (result.success) {
       setImages((prev) => prev.filter((img) => img !== imagePath));
     } else {
+      // نکته: در یک اپلیکیشن واقعی، از یک modal سفارشی به جای alert() استفاده کنید.
       alert(result.message);
     }
   };
@@ -101,31 +103,45 @@ export default function MediaLibraryModal({
             </p>
           ) : (
             <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4">
-              {filteredImages.map((path) => (
-                <div
-                  key={path}
-                  className="group relative cursor-pointer aspect-square"
-                  onClick={() => onSelectImage(path)}
-                >
-                  <button
-                    onClick={(e) => handleDelete(e, path)}
-                    className="absolute top-1 right-1 z-10 w-6 h-6 bg-black/70 text-white text-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[var(--error)]"
-                    title="حذف"
+              {filteredImages.map((path) => {
+                // path: 'سال/ماه/نام-فایل-اصلی.webp' (مثلاً '2025/07/pirahan-yousef.webp')
+                const pathParts = path.split("/");
+                const year = pathParts[0];
+                const month = pathParts[1];
+                const fileName = pathParts.slice(2).join("/"); // نام فایل اصلی
+
+                // ساخت مسیر API جدید با کوئری پارامترها
+                const apiImageUrl = `/maddahi/api/getimg?year=${year}&month=${month}&fileName=${fileName}&size=150x150&t=${new Date().getTime()}`;
+
+                return (
+                  <div
+                    key={path}
+                    className="group relative cursor-pointer aspect-square"
+                    onClick={() => onSelectImage(path)} // همچنان مسیر اصلی را برمی‌گردانیم
                   >
-                    ×
-                  </button>
-                  <Image
-                    fill
-                    // ★★★ تغییر اینجا: اضافه کردن timestamp به URL برای شکستن کش ★★★
-                    src={`${encodeURI(
-                      `/uploads/${path}?t=${new Date().getTime()}`
-                    )}`}
-                    alt={path.split("/").pop() || "تصویر رسانه"}
-                    sizes="(max-width: 640px) 25vw, (max-width: 768px) 16.6vw, 12.5vw"
-                    className="object-cover rounded-md border-2 border-[var(--border-secondary)] group-hover:border-[var(--accent-primary)] transition-all"
-                  />
-                </div>
-              ))}
+                    <button
+                      onClick={(e) => handleDelete(e, path)}
+                      className="absolute top-1 right-1 z-10 w-6 h-6 bg-black/70 text-white text-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[var(--error)]"
+                      title="حذف"
+                    >
+                      ×
+                    </button>
+                    <img // تگ <img>
+                      src={apiImageUrl} // استفاده از مسیر API جدید
+                      alt={path.split("/").pop() || "تصویر رسانه"}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                      className="rounded-md border-2 border-[var(--border-secondary)] group-hover:border-[var(--accent-primary)] transition-all"
+                    />
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

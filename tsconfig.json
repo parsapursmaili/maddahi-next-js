@@ -27,6 +27,6 @@
     "**/*.ts",
     "**/*.tsx",
     "src/app/api/posts/route.ts"
-, "src/app/maddahi/api/upload-revalidate/route.js"  ],
+, "src/app/maddahi/api/upload-revalidate/route.js", "src/app/maddahi/api/[filename]/route.js"  ],
   "exclude": ["node_modules"]
 }
