@@ -11,7 +11,7 @@ export default async function AdminPage() {
 
   // ۲. اگر کاربر احراز هویت نشده بود، او را به صفحه ورود هدایت می‌کنیم
   if (!isAuth) {
-    redirect("/login");
+    redirect("/maddahi/login");
   }
 
   // اگر کاربر احراز هویت شده بود، ادامه بده...

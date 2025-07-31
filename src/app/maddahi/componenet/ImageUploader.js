@@ -8,7 +8,7 @@ import MediaLibraryModal from "./MediaLibraryModal";
 
 export default function ImageUploader({
   title,
-  imageUrl,
+  imageUrl, // این imageUrl از پراپس میاد (مثلاً از دیتابیس)
   onImageChange,
   onBusyStateChange,
   revalidatePath,
@@ -19,11 +19,11 @@ export default function ImageUploader({
   const fileInputRef = useRef(null);
 
   useEffect(() => {
+    // این useEffect برای حالتی است که imageUrl از بیرون (مثلاً دیتابیس) تغییر می‌کند
+    // و شامل عکس‌های از قبل موجود و عکس‌های تازه آپلود شده از رفرش صفحه است.
     if (imageUrl) {
-      // ★★★ بهینه‌سازی: ساخت URL کامل برای پیش‌نمایش ★★★
-      // استفاده از متغیر محیطی برای انعطاف‌پذیری بین لوکال و پروداکشن
-
-      setPreview(`/uploads/${imageUrl}`);
+      // برای شکستن کش، یک timestamp به URL اضافه می‌کنیم.
+      setPreview(`/uploads/${imageUrl}?t=${new Date().getTime()}`);
       setIsLocalPreview(false);
     } else {
       setPreview(null);
@@ -39,7 +39,7 @@ export default function ImageUploader({
     handleBusy(true);
 
     const localPreviewUrl = URL.createObjectURL(file);
-    setPreview(localPreviewUrl);
+    setPreview(localPreviewUrl); // نمایش فوری پیش‌نمایش لوکال
     setIsLocalPreview(true);
 
     const formData = new FormData();
@@ -47,14 +47,24 @@ export default function ImageUploader({
     formData.append("pathToRevalidate", revalidatePath);
 
     const result = await uploadImage(formData);
-    URL.revokeObjectURL(localPreviewUrl);
+    URL.revokeObjectURL(localPreviewUrl); // URL موقت را آزاد کنید
 
     if (result.success && result.relativePath) {
-      onImageChange(result.relativePath);
+      // ★★★ تغییر مهم: بلافاصله preview را با URL کامل و timestamp به‌روز می‌کنیم ★★★
+      // این اطمینان می‌دهد که حتی اگر Next.js کش کرده باشد، URL جدید باعث بارگذاری مجدد شود.
+      const newImageUrlWithTimestamp = `/uploads/${
+        result.relativePath
+      }?t=${new Date().getTime()}`;
+      setPreview(newImageUrlWithTimestamp);
+      setIsLocalPreview(false);
+      onImageChange(result.relativePath); // این پراپ را به والد می‌فرستد که مقدار را در دیتابیس ذخیره کند
     } else {
       alert(result.message || "خطا در آپلود");
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
-      setPreview(imageUrl ? `${baseUrl}/uploads/${imageUrl}` : null);
+      // در صورت خطا، به URL قبلی (اگر وجود دارد) برگردید
+      // با افزودن timestamp برای شکستن کش احتمالی تصویر قبلی
+      setPreview(
+        imageUrl ? `/uploads/${imageUrl}?t=${new Date().getTime()}` : null
+      );
       setIsLocalPreview(false);
     }
     handleBusy(false);
@@ -66,6 +76,12 @@ export default function ImageUploader({
   };
 
   const handleSelectFromLibrary = (relativePath) => {
+    // وقتی از کتابخانه انتخاب می‌شود، `onImageChange` فراخوانی می‌شود
+    // که `imageUrl` پراپ را تغییر می‌دهد و `useEffect` بالا مسئول به‌روزرسانی `preview` است.
+    // اما برای اطمینان از شکستن کش در این حالت نیز:
+    const selectedImageUrlWithTimestamp = `/uploads/${relativePath}?t=${new Date().getTime()}`;
+    setPreview(selectedImageUrlWithTimestamp);
+    setIsLocalPreview(false);
     onImageChange(relativePath);
     setIsLibraryOpen(false);
   };
@@ -91,7 +107,7 @@ export default function ImageUploader({
 
     return (
       <Image
-        src={preview}
+        src={preview} // این preview حاوی timestamp است
         alt={title || "پیش‌نمایش تصویر"}
         width={112}
         height={112}

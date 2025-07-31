@@ -179,26 +179,26 @@ export default async function AdminDashboardPage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <NavLinkCard
-              href="/admin/posts"
+              href="/maddahi/admin/posts"
               icon={<FileText size={32} />}
               title="مدیریت پست‌ها"
               description="ایجاد، ویرایش و حذف نوشته‌ها و برگه‌های سایت."
               className="lg:col-span-2" // این کارت دو ستون را در نمایشگر بزرگ اشغال می‌کند
             />
             <NavLinkCard
-              href="/admin/statistics" // لینک جدید به صفحه آمار
+              href="/maddahi/admin/statistics" // لینک جدید به صفحه آمار
               icon={<BarChartBig size={32} />}
               title="آمار و تحلیل"
               description="مشاهده آمار بازدید، محتوا و کاربران."
             />
             <NavLinkCard
-              href="/admin/comments"
+              href="/maddahi/admin/comments"
               icon={<MessageSquare size={32} />}
               title="مدیریت دیدگاه‌ها"
               description="بررسی، تایید و پاسخ به نظرات کاربران."
             />
             <NavLinkCard
-              href="/admin/terms"
+              href="/maddahi/admin/terms"
               icon={<Tags size={32} />}
               title="مدیریت دسته‌بندی‌ها"
               description="سازماندهی دسته‌بندی‌ها و برچسب‌های محتوا."

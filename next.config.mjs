@@ -4,19 +4,19 @@
 const nextConfig = {
   output: "standalone",
   images: {
-    // بخش remotePatterns برای امنیت همچنان لازم است
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "besooyeto.ir",
+        hostname: "besooyeto.ir", // دامنه اصلی شما
         port: "",
-        pathname: "/maddahi/wp-content/uploads/**",
+        pathname: "/uploads/**",
       },
+      // این بخش برای حالت توسعه ضروری است
       {
         protocol: "http",
         hostname: "localhost",
         port: "3000",
-        pathname: "/**",
+        pathname: "/uploads/**",
       },
     ],
   },

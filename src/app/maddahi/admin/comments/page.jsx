@@ -6,7 +6,7 @@ import { AlertTriangle } from "lucide-react";
 export default async function AdminCommentsPage() {
   const isAuth = await isAuthenticated();
   if (!isAuth) {
-    redirect("/login");
+    redirect("/maddahi/login");
   }
 
   const result = await getCommentsForAdmin();

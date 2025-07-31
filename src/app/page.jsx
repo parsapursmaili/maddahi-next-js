@@ -118,7 +118,7 @@ const HeroSection = () => (
 const MaddahHorizontalCard = ({ name, slug, fullImageUrl }) => {
   const creativeText = `مشاهده جدیدترین آثار و نماهنگ‌های ${name}`;
   return (
-    <Link href={`/maddah/${slug}`} className="group block w-full">
+    <Link href={`/maddahi/category/${slug}`} className="group block w-full">
       <div className="relative flex flex-col md:flex-row items-center bg-[var(--background-secondary)] rounded-2xl overflow-hidden border border-[var(--border-primary)] transition-all duration-300 hover:border-[var(--accent-primary)] hover:shadow-2xl hover:shadow-[var(--accent-primary)]/20">
         <div className="relative w-full md:w-5/12 h-64 md:h-auto md:aspect-[4/3] overflow-hidden">
           <Image

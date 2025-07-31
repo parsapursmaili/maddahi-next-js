@@ -54,6 +54,7 @@ const SliderConcept11 = ({ slides, sliderId }) => {
                       src={`/uploads/${encodeURI(post.thumbnail)}`}
                       alt={post.title}
                       fill
+                      sizes="128px"
                       className="object-cover transition-transform duration-400 ease-in-out group-hover:scale-110"
                     />
                   ) : (

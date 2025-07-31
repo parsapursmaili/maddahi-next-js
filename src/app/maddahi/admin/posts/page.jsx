@@ -10,7 +10,7 @@ export default async function AdminPostsPage() {
 
   // ۲. هدایت کاربر لاگین نکرده به صفحه ورود
   if (!isAuth) {
-    redirect("/login");
+    redirect("/maddahi/login");
   }
 
   // ۳. اگر کاربر دسترسی داشت، کامپوننت اصلی را رندر می‌کنیم

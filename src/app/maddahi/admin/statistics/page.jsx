@@ -11,7 +11,7 @@ export const metadata = {
 export default async function StatisticsPage() {
   const isAuth = await isAuthenticated();
   if (!isAuth) {
-    redirect("/login"); // یا هر صفحه لاگین دیگری که دارید
+    redirect("/maddahi/login"); // یا هر صفحه لاگین دیگری که دارید
   }
 
   const statsResult = await getDashboardStatistics();

@@ -190,7 +190,7 @@ const MusicPlayer = ({
           />
 
           {/* دکمه آهنگ قبلی */}
-          <SkipBack
+          <SkipForward
             onClick={backward}
             className="cursor-pointer text-[var(--foreground-secondary)] transition-all duration-300 ease-in-out hover:text-[var(--foreground-primary)] hover:scale-110 active:scale-95"
             size={30}
@@ -220,7 +220,7 @@ const MusicPlayer = ({
           </button>
 
           {/* دکمه آهنگ بعدی */}
-          <SkipForward
+          <SkipBack
             onClick={forward}
             className="cursor-pointer text-[var(--foreground-secondary)] transition-all duration-300 ease-in-out hover:text-[var(--foreground-primary)] hover:scale-110 active:scale-95"
             size={30}
@@ -228,7 +228,7 @@ const MusicPlayer = ({
             title="آهنگ بعدی"
           />
 
-          {/* دکame تکرار */}
+          {/* دکمه تکرار */}
           <Repeat
             onClick={() =>
               setMusicPlayer((p) => ({ ...p, refresh: !musicPlayer.refresh }))

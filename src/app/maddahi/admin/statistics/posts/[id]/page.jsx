@@ -9,7 +9,7 @@ import { ArrowRight } from "lucide-react";
 export default async function PostStatisticsPage({ params }) {
   const isAuth = await isAuthenticated();
   if (!isAuth) {
-    redirect("/login");
+    redirect("/maddahi/login");
   }
 
   const { id } = params;

@@ -40,7 +40,7 @@ export async function login(prevState, formData) {
   });
 
   // ۴. هدایت کاربر فقط در صورت موفقیت
-  redirect("/admin");
+  redirect("/maddahi/admin");
 }
 
 export async function logout() {
