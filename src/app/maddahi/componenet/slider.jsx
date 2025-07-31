@@ -51,7 +51,7 @@ const SliderConcept11 = ({ slides, sliderId }) => {
                 <div className="relative w-32 h-32 rounded-full overflow-hidden flex-shrink-0">
                   {post.thumbnail ? (
                     <Image
-                      src={`/uploads/${encodeURI(post.thumbnail)}`}
+                      src={`${encodeURI(`/uploads/${post.thumbnail}`)}`}
                       alt={post.title}
                       fill
                       sizes="128px"

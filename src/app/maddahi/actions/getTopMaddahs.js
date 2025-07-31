@@ -13,9 +13,6 @@ import { db } from "@/app/maddahi/lib/db/mysql";
  */
 export const getTopMaddahs = cache(
   async () => {
-    const uploadsPath = process.env.NEXT_PUBLIC_UPLOADS_BASE_PATH || "/uploads";
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-
     try {
       const [topMaddahsResult] = await db.query(
         `
@@ -45,9 +42,7 @@ export const getTopMaddahs = cache(
       return topMaddahsResult.map((maddah) => ({
         name: maddah.name,
         slug: maddah.slug,
-        imageUrl: maddah.image_url
-          ? `${siteUrl}${uploadsPath}/${maddah.image_url}`
-          : null,
+        imageUrl: maddah.image_url ? `/uploads/${maddah.image_url}` : null,
       }));
     } catch (error) {
       console.error("Failed to fetch top maddahs:", error);

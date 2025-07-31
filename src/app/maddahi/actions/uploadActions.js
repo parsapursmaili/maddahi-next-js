@@ -1,12 +1,34 @@
+// /app/maddahi/actions/uploadActions.js
 "use server";
 
 import { writeFile, stat, mkdir, readdir, unlink } from "fs/promises";
 import { join, basename } from "path";
 import { revalidatePath } from "next/cache";
 
+// تابع کمکی برای تبدیل فاصله‌ها به خط تیره در نام فایل
+function slugifyFileName(fileName) {
+  const parts = fileName.split(".");
+  const ext = parts.pop(); // پسوند فایل را جدا می‌کند
+  let nameWithoutExt = parts.join("."); // نام فایل بدون پسوند
+
+  // ★★★ تنها تغییر مهم: جایگزینی تمام فاصله‌ها با خط تیره ★★★
+  nameWithoutExt = nameWithoutExt.replace(/\s+/g, "-");
+
+  // حذف خط تیره های اضافی پشت سر هم و از ابتدا و انتهای رشته (اختیاری، برای تمیزی بیشتر)
+  nameWithoutExt = nameWithoutExt.replace(/--+/g, "-");
+  nameWithoutExt = nameWithoutExt.replace(/^-+|-+$/g, "");
+
+  // اطمینان از اینکه نام خالی نباشد و یک نام پیش فرض داشته باشد
+  if (!nameWithoutExt) {
+    nameWithoutExt = "untitled-file";
+  }
+
+  return `${nameWithoutExt}.${ext}`;
+}
+
 export async function uploadImage(formData) {
   const file = formData.get("file");
-  const pathToRevalidate = formData.get("pathToRevalidate") || "/"; // دریافت مسیر از کلاینت
+  const pathToRevalidate = formData.get("pathToRevalidate") || "/";
 
   if (!file || file.size === 0) {
     return { success: false, message: "فایلی برای آپلود انتخاب نشده است." };
@@ -21,14 +43,17 @@ export async function uploadImage(formData) {
     if (e.code !== "EEXIST") throw e;
   });
 
-  const finalFileName = basename(file.name);
+  const originalFileName = basename(file.name);
+  // ★★★ استفاده از slugifyFileName برای تغییر نام فایل قبل از ذخیره ★★★
+  const finalFileName = slugifyFileName(originalFileName);
+
   const finalPath = join(monthDir, finalFileName);
   const buffer = Buffer.from(await file.arrayBuffer());
 
   try {
     await writeFile(finalPath, buffer);
-    const relativePath = `${year}/${month}/${finalFileName}`;
-    revalidatePath(pathToRevalidate); // استفاده از مسیر داینامیک
+    const relativePath = `${year}/${month}/${finalFileName}`; // استفاده از نام فایل جدید
+    revalidatePath(pathToRevalidate);
     return { success: true, message: "آپلود موفقیت‌آمیز بود.", relativePath };
   } catch (error) {
     console.error("خطا در ذخیره فایل:", error);
@@ -37,14 +62,13 @@ export async function uploadImage(formData) {
 }
 
 export async function deleteImage(relativePath, pathToRevalidate = "/") {
-  // دریافت مسیر از کلاینت
   if (!relativePath) {
     return { success: false, message: "مسیر فایل برای حذف مشخص نشده است." };
   }
   try {
     const fullPath = join(process.cwd(), "public", "uploads", relativePath);
     await unlink(fullPath);
-    revalidatePath(pathToRevalidate); // استفاده از مسیر داینامیک
+    revalidatePath(pathToRevalidate);
     return { success: true, message: "فایل با موفقیت حذف شد." };
   } catch (error) {
     if (error.code === "ENOENT")
@@ -55,7 +79,6 @@ export async function deleteImage(relativePath, pathToRevalidate = "/") {
 }
 
 export async function getMediaLibrary() {
-  // این تابع نیازی به تغییر ندارد
   const uploadsDir = join(process.cwd(), "public", "uploads");
   const allFiles = [];
   try {

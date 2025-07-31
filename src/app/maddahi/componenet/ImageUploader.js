@@ -3,12 +3,12 @@
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { uploadImage } from "@/app/maddahi/actions/uploadActions";
+// import { uploadImage } from "@/app/maddahi/actions/uploadActions"; // این خط رو حذف کنید
 import MediaLibraryModal from "./MediaLibraryModal";
 
 export default function ImageUploader({
   title,
-  imageUrl, // این imageUrl از پراپس میاد (مثلاً از دیتابیس)
+  imageUrl,
   onImageChange,
   onBusyStateChange,
   revalidatePath,
@@ -19,11 +19,10 @@ export default function ImageUploader({
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    // این useEffect برای حالتی است که imageUrl از بیرون (مثلاً دیتابیس) تغییر می‌کند
-    // و شامل عکس‌های از قبل موجود و عکس‌های تازه آپلود شده از رفرش صفحه است.
     if (imageUrl) {
-      // برای شکستن کش، یک timestamp به URL اضافه می‌کنیم.
-      setPreview(`/uploads/${imageUrl}?t=${new Date().getTime()}`);
+      setPreview(
+        `${encodeURI(`/uploads/${imageUrl}?t=${new Date().getTime()}`)}`
+      );
       setIsLocalPreview(false);
     } else {
       setPreview(null);
@@ -39,46 +38,47 @@ export default function ImageUploader({
     handleBusy(true);
 
     const localPreviewUrl = URL.createObjectURL(file);
-    setPreview(localPreviewUrl); // نمایش فوری پیش‌نمایش لوکال
+    setPreview(localPreviewUrl);
     setIsLocalPreview(true);
 
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("pathToRevalidate", revalidatePath);
+    formData.append("pathToRevalidate", revalidatePath); // مسیر revalidate رو هم بفرستید
 
-    const result = await uploadImage(formData);
-    URL.revokeObjectURL(localPreviewUrl); // URL موقت را آزاد کنید
+    // ★★★ تغییر مهم: فراخوانی API Route به جای Server Action مستقیم ★★★
+    const response = await fetch("/maddahi/api/upload-revalidate", {
+      method: "POST",
+      body: formData,
+    });
+    const result = await response.json();
+    URL.revokeObjectURL(localPreviewUrl);
 
     if (result.success && result.relativePath) {
-      // ★★★ تغییر مهم: بلافاصله preview را با URL کامل و timestamp به‌روز می‌کنیم ★★★
-      // این اطمینان می‌دهد که حتی اگر Next.js کش کرده باشد، URL جدید باعث بارگذاری مجدد شود.
       const newImageUrlWithTimestamp = `/uploads/${
         result.relativePath
       }?t=${new Date().getTime()}`;
       setPreview(newImageUrlWithTimestamp);
       setIsLocalPreview(false);
-      onImageChange(result.relativePath); // این پراپ را به والد می‌فرستد که مقدار را در دیتابیس ذخیره کند
+      onImageChange(result.relativePath);
     } else {
       alert(result.message || "خطا در آپلود");
-      // در صورت خطا، به URL قبلی (اگر وجود دارد) برگردید
-      // با افزودن timestamp برای شکستن کش احتمالی تصویر قبلی
       setPreview(
-        imageUrl ? `/uploads/${imageUrl}?t=${new Date().getTime()}` : null
+        imageUrl
+          ? `${encodeURI(`/uploads/${imageUrl}?t=${new Date().getTime()}`)}`
+          : null
       );
       setIsLocalPreview(false);
     }
     handleBusy(false);
   };
 
+  // بقیه کد ImageUploader.js بدون تغییر
   const handleRemoveImage = () => {
     onImageChange("");
     setPreview(null);
   };
 
   const handleSelectFromLibrary = (relativePath) => {
-    // وقتی از کتابخانه انتخاب می‌شود، `onImageChange` فراخوانی می‌شود
-    // که `imageUrl` پراپ را تغییر می‌دهد و `useEffect` بالا مسئول به‌روزرسانی `preview` است.
-    // اما برای اطمینان از شکستن کش در این حالت نیز:
     const selectedImageUrlWithTimestamp = `/uploads/${relativePath}?t=${new Date().getTime()}`;
     setPreview(selectedImageUrlWithTimestamp);
     setIsLocalPreview(false);
@@ -107,7 +107,7 @@ export default function ImageUploader({
 
     return (
       <Image
-        src={preview} // این preview حاوی timestamp است
+        src={preview}
         alt={title || "پیش‌نمایش تصویر"}
         width={112}
         height={112}

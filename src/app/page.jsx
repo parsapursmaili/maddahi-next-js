@@ -16,8 +16,6 @@ export const revalidate = 3600;
 // =================================================================
 
 async function fetchFeaturedMaddahs() {
-  const siteUrl = process.env.SITE_URL || "http://localhost:3000";
-  const uploadsPath = process.env.NEXT_PUBLIC_UPLOADS_BASE_PATH || "/uploads";
   const featuredIds = [108, 24, 2, 10];
 
   try {
@@ -34,7 +32,7 @@ async function fetchFeaturedMaddahs() {
     return sortedResults.map((maddah) => ({
       ...maddah,
       fullImageUrl: maddah.image_url
-        ? new URL(`${uploadsPath}/${maddah.image_url}`, siteUrl).href
+        ? `/uploads/${maddah.image_url}`
         : "/default-maddah-image.jpg",
     }));
   } catch (error) {
@@ -122,7 +120,7 @@ const MaddahHorizontalCard = ({ name, slug, fullImageUrl }) => {
       <div className="relative flex flex-col md:flex-row items-center bg-[var(--background-secondary)] rounded-2xl overflow-hidden border border-[var(--border-primary)] transition-all duration-300 hover:border-[var(--accent-primary)] hover:shadow-2xl hover:shadow-[var(--accent-primary)]/20">
         <div className="relative w-full md:w-5/12 h-64 md:h-auto md:aspect-[4/3] overflow-hidden">
           <Image
-            src={fullImageUrl}
+            src={encodeURI(fullImageUrl)}
             alt={`تصویر ${name}`}
             fill
             className="object-cover w-full h-full transition-transform duration-500 ease-in-out group-hover:scale-110"
