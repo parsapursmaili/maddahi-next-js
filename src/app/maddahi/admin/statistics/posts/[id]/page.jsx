@@ -20,7 +20,7 @@ export default async function PostStatisticsPage({ params }) {
       <div className="p-8 text-center text-[var(--error)]">
         <p>{result.message}</p>
         <Link
-          href="/admin/statistics"
+          href="/maddahi/admin/statistics"
           className="mt-4 inline-block text-[var(--accent-primary)]"
         >
           بازگشت به پنل آمار
@@ -44,7 +44,7 @@ export default async function PostStatisticsPage({ params }) {
           </h1>
         </div>
         <Link
-          href="/admin/statistics"
+          href="/maddahi/admin/statistics"
           className="flex items-center gap-2 px-4 py-2 rounded-md bg-[var(--background-secondary)] hover:bg-[var(--background-tertiary)] transition-colors"
         >
           <span>بازگشت</span>

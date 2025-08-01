@@ -1,12 +1,11 @@
 // app/layout.js
 
 import "./globals.css";
+import TopLoader from "./componenet/topLoader";
 import { Geist, Geist_Mono } from "next/font/google";
 import { vazir } from "./font";
 import Header from "@/app/maddahi/componenet/Header";
-// Suspense دیگر لازم نیست
-// import { isAuthenticated } from "@/app/actions/auth"; // حذف شد
-import AuthWrapper from "@/app/maddahi/componenet/AuthWrapper"; // کامپوننت جدید
+import AuthWrapper from "@/app/maddahi/componenet/AuthWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,26 +24,27 @@ export const metadata = {
   icons: {
     icon: [
       {
-        url: "/favicon.webp", // فاوآیکون اصلی WebP
+        url: "/favicon.webp",
         type: "image/webp",
       },
     ],
-    // می‌تونی آیکون‌های دیگه مثل Apple Touch Icon رو هم اینجا اضافه کنی:
-    // apple: '/apple-touch-icon.png',
   },
-  // robots را میتوانید برای محیط پروداکشن بردارید
 };
 
-// تابع دیگر async نیست و کاملاً استاتیک است
 export default function RootLayout({ children }) {
   return (
-    <html lang="fa" dir="rtl" className={vazir.variable}>
+    // اینجا از suppressHydrationWarning استفاده کنید
+    <html
+      lang="fa"
+      dir="rtl"
+      className={vazir.variable}
+      suppressHydrationWarning
+    >
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* به جای بررسی مستقیم، کامپوننت کلاینت را قرار میدهیم */}
+        <TopLoader />
         <AuthWrapper />
-
         <Header />
         <main>{children}</main>
       </body>

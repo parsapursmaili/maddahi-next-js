@@ -81,7 +81,7 @@ export async function createPost(formData, revalidateUrl) {
     status,
     name,
     link,
-    video_link, // <-- ویرایش شد
+    video_link,
     description,
     rozeh,
     thumbnail_alt,
@@ -98,6 +98,10 @@ export async function createPost(formData, revalidateUrl) {
     const slugInput = name || encodeURIComponent(title);
     const uniqueSlug = await generateUniqueSlug(slugInput, null);
 
+    // ویرایش: بررسی می‌کنیم که اگر هیچ دسته‌بندی انتخاب نشده بود، دسته پیش‌فرض (ID: 12) را قرار بده.
+    const finalCategories =
+      categories && categories.length > 0 ? categories : [12];
+
     const postData = {
       title,
       content: content || "",
@@ -105,7 +109,7 @@ export async function createPost(formData, revalidateUrl) {
       status: status || "draft",
       name: uniqueSlug,
       link: link || null,
-      video_link: video_link || null, // <-- ویرایش شد
+      video_link: video_link || null,
       description: description,
       rozeh: rozeh || "نیست",
       thumbnail_alt: thumbnail_alt || null,
@@ -115,16 +119,16 @@ export async function createPost(formData, revalidateUrl) {
           ? JSON.stringify(extra_metadata)
           : null,
       date: date ? new Date(date) : new Date(),
-      // last_update: new Date(), // <-- حذف شد
       type: "post",
       view: 0,
-      author: 1, // یا هر مقدار پیش‌فرض دیگری برای نویسنده
+      author: 1,
     };
 
     const [result] = await db.query("INSERT INTO posts SET ?", postData);
     const newPostId = result.insertId;
 
-    await manageTermRelationships(newPostId, categories, tags);
+    // ویرایش: از آرایه دسته‌بندی‌های نهایی برای ذخیره استفاده می‌کنیم.
+    await manageTermRelationships(newPostId, finalCategories, tags);
 
     revalidateTag("posts");
     revalidatePath(revalidateUrl);
@@ -153,7 +157,7 @@ export async function updatePost(postId, formData, revalidateUrl) {
     tags,
     status,
     link,
-    video_link, // <-- ویرایش شد
+    video_link,
     description,
     rozeh,
     thumbnail_alt,
@@ -176,6 +180,10 @@ export async function updatePost(postId, formData, revalidateUrl) {
     );
     const oldSlugEncoded = oldPostRows.length > 0 ? oldPostRows[0].name : null;
 
+    // ویرایش: بررسی می‌کنیم که اگر هیچ دسته‌بندی انتخاب نشده بود، دسته پیش‌فرض (ID: 12) را قرار بده.
+    const finalCategories =
+      categories && categories.length > 0 ? categories : [12];
+
     const uniqueSlugEncoded = await generateUniqueSlug(name, postId);
     const postData = {
       title,
@@ -184,7 +192,7 @@ export async function updatePost(postId, formData, revalidateUrl) {
       thumbnail: thumbnail || null,
       status: status || "draft",
       link: link || null,
-      video_link: video_link || null, // <-- ویرایش شد
+      video_link: video_link || null,
       description: description,
       rozeh: rozeh || "نیست",
       thumbnail_alt: thumbnail_alt || null,
@@ -194,14 +202,14 @@ export async function updatePost(postId, formData, revalidateUrl) {
           ? JSON.stringify(extra_metadata)
           : null,
       date: date ? new Date(date) : new Date(),
-      // last_update: new Date(), // <-- حذف شد
     };
     await connection.query("UPDATE posts SET ? WHERE ID = ?", [
       postData,
       postId,
     ]);
 
-    await manageTermRelationships(postId, categories, tags);
+    // ویرایش: از آرایه دسته‌بندی‌های نهایی برای به‌روزرسانی استفاده می‌کنیم.
+    await manageTermRelationships(postId, finalCategories, tags);
 
     await connection.commit();
 

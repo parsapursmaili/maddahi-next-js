@@ -2,6 +2,7 @@
 "use client";
 
 import { Search, PlusCircle, ArrowDownUp } from "lucide-react";
+import { useRef, useCallback, useEffect } from "react"; // هوک‌های لازم برای IntersectionObserver
 
 export default function PostsList({
   posts,
@@ -13,12 +14,32 @@ export default function PostsList({
   onSortChange,
   onSelectPost,
   onNewPost,
+  // --- پراپ‌های جدید برای اسکرول بی‌نهایت ---
+  onLoadMore,
+  hasMore,
+  isFetchingNextPage,
 }) {
   const inputClasses =
     "w-full bg-[var(--background-tertiary)] border border-[var(--border-primary)] rounded-md text-[var(--foreground-primary)] focus:outline-none focus:border-[var(--accent-primary)] focus:ring-1 focus:ring-[var(--accent-primary)]";
 
-  // *** تغییر اصلی اینجاست ***
-  // کلاس md:w-1/3 حذف شد تا این کامپوننت همیشه عرض والد خود را بگیرد.
+  // --- منطق IntersectionObserver برای اسکرول بی‌نهایت ---
+  const observer = useRef();
+  const lastPostElementRef = useCallback(
+    (node) => {
+      if (isLoading || isFetchingNextPage) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        // اگر آخرین آیتم قابل مشاهده است و صفحات بیشتری وجود دارد، صفحه بعد را بارگذاری کن
+        if (entries[0].isIntersecting && hasMore) {
+          onLoadMore();
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [isLoading, isFetchingNextPage, hasMore, onLoadMore]
+  );
+  // --- پایان منطق IntersectionObserver ---
+
   return (
     <div className="w-full border-r border-[var(--border-primary)] flex flex-col h-full bg-[var(--background-secondary)]">
       {/* هدر */}
@@ -75,23 +96,42 @@ export default function PostsList({
           </p>
         ) : (
           <ul>
-            {posts.map((post) => (
-              <li
-                key={post.ID}
-                onClick={() => onSelectPost(post)}
-                className={`p-4 border-b border-[var(--border-secondary)] cursor-pointer transition-colors ${
-                  selectedPostId === post.ID
-                    ? "bg-[var(--accent-primary-faded)]"
-                    : "hover:bg-[var(--background-tertiary)]"
-                }`}
-              >
-                <h3 className="font-semibold text-md truncate">{post.title}</h3>
-                <p className="text-xs text-[var(--foreground-muted)] mt-1">
-                  ID: {post.ID} - بازدید: {post.view}
-                </p>
-              </li>
-            ))}
+            {posts.map((post, index) => {
+              // اگر این آخرین پست در لیست است، ref را به آن متصل کن
+              const isLastElement = index === posts.length - 1;
+              return (
+                <li
+                  ref={isLastElement ? lastPostElementRef : null}
+                  key={`${post.ID}-${index}`} // کلید منحصر به فرد در صورت وجود IDهای تکراری موقت
+                  onClick={() => onSelectPost(post)}
+                  className={`p-4 border-b border-[var(--border-secondary)] cursor-pointer transition-colors ${
+                    selectedPostId === post.ID
+                      ? "bg-[var(--accent-primary-faded)]"
+                      : "hover:bg-[var(--background-tertiary)]"
+                  }`}
+                >
+                  <h3 className="font-semibold text-md truncate">
+                    {post.title || "بدون عنوان"}
+                  </h3>
+                  <p className="text-xs text-[var(--foreground-muted)] mt-1">
+                    ID: {post.ID} - بازدید: {post.view} - وضعیت: {post.status}
+                  </p>
+                </li>
+              );
+            })}
           </ul>
+        )}
+        {/* نمایش لودر هنگام بارگذاری صفحات بعدی */}
+        {isFetchingNextPage && (
+          <p className="p-4 text-center text-sm text-[var(--foreground-muted)]">
+            در حال بارگذاری موارد بیشتر...
+          </p>
+        )}
+        {/* نمایش پیام پایان لیست */}
+        {!hasMore && posts.length > 0 && (
+          <p className="p-4 text-center text-xs text-[var(--foreground-muted)]">
+            پایان لیست
+          </p>
         )}
       </div>
     </div>

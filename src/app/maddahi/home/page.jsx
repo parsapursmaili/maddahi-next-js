@@ -59,6 +59,10 @@ export default function Home() {
     }
     control.current.index = -1;
     setIndex(-1);
+    if (phaze == 3) {
+      control.current.index = 0;
+      setIndex(0);
+    }
     fetchPosts();
   }
 
