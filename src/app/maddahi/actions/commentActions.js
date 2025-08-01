@@ -2,9 +2,9 @@
 "use server";
 
 import { db } from "@/app/maddahi/lib/db/mysql";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
-// واکشی تمام دیدگاه‌ها برای پنل مدیریت
+// واکشی تمام دیدگاه‌ها برای پنل مدیریت (بدون تغییر)
 export async function getCommentsForAdmin() {
   try {
     const [comments] = await db.query(`
@@ -41,7 +41,6 @@ export async function deleteCommentPermanently(id) {
   try {
     await connection.beginTransaction();
 
-    // ابتدا اطلاعات پست مربوطه را برای revalidate کردن مسیر پیدا می‌کنیم
     const [commentRows] = await connection.query(
       "SELECT post.name as post_slug FROM comments c JOIN posts post ON c.post_id = post.ID WHERE c.id = ?",
       [id]
@@ -54,7 +53,8 @@ export async function deleteCommentPermanently(id) {
     await connection.query(`DELETE FROM comments WHERE id = ?`, [id]);
     await connection.commit();
 
-    // Revalidate کردن مسیرهای لازم
+    // Revalidate کردن تگ و مسیرهای لازم
+    revalidateTag("posts"); // <-- این خط اضافه شد
     revalidatePath("/maddahi/admin/comments");
     if (slugToDelete) {
       revalidatePath(`/maddahi/${slugToDelete}`);
@@ -81,7 +81,7 @@ export async function addCommentReply({ text, parentId, postId }) {
   try {
     const adminName = "مدیر سایت";
     const adminEmail = "admin@yourdomain.com";
-    const status = 1; // 1: پاسخ مدیر خودکار تایید (APPROVED) می‌شود
+    const status = 1;
 
     const [result] = await db.query(
       `INSERT INTO comments (post_id, parent_id, name, email, text, status, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())`,
@@ -99,7 +99,8 @@ export async function addCommentReply({ text, parentId, postId }) {
 
     const newComment = newCommentRows[0];
 
-    // Revalidate کردن مسیرهای لازم
+    // Revalidate کردن تگ و مسیرهای لازم
+    revalidateTag("posts"); // <-- این خط اضافه شد
     revalidatePath("/maddahi/admin/comments");
     if (newComment.post_slug) {
       revalidatePath(`/maddahi/${decodeURIComponent(newComment.post_slug)}`);
@@ -107,6 +108,7 @@ export async function addCommentReply({ text, parentId, postId }) {
 
     return { success: true, newComment };
   } catch (error) {
+    console.error("MySQL Error adding reply:", error); // لاگ کردن خطا برای دیباگ بهتر
     return { success: false, message: "خطا در ثبت پاسخ در دیتابیس." };
   }
 }
@@ -125,6 +127,8 @@ export async function updateCommentStatus(id, status) {
 
     await db.query(`UPDATE comments SET status = ? WHERE id = ?`, [status, id]);
 
+    // Revalidate کردن تگ و مسیرهای لازم
+    revalidateTag("posts"); // <-- این خط اضافه شد
     revalidatePath("/maddahi/admin/comments");
     if (slugToRevalidate) {
       revalidatePath(`/maddahi/${slugToRevalidate}`);
@@ -132,6 +136,7 @@ export async function updateCommentStatus(id, status) {
 
     return { success: true };
   } catch (error) {
+    console.error("MySQL Error updating status:", error); // لاگ کردن خطا
     return { success: false, message: "خطا در تغییر وضعیت." };
   }
 }
@@ -144,7 +149,6 @@ export async function updateCommentDetails(id, data) {
       [data.name, data.email, data.text, id]
     );
 
-    // برای revalidate کردن، به اسلاگ پست نیاز داریم
     const [commentRows] = await db.query(
       "SELECT post.name as post_slug FROM comments c JOIN posts post ON c.post_id = post.ID WHERE c.id = ?",
       [id]
@@ -154,6 +158,8 @@ export async function updateCommentDetails(id, data) {
         ? decodeURIComponent(commentRows[0].post_slug)
         : null;
 
+    // Revalidate کردن تگ و مسیرهای لازم
+    revalidateTag("posts"); // <-- این خط اضافه شد
     revalidatePath("/maddahi/admin/comments");
     if (slugToRevalidate) {
       revalidatePath(`/maddahi/${slugToRevalidate}`);
@@ -161,6 +167,7 @@ export async function updateCommentDetails(id, data) {
 
     return { success: true };
   } catch (error) {
+    console.error("MySQL Error updating details:", error); // لاگ کردن خطا
     return { success: false, message: "خطا در ویرایش دیدگاه." };
   }
 }

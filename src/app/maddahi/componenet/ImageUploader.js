@@ -2,34 +2,26 @@
 
 import { useState, useRef, useEffect } from "react";
 import MediaLibraryModal from "./MediaLibraryModal";
+import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl"; // ۱. وارد کردن تابع کمکی
 
 export default function ImageUploader({
   title,
-  imageUrl, // این imageUrl مسیر نسبی به فایل اصلی است (مثلاً '2025/07/my-image.webp')
+  imageUrl, // مسیر نسبی خام: '2025/07/my-image.webp'
   onImageChange,
   onBusyStateChange,
   revalidatePath,
 }) {
   const [preview, setPreview] = useState(null);
-  const [isLocalPreview, setIsLocalPreview] = useState(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    if (imageUrl) {
-      // imageUrl: '2025/07/my-image.webp'
-      const pathParts = imageUrl.split("/");
-      const year = pathParts[0];
-      const month = pathParts[1];
-      const fileName = pathParts.slice(2).join("/"); // نام فایل اصلی
-
-      // ساخت مسیر API جدید با کوئری پارامترها
-      const apiImageUrl = `/maddahi/api/getimg?year=${year}&month=${month}&fileName=${fileName}&size=150x150&t=${new Date().getTime()}`;
-      setPreview(apiImageUrl);
-      setIsLocalPreview(false);
-    } else {
-      setPreview(null);
-    }
+    // ۲. استفاده از تابع کمکی برای تنظیم پیش‌نمایش اولیه
+    const apiImageUrl = createApiImageUrl(imageUrl, {
+      size: "150x150",
+      bustCache: true,
+    });
+    setPreview(apiImageUrl);
   }, [imageUrl]);
 
   const handleBusy = (isBusy) => onBusyStateChange?.(isBusy);
@@ -40,49 +32,35 @@ export default function ImageUploader({
 
     handleBusy(true);
 
+    // پیش‌نمایش موقت محلی برای تجربه کاربری بهتر
     const localPreviewUrl = URL.createObjectURL(file);
     setPreview(localPreviewUrl);
-    setIsLocalPreview(true);
 
     const formData = new FormData();
     formData.append("file", file);
     formData.append("pathToRevalidate", revalidatePath);
 
-    // فراخوانی API Route برای آپلود
     const response = await fetch("/maddahi/api/upload-revalidate", {
       method: "POST",
       body: formData,
     });
     const result = await response.json();
-    URL.revokeObjectURL(localPreviewUrl); // URL موقت را آزاد کنید
+    URL.revokeObjectURL(localPreviewUrl);
 
     if (result.success && result.relativePath) {
-      // result.relativePath: '2025/07/my-image.webp'
-      const pathParts = result.relativePath.split("/");
-      const year = pathParts[0];
-      const month = pathParts[1];
-      const fileName = pathParts.slice(2).join("/"); // نام فایل اصلی
-
-      // ما از این مسیر اصلی برای ساخت URL API برای نمایش پیش‌نمایش استفاده می‌کنیم.
-      const newApiImageUrl = `/maddahi/api/getimg?year=${year}&month=${month}&fileName=${fileName}&size=150x150&t=${new Date().getTime()}`;
+      // ۳. استفاده از تابع کمکی برای نمایش تصویر آپلود شده
+      const newApiImageUrl = createApiImageUrl(result.relativePath, {
+        size: "150x150",
+        bustCache: true,
+      });
       setPreview(newApiImageUrl);
-      setIsLocalPreview(false);
-      onImageChange(result.relativePath); // این پراپ را به والد می‌فرستد که مقدار را در دیتابیس ذخیره کند (مسیر اصلی)
+      onImageChange(result.relativePath);
     } else {
-      // نکته: در یک اپلیکیشن واقعی، از یک modal سفارشی به جای alert() استفاده کنید.
       alert(result.message || "خطا در آپلود");
+      // در صورت خطا به تصویر قبلی بازگرد
       setPreview(
-        imageUrl
-          ? (() => {
-              const pathParts = imageUrl.split("/");
-              const year = pathParts[0];
-              const month = pathParts[1];
-              const fileName = pathParts.slice(2).join("/");
-              return `/maddahi/api/getimg?year=${year}&month=${month}&fileName=${fileName}&size=150x150&t=${new Date().getTime()}`;
-            })()
-          : null
+        createApiImageUrl(imageUrl, { size: "150x150", bustCache: true })
       );
-      setIsLocalPreview(false);
     }
     handleBusy(false);
   };
@@ -93,16 +71,13 @@ export default function ImageUploader({
   };
 
   const handleSelectFromLibrary = (relativePath) => {
-    // relativePath از MediaLibraryModal می‌آید و مسیر به فایل اصلی است.
-    const pathParts = relativePath.split("/");
-    const year = pathParts[0];
-    const month = pathParts[1];
-    const fileName = pathParts.slice(2).join("/");
-
-    const selectedApiImageUrl = `/maddahi/api/getimg?year=${year}&month=${month}&fileName=${fileName}&size=150x150&t=${new Date().getTime()}`;
+    // ۴. استفاده از تابع کمکی برای نمایش تصویر انتخاب شده از کتابخانه
+    const selectedApiImageUrl = createApiImageUrl(relativePath, {
+      size: "150x150",
+      bustCache: true,
+    });
     setPreview(selectedApiImageUrl);
-    setIsLocalPreview(false);
-    onImageChange(relativePath); // این پراپ را به والد می‌فرستد که مقدار را در دیتابیس ذخیره کند (مسیر اصلی)
+    onImageChange(relativePath);
     setIsLibraryOpen(false);
   };
 
@@ -114,23 +89,12 @@ export default function ImageUploader({
         </div>
       );
     }
-
-    if (isLocalPreview) {
-      return (
-        <img
-          src={preview}
-          alt="پیش‌نمایش موقت"
-          className="w-28 h-28 object-cover rounded-md border border-[var(--border-secondary)]"
-        />
-      );
-    }
-
     return (
-      <img // تگ <img>
-        src={preview} // استفاده از مسیر API جدید
+      <img
+        src={preview}
         alt={title || "پیش‌نمایش تصویر"}
-        width={112} // تعیین عرض و ارتفاع برای تگ <img>
-        height={112} // تعیین عرض و ارتفاع برای تگ <img>
+        width={112}
+        height={112}
         className="object-cover rounded-md border border-[var(--border-secondary)]"
       />
     );

@@ -5,6 +5,7 @@ import {
   getMediaLibrary,
   deleteImage,
 } from "@/app/maddahi/actions/uploadActions";
+import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl"; // ۱. وارد کردن تابع کمکی
 
 export default function MediaLibraryModal({
   onClose,
@@ -24,7 +25,6 @@ export default function MediaLibraryModal({
         setImages(media);
       } catch (error) {
         console.error("Failed to fetch media:", error);
-        // نکته: در یک اپلیکیشن واقعی، از یک modal سفارشی به جای alert() استفاده کنید.
         alert("خطا در بارگذاری رسانه‌ها.");
       } finally {
         setLoading(false);
@@ -40,7 +40,6 @@ export default function MediaLibraryModal({
 
   const handleDelete = async (e, imagePath) => {
     e.stopPropagation();
-    // نکته: در یک اپلیکیشن واقعی، از یک modal سفارشی به جای window.confirm() استفاده کنید.
     if (
       !window.confirm(
         `آیا از حذف فایل "${imagePath.split("/").pop()}" مطمئن هستید؟`
@@ -52,7 +51,6 @@ export default function MediaLibraryModal({
     if (result.success) {
       setImages((prev) => prev.filter((img) => img !== imagePath));
     } else {
-      // نکته: در یک اپلیکیشن واقعی، از یک modal سفارشی به جای alert() استفاده کنید.
       alert(result.message);
     }
   };
@@ -104,20 +102,16 @@ export default function MediaLibraryModal({
           ) : (
             <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4">
               {filteredImages.map((path) => {
-                // path: 'سال/ماه/نام-فایل-اصلی.webp' (مثلاً '2025/07/pirahan-yousef.webp')
-                const pathParts = path.split("/");
-                const year = pathParts[0];
-                const month = pathParts[1];
-                const fileName = pathParts.slice(2).join("/"); // نام فایل اصلی
-
-                // ساخت مسیر API جدید با کوئری پارامترها
-                const apiImageUrl = `/maddahi/api/getimg?year=${year}&month=${month}&fileName=${fileName}&size=150x150&t=${new Date().getTime()}`;
+                // ۲. استفاده ساده از تابع کمکی
+                const apiImageUrl = createApiImageUrl(path, {
+                  size: "150x150",
+                });
 
                 return (
                   <div
                     key={path}
                     className="group relative cursor-pointer aspect-square"
-                    onClick={() => onSelectImage(path)} // همچنان مسیر اصلی را برمی‌گردانیم
+                    onClick={() => onSelectImage(path)}
                   >
                     <button
                       onClick={(e) => handleDelete(e, path)}
@@ -126,19 +120,22 @@ export default function MediaLibraryModal({
                     >
                       ×
                     </button>
-                    <img // تگ <img>
-                      src={apiImageUrl} // استفاده از مسیر API جدید
-                      alt={path.split("/").pop() || "تصویر رسانه"}
-                      style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                      className="rounded-md border-2 border-[var(--border-secondary)] group-hover:border-[var(--accent-primary)] transition-all"
-                    />
+                    {apiImageUrl && (
+                      <img
+                        src={apiImageUrl}
+                        alt={path.split("/").pop() || "تصویر رسانه"}
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                        className="rounded-md border-2 border-[var(--border-secondary)] group-hover:border-[var(--accent-primary)] transition-all"
+                        loading="lazy"
+                      />
+                    )}
                   </div>
                 );
               })}

@@ -1,10 +1,7 @@
-// app/maddahi/api/getimg/route.js
-
 import { NextResponse } from "next/server";
 import { join } from "path";
 import { stat, readFile } from "fs/promises";
 import mime from "mime-types";
-import { createHash } from "crypto"; // برای ساخت ETag
 
 // ابعاد موجود (بدون تغییر)
 const AVAILABLE_SIZES = [
@@ -18,67 +15,60 @@ const AVAILABLE_SIZES = [
 const BASE_STORAGE_DIR = join(process.cwd(), "storage", "uploads");
 
 export async function GET(request) {
-  // بخش دریافت پارامترها و ساخت مسیر فایل (بدون تغییر)
-  const url = new URL(request.url);
-  const year = url.searchParams.get("year");
-  const month = url.searchParams.get("month");
-  const fileName = url.searchParams.get("fileName");
-  const sizeParam = url.searchParams.get("size");
+  const { searchParams } = new URL(request.url);
 
-  if (!year || !month || !fileName) {
+  // استخراج پارامترها از URL
+  const year = searchParams.get("year");
+  const month = searchParams.get("month");
+  const originalFileName = searchParams.get("fileName");
+  const sizeParam = searchParams.get("size");
+
+  // اعتبارسنجی پارامترهای ضروری
+  if (!year || !month || !originalFileName) {
     return NextResponse.json(
-      { error: "پارامترهای year, month و fileName اجباری هستند." },
+      { error: "پارامترهای year، month و fileName ضروری هستند." },
       { status: 400 }
     );
   }
 
-  const baseFileNameWithoutExt = fileName.replace(/\.webp$/, "");
+  const baseFileNameWithoutExt = originalFileName.replace(/\.webp$/, "");
   let targetFileName = "";
 
+  // منطق انتخاب سایز تصویر
   if (sizeParam === "original") {
-    targetFileName = `${baseFileNameWithoutExt}.webp`;
+    targetFileName = originalFileName;
   } else {
     const foundSize = AVAILABLE_SIZES.find((s) => s.suffix === sizeParam);
-    if (foundSize && foundSize.suffix !== "") {
+    if (foundSize && foundSize.suffix) {
+      // اگر سایز مشخص و معتبر بود، نام فایل با پسوند سایز را بساز
       targetFileName = `${baseFileNameWithoutExt}-${foundSize.suffix}.webp`;
     } else {
-      targetFileName = `${baseFileNameWithoutExt}.webp`;
+      // اگر سایز مشخص نشده یا نامعتبر بود، از تصویر اصلی استفاده کن
+      targetFileName = originalFileName;
     }
   }
 
+  // ساخت مسیر کامل فایل روی سرور
   const imageFullPath = join(BASE_STORAGE_DIR, year, month, targetFileName);
 
   try {
-    // ======== بهینه‌سازی اصلی در این بخش است ========
-
-    // ابتدا فقط اطلاعات فایل (مانند زمان آخرین ویرایش) را میخوانیم، نه کل فایل
     const stats = await stat(imageFullPath);
-    // یک ETag بر اساس اندازه فایل و زمان آخرین ویرایش آن می‌سازیم.
-    // این روش بسیار سریع‌تر از خواندن کل فایل و هش کردن آن است.
     const etag = `"${stats.mtime.getTime()}-${stats.size}"`;
-
-    // ETag ارسالی از سمت مرورگر را چک می‌کنیم
     const ifNoneMatch = request.headers.get("if-none-match");
 
+    // مدیریت کش با ETag
     if (ifNoneMatch === etag) {
-      // اگر ETag ها یکی بودند، یعنی مرورگر نسخه صحیح را دارد.
-      // یک پاسخ خالی با کد 304 می‌فرستیم و کار تمام است.
-      // سرور هیچ فایل سنگینی را ارسال نمیکند.
       return new Response(null, { status: 304 });
     }
 
-    // اگر ETag ها یکی نبودند (یا اولین درخواست بود)، حالا کل فایل را میخوانیم
     const imageBuffer = await readFile(imageFullPath);
     const contentType =
       mime.lookup(targetFileName) || "application/octet-stream";
 
-    // فایل را به همراه هدرهای کشینگ و ETag جدید ارسال می‌کنیم
     return new Response(imageBuffer, {
       headers: {
         "Content-Type": contentType,
-        // کش بسیار طولانی مدت برای مرورگر و CDN
         "Cache-Control": "public, max-age=31536000, immutable",
-        // ETag برای بهینه‌سازی درخواست‌های بعدی
         ETag: etag,
       },
       status: 200,
