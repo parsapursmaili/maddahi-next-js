@@ -42,7 +42,7 @@ export const getTopMaddahs = cache(
       return topMaddahsResult.map((maddah) => ({
         name: maddah.name,
         slug: maddah.slug,
-        imageUrl: maddah.image_url ? `/uploads/${maddah.image_url}` : null,
+        imageUrl: maddah.image_url ? maddah.image_url : null,
       }));
     } catch (error) {
       console.error("Failed to fetch top maddahs:", error);

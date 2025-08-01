@@ -60,8 +60,8 @@ export const getPostPageData = cache(
         `
         SELECT DISTINCT p.ID, p.title, p.name, p.thumbnail, p.thumbnail_alt FROM posts AS p
         JOIN wp_term_relationships AS wtr ON p.ID = wtr.object_id
-        WHERE wtr.term_taxonomy_id IN (?) AND p.ID != ?
-        ORDER BY RAND() LIMIT 20;
+        WHERE wtr.term_taxonomy_id IN (?) AND p.ID != ? and p.status = 'publish'
+        ORDER BY RAND() LIMIT 12;
       `,
         [monasebatIds, post.ID]
       );
@@ -76,9 +76,9 @@ export const getPostPageData = cache(
         SELECT DISTINCT p.ID, p.title, p.name, p.thumbnail, p.thumbnail_alt
         FROM posts AS p
         JOIN wp_term_relationships AS wtr ON p.ID = wtr.object_id
-        WHERE wtr.term_taxonomy_id IN (?) AND p.ID != ?
+        WHERE wtr.term_taxonomy_id IN (?) AND p.ID != ? and p.status = 'publish'
         ORDER BY p.date DESC
-        LIMIT 20;
+        LIMIT 12;
       `,
         [maddahIds, post.ID]
       );

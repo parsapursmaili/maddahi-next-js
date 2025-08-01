@@ -104,7 +104,7 @@ export default function MediaLibraryModal({
               {filteredImages.map((path) => {
                 // ۲. استفاده ساده از تابع کمکی
                 const apiImageUrl = createApiImageUrl(path, {
-                  size: "150x150",
+                  size: "150",
                 });
 
                 return (

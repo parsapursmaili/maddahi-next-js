@@ -9,7 +9,8 @@ import Comment from "./CommentForm";
 import CommentThread from "./CommentThread";
 import ServerViewCounter from "@/app/maddahi/componenet/incview";
 import Link from "next/link";
-import ScriptEmbed from "@/app/maddahi/componenet/ScriptEmbed"; // ★★★ ایمپورت کامپوننت جدید ★★★
+import ScriptEmbed from "@/app/maddahi/componenet/ScriptEmbed";
+import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl";
 import {
   BookOpen,
   Sparkles,
@@ -19,6 +20,7 @@ import {
   ShieldAlert,
   ImageIcon,
   Film,
+  ArrowLeft,
 } from "lucide-react";
 
 export async function generateStaticParams() {
@@ -42,8 +44,10 @@ export async function generateMetadata({ params }) {
     "محتوای این صفحه را مشاهده کنید.";
 
   const imageUrl = post.thumbnail
-    ? `/uploads/${post.thumbnail}`
-    : "/default-og-image.jpg";
+    ? `https://besooyeto.ir${createApiImageUrl(post.thumbnail, {
+        size: "560x560",
+      })}`
+    : "https://besooyeto.ir/default-og-image.jpg";
 
   return {
     title: post.title,
@@ -78,7 +82,16 @@ export default async function ProductPage({ params }) {
 
   if (!post) notFound();
 
-  const fullThumbnailUrl = post.thumbnail ? `/uploads/${post.thumbnail}` : null;
+  const fullThumbnailUrl = createApiImageUrl(post.thumbnail, {
+    size: "560",
+  });
+
+  const similarOccasionLink =
+    monasebat.length > 0
+      ? `/maddahi/home/?monasebatha=${monasebat[0].ID}`
+      : "#";
+  const latestFromMaddahLink =
+    maddah.length > 0 ? `/maddahi/category/${maddah[0].slug}` : "#";
 
   let parsedMetadata = null;
   if (post.extra_metadata) {
@@ -97,7 +110,7 @@ export default async function ProductPage({ params }) {
   }
   const secondThumbnailPath = parsedMetadata?.second_thumbnail;
   const fullSecondThumbnailUrl = secondThumbnailPath
-    ? `/uploads/${secondThumbnailPath}`
+    ? createApiImageUrl(secondThumbnailPath, { size: "300" })
     : null;
 
   return (
@@ -176,12 +189,11 @@ export default async function ProductPage({ params }) {
         )}
 
         {post.link && (
-          <section className="px-5 flex justify-center items-center">
+          <section className="px-5 flex justify-center items-center py-6">
             <MusicPlayer audioSrc={post.link} />
           </section>
         )}
 
-        {/* ★★★ شروع: بخش نمایش ویدیو با کامپوننت جدید ★★★ */}
         {post.video_link && (
           <>
             <SectionDivider />
@@ -191,13 +203,12 @@ export default async function ProductPage({ params }) {
                 title="نماهنگ و ویدیو"
                 className="mb-6"
               />
-              <div className="w-full max-w-3xl mx-auto">
+              <div className="w-full max-w-3xl mx-auto aspect-video bg-[#0a0a0a] rounded-lg overflow-hidden ring-1 ring-[#262626]">
                 <ScriptEmbed htmlSnippet={post.video_link} />
               </div>
             </section>
           </>
         )}
-        {/* ★★★ پایان: بخش نمایش ویدیو ★★★ */}
 
         {fullSecondThumbnailUrl && (
           <>
@@ -225,11 +236,16 @@ export default async function ProductPage({ params }) {
           <>
             <SectionDivider />
             <section className="py-8">
-              <SectionTitle
-                icon={<Sparkles />}
-                title="از همین مناسبت"
-                className="px-6 sm:px-8 md:px-12 mb-6"
-              />
+              <div className="flex flex-col items-center gap-3 px-6 sm:px-8 md:px-12 mb-6">
+                <SectionTitle icon={<Sparkles />} title="از همین مناسبت" />
+                <Link
+                  href={similarOccasionLink}
+                  className="group flex items-center gap-2 text-sm font-medium text-[#a3a3a3] hover:text-[#a3fff4] transition-colors duration-300"
+                >
+                  <span>مشاهده ی بیشتر از همین مناسبت</span>
+                  <ArrowLeft className="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-1" />
+                </Link>
+              </div>
               <Slider slides={moshabeh} sliderId="similar-posts" />
             </section>
           </>
@@ -252,11 +268,19 @@ export default async function ProductPage({ params }) {
           <>
             <SectionDivider />
             <section className="py-8">
-              <SectionTitle
-                icon={<Sparkles />}
-                title="آخرین مداحی ها از همین مداح"
-                className="px-6 sm:px-8 md:px-12 mb-6"
-              />
+              <div className="flex flex-col items-center gap-3 px-6 sm:px-8 md:px-12 mb-6">
+                <SectionTitle
+                  icon={<Sparkles />}
+                  title="آخرین مداحی ها از همین مداح"
+                />
+                <Link
+                  href={latestFromMaddahLink}
+                  className="group flex items-center gap-2 text-sm font-medium text-[#a3a3a3] hover:text-[#a3fff4] transition-colors duration-300"
+                >
+                  <span>مشاهده ی بیشتر از همین مداح</span>
+                  <ArrowLeft className="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-1" />
+                </Link>
+              </div>
               <Slider slides={latestFromMaddah} sliderId="latest-from-maddah" />
             </section>
           </>
@@ -265,6 +289,7 @@ export default async function ProductPage({ params }) {
         <div className="border-t border-[#262626] bg-[#0a0a0a]/30 rounded-b-2xl">
           <section className="p-6 sm:p-8 md:p-12">
             <div className="max-w-3xl mx-auto">
+              {/* ★★★ اصلاح: حذف کلاس justify-start برای تراز وسط‌چین یکسان با سایر تیترها ★★★ */}
               <SectionTitle
                 icon={<Users />}
                 title={`نظرات کاربران (${totalCommentsCount.toLocaleString(

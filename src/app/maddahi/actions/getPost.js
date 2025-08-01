@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/app/maddahi/lib/db/mysql";
-
+import { isAuthenticated } from "@/app/maddahi/actions/auth";
 export default async function getPosts(params) {
   let {
     page = 1,
@@ -43,6 +43,9 @@ export default async function getPosts(params) {
       `p.link IS NOT NULL`,
       `p.link != ''`,
     ];
+    (await isAuthenticated())
+      ? null
+      : whereClauses.push(`p.status = 'publish'`);
     let values = [];
     // --- شروع تغییرات ---
     // آرایه‌ای جداگانه برای مقادیر پارامترهای بخش ORDER BY

@@ -73,7 +73,7 @@ export default function ImageUploader({
   const handleSelectFromLibrary = (relativePath) => {
     // ۴. استفاده از تابع کمکی برای نمایش تصویر انتخاب شده از کتابخانه
     const selectedApiImageUrl = createApiImageUrl(relativePath, {
-      size: "150x150",
+      size: "150",
       bustCache: true,
     });
     setPreview(selectedApiImageUrl);

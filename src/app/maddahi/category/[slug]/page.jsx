@@ -7,14 +7,12 @@ import { db } from "@/app/maddahi/lib/db/mysql";
 import getPosts from "@/app/maddahi/actions/getPost";
 import { FiMic, FiHeadphones, FiChevronLeft } from "react-icons/fi";
 import { notFound } from "next/navigation";
-
+import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl";
 // =================================================================
 // ★★ کامپوننت‌های نهایی - بازطراحی شده بر اساس استایل شما ★★
 // =================================================================
 
 export async function generateMetadata({ params }) {
-  const siteUrl = process.env.SITE_URL || "http://localhost:3000";
-  const uploadsPath = process.env.NEXT_PUBLIC_UPLOADS_BASE_PATH || "/uploads";
   const { slug } = params;
 
   const [maddahResult] = await db.query(
@@ -47,8 +45,8 @@ export async function generateMetadata({ params }) {
 
   // ساخت URL کامل برای تصویر
   const imageUrl = maddah.image_url
-    ? `/uploads/${maddah.image_url}`
-    : `${siteUrl}/default-og-image.jpg`; // یک تصویر پیش‌فرض برای زمانی که تصویری وجود ندارد
+    ? createApiImageUrl(maddah.image_url, { size: "300" })
+    : ``; // یک تصویر پیش‌فرض برای زمانی که تصویری وجود ندارد
 
   console.log(imageUrl);
   return {
@@ -58,7 +56,7 @@ export async function generateMetadata({ params }) {
       title: title,
       description: description,
       images: [imageUrl],
-      url: `${siteUrl}/maddah/${slug}`,
+      url: `/maddahi/category/${slug}`,
       type: "profile", // "profile" برای صفحه شخص مناسب‌تر است
     },
     twitter: {
@@ -166,7 +164,7 @@ export default async function MaddahCategoryPage({ params }) {
   const MADDAS_ID = maddah.ID;
 
   const fullImageUrl = maddah.image_url
-    ? `${uploadsPath}/${encodeURI(maddah.image_url)}`
+    ? createApiImageUrl(maddah.image_url, { size: "300" })
     : null;
   const eulogistBiographyHtml = maddah.biography || null;
 
