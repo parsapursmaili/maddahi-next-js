@@ -114,10 +114,12 @@ export default async function ProductPage({ params }) {
     : null;
 
   return (
-    <main className="relative flex min-h-screen flex-col items-center bg-[#0a0a0a] py-16 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
-      <article className="relative z-10 w-full max-w-5xl rounded-2xl bg-[#171717]/50 shadow-2xl shadow-black/40 backdrop-blur-2xl ring-1 ring-[#262626]">
+    // ★★★ اصلاح: حذف px-4 برای تمام-عرض شدن در موبایل ★★★
+    <main className="relative flex min-h-screen flex-col items-center bg-[#0a0a0a] py-16 sm:px-6 lg:px-8 overflow-x-hidden">
+      {/* ★★★ اصلاح: افزودن rounded-none برای موبایل و sm:rounded-2xl برای دسکتاپ ★★★ */}
+      <article className="relative z-10 w-full max-w-5xl rounded-none sm:rounded-2xl bg-[#171717]/50 shadow-2xl shadow-black/40 backdrop-blur-2xl ring-1 ring-[#262626]">
         <div
-          className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-[#a3fff4]/10 pointer-events-none"
+          className="absolute inset-0 rounded-none sm:rounded-2xl ring-1 ring-inset ring-[#a3fff4]/10 pointer-events-none"
           aria-hidden="true"
         ></div>
 
@@ -286,10 +288,9 @@ export default async function ProductPage({ params }) {
           </>
         )}
 
-        <div className="border-t border-[#262626] bg-[#0a0a0a]/30 rounded-b-2xl">
+        <div className="border-t border-[#262626] bg-[#0a0a0a]/30 rounded-b-none sm:rounded-b-2xl">
           <section className="p-6 sm:p-8 md:p-12">
             <div className="max-w-3xl mx-auto">
-              {/* ★★★ اصلاح: حذف کلاس justify-start برای تراز وسط‌چین یکسان با سایر تیترها ★★★ */}
               <SectionTitle
                 icon={<Users />}
                 title={`نظرات کاربران (${totalCommentsCount.toLocaleString(
