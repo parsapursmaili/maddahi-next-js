@@ -114,9 +114,7 @@ export default async function ProductPage({ params }) {
     : null;
 
   return (
-    // ★★★ اصلاح: حذف px-4 برای تمام-عرض شدن در موبایل ★★★
     <main className="relative flex min-h-screen flex-col items-center bg-[#0a0a0a] py-16 sm:px-6 lg:px-8 overflow-x-hidden">
-      {/* ★★★ اصلاح: افزودن rounded-none برای موبایل و sm:rounded-2xl برای دسکتاپ ★★★ */}
       <article className="relative z-10 w-full max-w-5xl rounded-none sm:rounded-2xl bg-[#171717]/50 shadow-2xl shadow-black/40 backdrop-blur-2xl ring-1 ring-[#262626]">
         <div
           className="absolute inset-0 rounded-none sm:rounded-2xl ring-1 ring-inset ring-[#a3fff4]/10 pointer-events-none"
@@ -130,9 +128,8 @@ export default async function ProductPage({ params }) {
               <Image
                 src={fullThumbnailUrl}
                 alt={post.thumbnail_alt || post.title}
-                fill
-                sizes="(max-width: 768px) 192px, 224px"
                 priority
+                fill
                 className="rounded-2xl shadow-lg shadow-black/60 transition-transform duration-500 ease-in-out group-hover:scale-105"
               />
             </div>
@@ -223,10 +220,9 @@ export default async function ProductPage({ params }) {
               />
               <div className="group relative h-52 w-52 flex-shrink-0">
                 <Image
+                  fill
                   src={fullSecondThumbnailUrl}
                   alt={`تصویر دوم برای ${post.title}`}
-                  fill
-                  sizes="208px"
                   className="rounded-xl shadow-md shadow-black/25 transition-transform duration-500 group-hover:scale-105 ring-1 ring-white/10"
                 />
               </div>
@@ -237,7 +233,8 @@ export default async function ProductPage({ params }) {
         {moshabeh.length > 0 && (
           <>
             <SectionDivider />
-            <section className="py-8">
+            {/* ★★★ اصلاح: افزودن px-1 برای ایجاد فاصله ظریف در اطراف اسلایدر ★★★ */}
+            <section className="py-8 px-1">
               <div className="flex flex-col items-center gap-3 px-6 sm:px-8 md:px-12 mb-6">
                 <SectionTitle icon={<Sparkles />} title="از همین مناسبت" />
                 <Link
@@ -269,7 +266,8 @@ export default async function ProductPage({ params }) {
         {latestFromMaddah.length > 0 && (
           <>
             <SectionDivider />
-            <section className="py-8">
+            {/* ★★★ اصلاح: افزودن px-1 برای ایجاد فاصله ظریف در اطراف اسلایدر ★★★ */}
+            <section className="py-8 px-1">
               <div className="flex flex-col items-center gap-3 px-6 sm:px-8 md:px-12 mb-6">
                 <SectionTitle
                   icon={<Sparkles />}
