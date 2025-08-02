@@ -4,7 +4,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getPostPageData } from "./post";
 import MusicPlayer from "@/app/maddahi/componenet/singleplayer";
-import Slider from "@/app/maddahi/componenet/slider";
+import Slider from "@/app/maddahi/componenet/Slider2";
 import Comment from "./CommentForm";
 import CommentThread from "./CommentThread";
 import ServerViewCounter from "@/app/maddahi/componenet/incview";

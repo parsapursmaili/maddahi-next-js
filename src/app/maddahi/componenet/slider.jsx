@@ -1,14 +1,17 @@
 "use client";
 
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation } from "swiper/modules";
+// ۱. ماژول FreeMode را در کنار Navigation وارد کنید
+import { Navigation, FreeMode } from "swiper/modules";
 import Image from "next/image";
 import Link from "next/link";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl"; // ۱. وارد کردن تابع کمکی
+import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl";
 import "./SliderConcept.css";
 import "swiper/css";
 import "swiper/css/navigation";
+// ۲. استایل‌های مربوط به FreeMode را وارد کنید (اختیاری اما پیشنهادی)
+import "swiper/css/free-mode";
 
 const SliderConcept11 = ({ slides, sliderId }) => {
   const nextButtonClass = `swiper-button-next-${sliderId}`;
@@ -17,7 +20,10 @@ const SliderConcept11 = ({ slides, sliderId }) => {
   return (
     <div className="relative group/slider container mx-auto px-4">
       <Swiper
-        modules={[Navigation]}
+        // ۳. ماژول FreeMode را به لیست ماژول‌ها اضافه کنید
+        modules={[FreeMode, Navigation]}
+        // ۴. حالت آزاد را فعال کنید
+        freeMode={true}
         spaceBetween={24}
         slidesPerView={2}
         navigation={{
@@ -34,7 +40,6 @@ const SliderConcept11 = ({ slides, sliderId }) => {
         dir="rtl"
       >
         {slides.map((post) => {
-          // ۲. فراخوانی تابع کمکی برای ساخت URL
           const imageUrl = createApiImageUrl(post.thumbnail, {
             size: "150",
           });
@@ -48,14 +53,12 @@ const SliderConcept11 = ({ slides, sliderId }) => {
                 <div className="neon-glow absolute inset-0 rounded-2xl p-0.5 w-full bg-[conic-gradient(from_var(--angle),#262626,#00b4a0,#a3fff4,#00b4a0,#262626)] opacity-0 group-hover:opacity-100 transition-opacity duration-400 ease-in-out z-[-1] animate-spin-slow group-hover:[animation-play-state:running]"></div>
                 <div className="relative bg-[#171717] rounded-xl p-4 flex flex-col items-center gap-4 h-full">
                   <div className="relative w-32 h-32 rounded-full overflow-hidden flex-shrink-0">
-                    {/* ۳. استفاده از نتیجه در کامپوننت Image */}
                     {imageUrl ? (
                       <Image
                         src={imageUrl}
                         alt={post.title}
                         fill
                         className="object-cover transition-transform duration-400 ease-in-out group-hover:scale-110"
-                        // next/image به طور خودکار lazy loading را مدیریت می‌کند
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-[#262626] text-[#525252]">

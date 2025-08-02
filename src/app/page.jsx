@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { FiArrowLeft, FiGrid } from "react-icons/fi";
-import Slider from "@/app/maddahi/componenet/slider";
+import Slider from "@/app/maddahi/componenet/Slider2";
 import { db } from "@/app/maddahi/lib/db/mysql";
 import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl";
 

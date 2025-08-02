@@ -1,4 +1,4 @@
-import Slider from "@/app/maddahi/componenet/slider";
+import Slider from "@/app/maddahi/componenet/Slider2";
 import SliderWithViews from "@/app/maddahi/componenet/SliderWithViews";
 import RandomMaddahCard from "@/app/maddahi/componenet/RandomMaddahCard";
 import { db } from "@/app/maddahi/lib/db/mysql";
