@@ -37,7 +37,7 @@ const SliderCardView = ({ slides, sliderId }) => {
         dir="rtl"
       >
         {slides.map((post) => {
-          const imageUrl = createApiImageUrl(post.thumbnail, { size: "250" });
+          const imageUrl = createApiImageUrl(post.thumbnail, { size: "300" });
 
           return (
             <SwiperSlide key={post.ID}>

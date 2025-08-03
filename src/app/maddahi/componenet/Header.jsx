@@ -13,9 +13,9 @@ export default function Header() {
   const pathname = usePathname();
 
   const navLinks = [
-    { href: "/", label: "صفحه اصلی" },
-    { href: "/home", label: "مداحی ها" },
-    { href: "/contact-us", label: "تماس با ما" },
+    { href: "/maddahi", label: "صفحه اصلی" },
+    { href: "/maddahi/home", label: "مداحی ها" },
+    { href: "/maddahi/contact-us", label: "تماس با ما" },
   ];
 
   // با تغییر مسیر، منو و جستجو را می‌بندیم

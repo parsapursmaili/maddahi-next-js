@@ -11,9 +11,12 @@ import {
 import ImageUploader from "@/app/maddahi/componenet/ImageUploader";
 
 // TiptapEditor اکنون از استایل‌های گلوبال استفاده می‌کند
-const TiptapEditor = dynamic(() => import("@/app/maddahi/componenet/TiptapEditor"), {
-  ssr: false,
-});
+const TiptapEditor = dynamic(
+  () => import("@/app/maddahi/componenet/TiptapEditor"),
+  {
+    ssr: false,
+  }
+);
 
 const defaultTerm = {
   ID: null,
@@ -37,7 +40,17 @@ export default function TermForm({
   const [loadingAction, setLoadingAction] = useState(null);
 
   useEffect(() => {
-    setFormData(initialTerm?.ID ? initialTerm : defaultTerm);
+    // هنگام دریافت ترم جدید، اسلاگ را دیکود کن
+    const termToSet = initialTerm?.ID ? { ...initialTerm } : defaultTerm;
+    if (termToSet.slug) {
+      try {
+        termToSet.slug = decodeURIComponent(termToSet.slug);
+      } catch (e) {
+        console.error("Failed to decode slug:", termToSet.slug, e);
+        // اگر دیکود با خطا مواجه شد، همان مقدار اولیه را نگه دار
+      }
+    }
+    setFormData(termToSet);
     setMessage({ type: "", text: "" });
     setLoadingAction(null);
   }, [initialTerm]);
@@ -54,14 +67,33 @@ export default function TermForm({
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loadingAction) return;
+
+    let finalSlug = formData.slug.trim();
+    // اگر اسلاگ خالی بود، آن را از روی نام بساز
+    if (!finalSlug) {
+      finalSlug = formData.name.substring(0, 50).trim().replace(/\s+/g, "-");
+    }
+
+    // یک کپی از اطلاعات فرم برای ارسال به سرور بساز
+    const dataToSubmit = {
+      ...formData,
+      // اسلاگ نهایی را برای ذخیره‌سازی در دیتابیس انکود کن
+      slug: encodeURIComponent(finalSlug),
+    };
+
     setLoadingAction("submit");
     const result = termForEditing.ID
-      ? await updateTermWithMetadata(termForEditing.ID, formData)
-      : await createTermWithMetadata(formData);
+      ? await updateTermWithMetadata(termForEditing.ID, dataToSubmit)
+      : await createTermWithMetadata(dataToSubmit);
 
     if (result?.success) {
       setMessage({ type: "success", text: result.message });
-      onFormSubmit({ ...formData, ID: termForEditing.ID || result.newTermId });
+      // برای آپدیت لیست در UI، فرمت دیکود شده را ارسال کن
+      onFormSubmit({
+        ...formData,
+        slug: finalSlug,
+        ID: termForEditing.ID || result.newTermId,
+      });
     } else {
       setMessage({ type: "error", text: result?.message || "خطایی رخ داد." });
     }
@@ -118,7 +150,7 @@ export default function TermForm({
           </div>
           <div>
             <label htmlFor="slug" className={labelClasses}>
-              اسلاگ
+              اسلاگ (اختیاری)
             </label>
             <input
               type="text"
@@ -126,7 +158,6 @@ export default function TermForm({
               id="slug"
               value={formData.slug}
               onChange={handleChange}
-              required
               className={inputFieldClasses}
             />
           </div>

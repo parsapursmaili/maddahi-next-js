@@ -52,7 +52,7 @@ async function fetchPosts(orderby = "date desc") {
 const PortalHeader = () => (
   <header className="sticky top-0 z-50 w-full bg-[var(--background-primary)]/80 backdrop-blur-lg border-b border-[var(--border-primary)]">
     <div className="container mx-auto flex items-center justify-between h-20 px-4">
-      <Link href="/" className="text-3xl font-black relative group">
+      <Link href="/maddahi" className="text-3xl font-black relative group">
         <span className="bg-clip-text text-transparent bg-gradient-to-r from-[var(--accent-crystal-highlight)] to-[var(--accent-primary)]">
           به سوی تو
         </span>
