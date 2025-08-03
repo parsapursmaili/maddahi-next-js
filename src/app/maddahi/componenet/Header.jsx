@@ -52,8 +52,9 @@ export default function Header() {
                     whileHover={{ y: -2 }}
                     transition={{ type: "spring", stiffness: 300 }}
                   >
+                    {/* --- تغییر در این قسمت اعمال شده است --- */}
                     <Link
-                      href={`/maddahi${link.href}`}
+                      href={link.href} // اصلاح شد: '/maddahi' اضافه حذف شد
                       className={`relative block px-4 py-2 text-base rounded-md transition-colors duration-300 z-10 ${
                         isActive
                           ? "text-[var(--foreground-primary)]"
