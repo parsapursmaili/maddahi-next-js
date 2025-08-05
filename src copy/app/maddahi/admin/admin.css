@@ -1,0 +1,41 @@
+/* ================================================== */
+/* -- استایل‌های جدید برای داشبورد مدرن -- */
+/* ================================================== */
+
+.aurora-background {
+  position: relative;
+  overflow: hidden; /* جلوگیری از خروج گرادینت از صفحه */
+}
+
+.aurora-background::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1200px; /* عرض بزرگ برای پوشش کامل */
+  height: 800px; /* ارتفاع بزرگ */
+  z-index: 0;
+  pointer-events: none; /* اطمینان از اینکه روی محتوا تاثیری ندارد */
+
+  /* گرادینت آئورا با استفاده از رنگ‌های اصلی شما */
+  background-image: radial-gradient(
+      circle at 20% 20%,
+      rgba(var(--accent-primary-rgb), 0.1),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 80% 70%,
+      rgba(163, 255, 244, 0.08),
+      /* Crystal Highlight */ transparent 30%
+    );
+
+  filter: blur(100px); /* محو کردن شدید برای ایجاد افکت نرم */
+  opacity: 0.5; /* کنترل شدت افکت */
+}
+
+/* اطمینان از اینکه محتوای اصلی روی پس‌زمینه قرار می‌گیرد */
+.aurora-background > * {
+  position: relative;
+  z-index: 1;
+}

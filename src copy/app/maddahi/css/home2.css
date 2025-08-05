@@ -1,0 +1,40 @@
+/* app/css/home2.css */
+
+/* استایل دکمه‌های ناوبری سفارشی Swiper */
+/* تغییر: استفاده از انتخابگر صفتی برای هدف قرار دادن همه دکمه‌ها */
+[class^="swiper-button-prev-"],
+[class^="swiper-button-next-"] {
+  color: var(--foreground-primary) !important;
+  border: 1px solid var(--border-primary);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+}
+
+/* 
+  حذف شد: قوانین مربوط به ::after حذف شدند
+  چون آیکون‌ها به صورت مستقیم در کامپوننت React (با FaChevronLeft/Right) اضافه شده‌اند
+  و دیگر نیازی به افزودن محتوا از طریق CSS نیست.
+*/
+
+/* استایل Pagination Dots سفارشی */
+[class^="swiper-pagination-"] .swiper-pagination-bullet {
+  background-color: var(--foreground-muted) !important;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transition: all 0.4s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+  cursor: pointer;
+}
+
+[class^="swiper-pagination-"] .swiper-pagination-bullet-active {
+  background-color: var(--accent-primary) !important;
+  width: 32px;
+  border-radius: 8px;
+}
+
+/* کلاس کمکی برای محدود کردن تعداد خطوط متن */
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}

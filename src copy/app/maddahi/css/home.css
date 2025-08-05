@@ -1,0 +1,110 @@
+/* 
+=================================================================
+  استایل‌های ایزوله شده برای موزیک پلیر اصلی سایت (main-music)
+=================================================================
+*/
+
+/* 
+  این استایل‌ها اکنون فقط به input[type="range"] که فرزندِ
+  یک اِلِمان با کلاس .main-music است، اعمال می‌شوند.
+*/
+.main-music input[type="range"] {
+  direction: ltr; /* جهت‌گیری چپ به راست حفظ شده است */
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px; /* کمی باریک‌تر برای ظاهر مدرن‌تر */
+  border-radius: 3px;
+  background: var(--background-tertiary); /* رنگ پس‌زمینه ترک */
+  outline: none;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+
+/* استایل دستگیره (Thumb) برای مرورگرهای Webkit */
+.main-music input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px; /* کمی بزرگ‌تر برای تعامل راحت‌تر */
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent-primary); /* استفاده از رنگ اصلی تم */
+  border: 3px solid var(--background-secondary); /* حاشیه همرنگ با پس‌زمینه پلیر */
+  box-shadow: 0 0 8px rgba(var(--accent-primary-rgb), 0.5); /* افزودن درخشش زیبا */
+  margin-top: -2px; /* تنظیم دقیق‌تر موقعیت عمودی دستگیره */
+  transition: transform 0.2s ease;
+}
+
+/* افکت هاور برای دستگیره */
+.main-music input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+/* استایل دستگیره (Thumb) برای فایرفاکس */
+.main-music input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  border: 3px solid var(--background-secondary);
+  box-shadow: 0 0 8px rgba(var(--accent-primary-rgb), 0.5);
+  cursor: pointer;
+}
+
+/* 
+  نکته: همانطور که قبلا ذکر شده، برای کار کردن box-shadow با متغیر رنگی،
+  باید متغیر RGB در :root تعریف شده باشد.
+  --accent-primary-rgb: 0, 180, 160; (بر اساس پالت رنگی قبلی شما)
+*/
+
+/* 
+=================================================================
+  انیمیشن و استایل‌های عمومی دیگر (در صورت نیاز می‌توانید اینها را هم ایزوله کنید)
+=================================================================
+*/
+
+/* 
+  اگر این انیمیشن هم مختص پلیر دوم است، بهتر است آن را نیز ایزوله کنید.
+  مثال: .main-music .bounce { ... }
+*/
+@keyframes bounce {
+  0%,
+  100% {
+    color: var(--accent-secondary); /* استفاده از رنگ نیلی */
+  }
+  50% {
+    color: var(--accent-primary); /* استفاده از رنگ آبی آسمانی */
+  }
+}
+
+.bounce {
+  animation: bounce 3s ease-in-out infinite;
+}
+
+/* 
+  استایل زیر برای تمام تگ‌های <i> اعمال می‌شود. اگر می‌خواهید فقط
+  آیکون‌های داخل پلیر دوم این استایل را بگیرند، آن را به این شکل تغییر دهید:
+  .main-music i { cursor: pointer; }
+*/
+i {
+  cursor: pointer;
+}
+
+/* استایل کانتینر عمومی، اگر لازم است می‌تواند باقی بماند */
+.container {
+  background-color: var(--background-primary);
+  padding: 2rem;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
