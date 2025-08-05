@@ -7,7 +7,7 @@ import { ArrowLeft } from "lucide-react"; // ★ ایمپورت آیکون فل�
 
 export const revalidate = 1800; // 30 دقیقه
 
-async function fetchPosts(orderby = "date desc", limit = 20) {
+async function fetchPosts(orderby = "date desc", limit = 12) {
   try {
     const [data] = await db.query(
       `SELECT ID, title, thumbnail, name, view FROM posts WHERE type='post' AND status='publish' ORDER BY ${orderby} LIMIT ${limit}`
@@ -21,9 +21,9 @@ async function fetchPosts(orderby = "date desc", limit = 20) {
 
 export default async function Home() {
   const [latestSlides, popularSlides, randomSlides] = await Promise.all([
-    fetchPosts("date desc", 20),
-    fetchPosts("CAST(view AS UNSIGNED) desc", 10),
-    fetchPosts("RAND()", 20),
+    fetchPosts("date desc", 12),
+    fetchPosts("CAST(view AS UNSIGNED) desc", 12),
+    fetchPosts("RAND()", 12),
   ]);
 
   return (
