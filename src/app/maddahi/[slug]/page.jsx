@@ -49,6 +49,7 @@ export async function generateMetadata({ params }) {
       })}`
     : "https://besooyeto.ir/default-og-image.jpg";
 
+  post.title = `${post.title}-به سوی تو`;
   return {
     title: post.title,
     description: description,
