@@ -11,6 +11,7 @@ import ServerViewCounter from "@/app/maddahi/componenet/incview";
 import Link from "next/link";
 import ScriptEmbed from "@/app/maddahi/componenet/ScriptEmbed";
 import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl";
+import PostTimeTracker from "./PostTimeTracker";
 import {
   BookOpen,
   Sparkles,
@@ -116,6 +117,7 @@ export default async function ProductPage({ params }) {
 
   return (
     <main className="relative flex min-h-screen flex-col items-center bg-[#0a0a0a] py-16 sm:px-6 lg:px-8 overflow-x-hidden">
+      <PostTimeTracker postId={post.ID} />
       <article className="relative z-10 w-full max-w-5xl rounded-none sm:rounded-2xl bg-[#171717]/50 shadow-2xl shadow-black/40 backdrop-blur-2xl ring-1 ring-[#262626]">
         <div
           className="absolute inset-0 rounded-none sm:rounded-2xl ring-1 ring-inset ring-[#a3fff4]/10 pointer-events-none"

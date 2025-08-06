@@ -1,12 +1,12 @@
 // /app/components/admin/statistics/TopPostsTable.js
 import Link from "next/link";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, LineChart } from "lucide-react"; // آیکون نمودار اضافه شد
 
 const TopPostsTable = ({ data }) => {
   if (!data || data.length === 0) {
     return (
       <p className="text-center text-[var(--foreground-muted)] py-8">
-        داده‌ای برای نمایش در این ماه وجود ندارد.
+        داده‌ای برای نمایش در ۳۰ روز اخیر وجود ندارد.
       </p>
     );
   }
@@ -23,7 +23,7 @@ const TopPostsTable = ({ data }) => {
               عنوان پست
             </th>
             <th className="p-3 text-sm font-semibold text-[var(--foreground-secondary)] text-center">
-              بازدید ماه
+              بازدید (۳۰ روز)
             </th>
             <th className="p-3 text-sm font-semibold text-[var(--foreground-secondary)] text-center">
               عملیات
@@ -49,10 +49,11 @@ const TopPostsTable = ({ data }) => {
                 <div className="flex items-center justify-center space-x-4 space-x-reverse">
                   <Link
                     href={`/maddahi/admin/statistics/posts/${post.ID}`}
-                    className="text-[var(--foreground-secondary)] hover:text-[var(--accent-crystal-highlight)] transition-colors"
+                    className="flex items-center gap-1 text-[var(--foreground-secondary)] hover:text-[var(--accent-crystal-highlight)] transition-colors"
                     title="نمودار جزئیات این پست"
                   >
-                    نمودار ماهانه
+                    <LineChart size={14} />
+                    <span>نمودار</span>
                   </Link>
                   <a
                     href={post.link}

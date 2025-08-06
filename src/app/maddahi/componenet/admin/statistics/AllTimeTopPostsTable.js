@@ -1,6 +1,6 @@
 // /app/components/admin/statistics/AllTimeTopPostsTable.js
 import Link from "next/link";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, LineChart } from "lucide-react"; // آیکون نمودار اضافه شد
 
 const AllTimeTopPostsTable = ({ data }) => {
   if (!data || data.length === 0) {
@@ -23,7 +23,7 @@ const AllTimeTopPostsTable = ({ data }) => {
               کل بازدیدها
             </th>
             <th className="p-3 text-sm font-semibold text-[var(--foreground-secondary)] text-center">
-              لینک
+              عملیات
             </th>
           </tr>
         </thead>
@@ -39,16 +39,27 @@ const AllTimeTopPostsTable = ({ data }) => {
               <td className="p-3 text-center font-mono text-[var(--accent-primary)] font-bold">
                 {post.total_views.toLocaleString("fa-IR")}
               </td>
-              <td className="p-3 text-center">
-                <a
-                  href={post.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block text-[var(--foreground-secondary)] hover:text-[var(--accent-crystal-highlight)] transition-colors"
-                  title="مشاهده پست"
-                >
-                  <ExternalLink size={16} />
-                </a>
+              {/* تغییر: اضافه شدن لینک به نمودار و حفظ لینک اصلی */}
+              <td className="p-3">
+                <div className="flex items-center justify-center space-x-4 space-x-reverse">
+                  <Link
+                    href={`/maddahi/admin/statistics/posts/${post.ID}`}
+                    className="flex items-center gap-1 text-[var(--foreground-secondary)] hover:text-[var(--accent-crystal-highlight)] transition-colors"
+                    title="نمودار جزئیات این پست"
+                  >
+                    <LineChart size={14} />
+                    <span>نمودار</span>
+                  </Link>
+                  <a
+                    href={post.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[var(--foreground-secondary)] hover:text-[var(--accent-crystal-highlight)] transition-colors"
+                    title="مشاهده پست"
+                  >
+                    <ExternalLink size={16} />
+                  </a>
+                </div>
               </td>
             </tr>
           ))}

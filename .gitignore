@@ -9,10 +9,10 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
-/storage
 
 # testing
 /coverage
+/storage
 
 # next.js
 /.next/
