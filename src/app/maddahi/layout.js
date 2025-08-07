@@ -7,6 +7,9 @@ import { vazir } from "./font";
 import Header from "@/app/maddahi/componenet/Header";
 import AuthWrapper from "@/app/maddahi/componenet/AuthWrapper";
 
+// ۱. کامپوننت Script را از next/script وارد کنید
+import Script from "next/script";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -33,7 +36,6 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    // اینجا از suppressHydrationWarning استفاده کنید
     <html
       lang="fa"
       dir="rtl"
@@ -47,6 +49,22 @@ export default function RootLayout({ children }) {
         <AuthWrapper />
         <Header />
         <main>{children}</main>
+
+        {/* ۲. اسکریپت‌های گوگل آنالیتیکس را اینجا، قبل از بستن تگ body قرار دهید */}
+        <Script
+          strategy="lazyOnload"
+          src={`https://www.googletagmanager.com/gtag/js?id=G-XSH630MRCH`}
+        />
+
+        <Script id="google-analytics" strategy="lazyOnload">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-XSH630MRCH');
+          `}
+        </Script>
       </body>
     </html>
   );
