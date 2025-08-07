@@ -1,4 +1,4 @@
-// /app/components/admin/statistics/StatisticsDashboard.js
+// /app/components/admin/statistics/StatisticsDashboard.js (اصلاح‌شده)
 "use client";
 
 import Link from "next/link";
@@ -7,21 +7,24 @@ import ContentGrowthChart from "./ContentGrowthChart";
 import TopPostsTable from "./TopPostsTable";
 import AllTimeTopPostsTable from "./AllTimeTopPostsTable";
 import CategoryPopularityChart from "./CategoryPopularityChart";
+import TopEngagementTable from "./TopEngagementTable";
 import {
   FileText,
   MessageSquare,
   Eye,
   CalendarClock,
   ArrowLeft,
-} from "lucide-react"; // آیکون‌های جدید
+  Clock,
+} from "lucide-react";
 
 const StatisticsDashboard = ({ initialStats }) => {
   const {
     quickStats,
-    topPostsLast30Days, // نام جدید
+    topPostsLast30Days,
     contentGrowth,
     allTimeTopPosts,
     topCategories,
+    topEngagementPosts,
   } = initialStats;
 
   return (
@@ -33,55 +36,38 @@ const StatisticsDashboard = ({ initialStats }) => {
         </p>
       </header>
 
-      {/* تغییر ۱: چیدمان و محتوای جدید کارت‌های آمار */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+      {/* ★★★ اصلاح: اطمینان از تبدیل مقادیر به عدد قبل از فرمت‌بندی ★★★ */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <StatCard
           icon={<FileText />}
           title="تعداد پست‌ها"
-          value={quickStats.postsCount.toLocaleString("fa-IR")}
+          value={Number(quickStats.postsCount || 0).toLocaleString("fa-IR")}
         />
         <StatCard
           icon={<MessageSquare />}
           title="کل دیدگاه‌ها"
-          value={quickStats.totalCommentsCount.toLocaleString("fa-IR")}
-          subtitle={`${quickStats.pendingCommentsCount.toLocaleString(
+          value={Number(quickStats.totalCommentsCount || 0).toLocaleString(
             "fa-IR"
-          )} در انتظار`}
+          )}
+          subtitle={`${Number(
+            quickStats.pendingCommentsCount || 0
+          ).toLocaleString("fa-IR")} در انتظار`}
         />
         <StatCard
-          icon={<CalendarClock />} // آیکون جدید
+          icon={<CalendarClock />}
           title="بازدید امروز"
-          value={quickStats.todaysViews.toLocaleString("fa-IR")}
+          value={Number(quickStats.todaysViews || 0).toLocaleString("fa-IR")}
         />
         <StatCard
           icon={<Eye />}
           title="کل بازدیدها"
-          value={quickStats.totalViews.toLocaleString("fa-IR")}
+          value={Number(quickStats.totalViews || 0).toLocaleString("fa-IR")}
         />
       </div>
 
-      {/* بخش اصلی نمودارها و جداول */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-        {/* ستون اصلی (بزرگتر) */}
         <div className="lg:col-span-3 space-y-8">
-          {/* تغییر ۲: نمودار بازدید ماهانه حذف شد و جدول تمام دوران جای آن را گرفت */}
-          <div className="bg-[var(--background-secondary)] p-4 rounded-lg border border-[var(--border-primary)]">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">
-                پربازدیدترین پست‌های تمام دوران
-              </h2>
-              {/* تغییر ۳: دکمه مشاهده همه اضافه شد */}
-              <Link
-                href="/maddahi/admin/statistics/top-posts?range=all"
-                className="flex items-center gap-2 text-sm text-[var(--accent-primary)] hover:underline"
-              >
-                <span>مشاهده همه</span>
-                <ArrowLeft size={16} />
-              </Link>
-            </div>
-            <AllTimeTopPostsTable data={allTimeTopPosts} />
-          </div>
-
+          {/* ★★★ تغییر: جابجایی بخش "پربازدیدترین‌های ۳۰ روز اخیر" به بالا ★★★ */}
           <div className="bg-[var(--background-secondary)] p-4 rounded-lg border border-[var(--border-primary)]">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">
@@ -91,11 +77,41 @@ const StatisticsDashboard = ({ initialStats }) => {
                 href="/maddahi/admin/statistics/top-posts?range=month"
                 className="flex items-center gap-2 text-sm text-[var(--accent-primary)] hover:underline"
               >
-                <span>مشاهده همه</span>
-                <ArrowLeft size={16} />
+                <span>مشاهده همه</span> <ArrowLeft size={16} />
               </Link>
             </div>
             <TopPostsTable data={topPostsLast30Days} />
+          </div>
+
+          <div className="bg-[var(--background-secondary)] p-4 rounded-lg border border-[var(--border-primary)]">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <Clock size={20} /> پست‌های درگیرکننده
+              </h2>
+              <Link
+                href="/maddahi/admin/statistics/top-engagement"
+                className="flex items-center gap-2 text-sm text-[var(--accent-primary)] hover:underline"
+              >
+                <span>تحلیل کامل</span> <ArrowLeft size={16} />
+              </Link>
+            </div>
+            <TopEngagementTable data={topEngagementPosts} />
+          </div>
+
+          {/* ★★★ تغییر: جابجایی بخش "پربازدیدترین پست‌های تمام دوران" به پایین ★★★ */}
+          <div className="bg-[var(--background-secondary)] p-4 rounded-lg border border-[var(--border-primary)]">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">
+                پربازدیدترین پست‌های تمام دوران
+              </h2>
+              <Link
+                href="/maddahi/admin/statistics/top-posts?range=all"
+                className="flex items-center gap-2 text-sm text-[var(--accent-primary)] hover:underline"
+              >
+                <span>مشاهده همه</span> <ArrowLeft size={16} />
+              </Link>
+            </div>
+            <AllTimeTopPostsTable data={allTimeTopPosts} />
           </div>
         </div>
 

@@ -102,6 +102,9 @@ export async function createPost(formData, revalidateUrl) {
     const finalCategories =
       categories && categories.length > 0 ? categories : [12];
 
+    // کد جدید و اصلاح شده
+    const secondThumbnail = extra_metadata?.second_thumbnail;
+
     const postData = {
       title,
       content: content || "",
@@ -111,13 +114,14 @@ export async function createPost(formData, revalidateUrl) {
       link: link || null,
       video_link: video_link || null,
       description: description,
-      rozeh: rozeh || "نیست",
+      // ویرایش: تبدیل مقدار 'rozeh' به بولین (1 یا 0)
+      rozeh: rozeh === "هست" ? 1 : 0,
       thumbnail_alt: thumbnail_alt || null,
       comment_status: comment_status || "open",
-      extra_metadata:
-        extra_metadata && Object.keys(extra_metadata).length > 0
-          ? JSON.stringify(extra_metadata)
-          : null,
+      // ویرایش: فقط در صورت وجود تامبنیل دوم، JSON ساخته می‌شود
+      extra_metadata: secondThumbnail
+        ? JSON.stringify({ second_thumbnail: secondThumbnail })
+        : null,
       date: date ? new Date(date) : new Date(),
       type: "post",
       view: 0,
@@ -185,6 +189,9 @@ export async function updatePost(postId, formData, revalidateUrl) {
       categories && categories.length > 0 ? categories : [12];
 
     const uniqueSlugEncoded = await generateUniqueSlug(name, postId);
+    // کد جدید و اصلاح شده
+    const secondThumbnail = extra_metadata?.second_thumbnail;
+
     const postData = {
       title,
       name: uniqueSlugEncoded,
@@ -194,13 +201,12 @@ export async function updatePost(postId, formData, revalidateUrl) {
       link: link || null,
       video_link: video_link || null,
       description: description,
-      rozeh: rozeh || "نیست",
+      rozeh: rozeh === "هست" ? 1 : 0,
       thumbnail_alt: thumbnail_alt || null,
       comment_status: comment_status || "open",
-      extra_metadata:
-        extra_metadata && Object.keys(extra_metadata).length > 0
-          ? JSON.stringify(extra_metadata)
-          : null,
+      extra_metadata: secondThumbnail
+        ? JSON.stringify({ second_thumbnail: secondThumbnail })
+        : null,
       date: date ? new Date(date) : new Date(),
     };
     await connection.query("UPDATE posts SET ? WHERE ID = ?", [

@@ -1,3 +1,4 @@
+// /app/maddahi/actions/getStatistics.js (فایل ویرایش شده)
 "use server";
 
 import { db } from "@/app/maddahi/lib/db/mysql";
@@ -8,7 +9,6 @@ import { toShamsi } from "@/app/maddahi/lib/utils/formatDate";
  */
 export async function getDashboardStatistics() {
   try {
-    // تغییر ۱: حذف کوئری تعداد برگه‌ها
     const [[{ postsCount }]] = await db.query(
       "SELECT COUNT(ID) as postsCount FROM posts WHERE type = 'post'"
     );
@@ -18,17 +18,12 @@ export async function getDashboardStatistics() {
     const [[{ pendingCommentsCount }]] = await db.query(
       "SELECT COUNT(id) as pendingCommentsCount FROM comments WHERE status = 0"
     );
-    // تغییر ۲: محاسبه بازدید کل از جدول posts و فیلد view
     const [[{ totalViews }]] = await db.query(
       "SELECT SUM(CAST(view AS UNSIGNED)) as totalViews FROM posts WHERE type = 'post'"
     );
-
-    // تغییر ۳: اضافه شدن کوئری برای محاسبه بازدید امروز
     const [[{ todaysViews }]] = await db.query(
       "SELECT SUM(view_count) as todaysViews FROM daily_post_views WHERE view_date = CURDATE()"
     );
-
-    // تغییر ۴: محاسبه پربازدیدترین‌ها بر اساس ۳۰ روز گذشته به جای ماه میلادی جاری
     const [topPostsLast30Days] = await db.query(`
       SELECT p.ID, p.title, p.link, SUM(dv.view_count) as monthly_views
       FROM posts p
@@ -38,24 +33,19 @@ export async function getDashboardStatistics() {
       ORDER BY monthly_views DESC
       LIMIT 7;
     `);
-
-    // سایر کوئری‌ها بدون تغییر باقی می‌مانند
     const [contentGrowth] = await db.query(`
       SELECT DATE_FORMAT(date, '%Y-%m') as month, COUNT(ID) as count
       FROM posts WHERE type = 'post' AND date >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
       GROUP BY month ORDER BY month ASC;
     `);
-
     const formattedContentGrowth = contentGrowth.map((item) => ({
       ...item,
       month: toShamsi(item.month + "-01", "jMMMM jYYYY"),
     }));
-
     const [allTimeTopPosts] = await db.query(`
       SELECT ID, title, link, CAST(view AS UNSIGNED) as total_views
       FROM posts WHERE type = 'post' ORDER BY total_views DESC LIMIT 10;
     `);
-
     const [topCategories] = await db.query(`
       SELECT
         t.name,
@@ -70,6 +60,22 @@ export async function getDashboardStatistics() {
       LIMIT 5;
     `);
 
+    // ★★★ جدید: واکشی پست‌ها با بیشترین تعامل زمانی برای داشبورد ★★★
+    const [topEngagementPosts] = await db.query(`
+      SELECT
+        p.ID,
+        p.title,
+        SUM(dt.time_added_seconds) AS total_time,
+        SUM(dt.logs_added_count) AS log_count,
+        (SUM(dt.time_added_seconds) / SUM(dt.logs_added_count)) AS average_time
+      FROM posts p
+      JOIN post_time dt ON p.ID = dt.post_id
+      GROUP BY p.ID, p.title
+      HAVING SUM(dt.logs_added_count) > 5 -- فقط پست‌هایی که حداقل چند بار دیده شده‌اند
+      ORDER BY average_time DESC
+      LIMIT 7;
+    `);
+
     return {
       success: true,
       data: {
@@ -78,12 +84,13 @@ export async function getDashboardStatistics() {
           totalCommentsCount,
           pendingCommentsCount,
           totalViews: totalViews || 0,
-          todaysViews: todaysViews || 0, // برگرداندن بازدید امروز
+          todaysViews: todaysViews || 0,
         },
-        topPostsLast30Days, // تغییر نام برای وضوح بیشتر
+        topPostsLast30Days,
         contentGrowth: formattedContentGrowth,
         allTimeTopPosts,
         topCategories,
+        topEngagementPosts, // ★★★ جدید
       },
     };
   } catch (error) {
@@ -92,6 +99,73 @@ export async function getDashboardStatistics() {
       success: false,
       message: "خطا در دریافت اطلاعات آماری.",
       data: null,
+    };
+  }
+}
+
+/**
+ * پست‌های درگیرکننده را بر اساس زمان با فیلتر و صفحه‌بندی واکشی می‌کند.
+ * @param {object} params
+ * @param {'avg_desc'|'avg_asc'|'total_time_desc'|'log_count_desc'} params.sortBy - نوع مرتب‌سازی
+ * @param {number} params.minViews - حداقل تعداد بازدید کل پست
+ * @param {number} params.page - شماره صفحه
+ */
+export async function getPaginatedEngagementPosts({
+  sortBy = "avg_desc",
+  minViews = 0,
+  page = 1,
+}) {
+  const limit = 20;
+  const offset = (page - 1) * limit;
+
+  let orderByClause;
+  switch (sortBy) {
+    case "avg_asc":
+      orderByClause = "average_time ASC";
+      break;
+    case "total_time_desc":
+      orderByClause = "total_time DESC";
+      break;
+    case "log_count_desc":
+      orderByClause = "log_count DESC";
+      break;
+    case "avg_desc":
+    default:
+      orderByClause = "average_time DESC";
+      break;
+  }
+
+  try {
+    const query = `
+      SELECT
+        p.ID,
+        p.title,
+        p.view as total_views,
+        SUM(dt.time_added_seconds) AS total_time,
+        SUM(dt.logs_added_count) AS log_count,
+        (SUM(dt.time_added_seconds) / SUM(dt.logs_added_count)) AS average_time
+      FROM posts p
+      JOIN post_time dt ON p.ID = dt.post_id
+      WHERE p.view >= ?
+      GROUP BY p.ID, p.title, p.view
+      ORDER BY ${orderByClause}
+      LIMIT ? OFFSET ?;
+    `;
+
+    const [posts] = await db.query(query, [minViews, limit, offset]);
+
+    return {
+      success: true,
+      data: posts,
+      hasMore: posts.length === limit,
+    };
+  } catch (error) {
+    console.error("Error fetching paginated engagement posts:", error);
+    return {
+      success: false,
+      message: "خطا در دریافت لیست پست‌ها.",
+      data: [],
+      hasMore: false,
     };
   }
 }

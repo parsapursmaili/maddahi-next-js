@@ -95,22 +95,7 @@ export default async function ProductPage({ params }) {
   const latestFromMaddahLink =
     maddah.length > 0 ? `/maddahi/category/${maddah[0].slug}` : "#";
 
-  let parsedMetadata = null;
-  if (post.extra_metadata) {
-    try {
-      parsedMetadata =
-        typeof post.extra_metadata === "string"
-          ? JSON.parse(post.extra_metadata)
-          : post.extra_metadata;
-    } catch (error) {
-      console.error(
-        "Failed to parse extra_metadata JSON:",
-        post.extra_metadata,
-        error
-      );
-    }
-  }
-  const secondThumbnailPath = parsedMetadata?.second_thumbnail;
+  const secondThumbnailPath = post.extra_metadata?.second_thumbnail;
   const fullSecondThumbnailUrl = secondThumbnailPath
     ? createApiImageUrl(secondThumbnailPath, { size: "300" })
     : null;
@@ -174,7 +159,7 @@ export default async function ProductPage({ params }) {
           </div>
         </header>
 
-        {post.rozeh === "هست" && (
+        {post.rozeh === 1 && (
           <section className="px-6 sm:px-8 md:px-12 py-6">
             <div className="flex items-center gap-4 rounded-lg bg-[#262626]/50 p-4 border-r-4 border-[#ef4444]">
               <ShieldAlert className="h-8 w-8 flex-shrink-0 text-[#ef4444]" />
