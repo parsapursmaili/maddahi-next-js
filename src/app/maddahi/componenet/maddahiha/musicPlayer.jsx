@@ -94,14 +94,61 @@ const MusicPlayer = ({
       setIsPlaying(true);
     }
   }
-  function handledownload() {
-    const link = document.createElement("a");
-    link.href = audioRef.current.src;
-    link.download = true;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
+  const handledownload = async () => {
+    // 1. مطمئن می‌شویم که منبع فایل صوتی وجود دارد
+    if (!audioRef.current || !audioRef.current.src) {
+      console.error("منبع فایل صوتی برای دانلود یافت نشد.");
+      return;
+    }
+
+    const audioSrc = audioRef.current.src;
+
+    try {
+      // 2. نمایش یک پیام به کاربر (اختیاری ولی برای تجربه کاربری خوب است)
+      // می‌توانید یک state برای نمایش پیام "در حال آماده‌سازی دانلود..." بگذارید
+
+      // 3. دریافت فایل در پشت صحنه با استفاده از fetch
+      const response = await fetch(audioSrc);
+
+      // اگر درخواست موفقیت‌آمیز نبود، خطا ایجاد کن
+      if (!response.ok) {
+        throw new Error(`خطا در شبکه: ${response.statusText}`);
+      }
+
+      // 4. تبدیل پاسخ به یک بسته داده (Blob)
+      const blob = await response.blob();
+
+      // 5. ایجاد یک آدرس موقت و محلی برای این بسته داده
+      const url = window.URL.createObjectURL(blob);
+
+      // 6. ایجاد یک لینک دانلود نامرئی
+      const link = document.createElement("a");
+      link.href = url;
+
+      // 7. استخراج نام فایل از آدرس برای ذخیره با نام اصلی
+      // این کد نام فایل را از انتهای URL جدا می‌کند (مثلا: "nava.mp3")
+      const fileName = audioSrc.split("/").pop() || "download.mp3";
+      link.setAttribute("download", fileName);
+
+      // 8. افزودن لینک به صفحه، کلیک روی آن و حذف فوری آن
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // 9. آزاد کردن حافظه اشغال شده توسط آدرس موقت (بسیار مهم)
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("خطا در فرآیند دانلود فایل:", error);
+      // در صورت بروز خطا، می‌توانیم از روش قدیمی به عنوان جایگزین استفاده کنیم
+      // تا کاربر حداقل بتواند فایل را باز کند.
+      const link = document.createElement("a");
+      link.href = audioSrc;
+      link.target = "_blank"; // در یک تب جدید باز شود
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
   function forward() {
     if (index + 1 < posts.length) {
       const i = index + 1;

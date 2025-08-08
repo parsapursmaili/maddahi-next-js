@@ -54,8 +54,35 @@ const MusicPlayer = ({ audioSrc }) => {
     return `${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`;
   };
 
-  const handleDownload = () => {
-    if (audioSrc) {
+  const handleDownload = async () => {
+    if (!audioSrc) return;
+
+    try {
+      // 1. دریافت فایل صوتی از لینک به صورت یک شیء Blob
+      const response = await fetch(audioSrc);
+      const blob = await response.blob();
+
+      // 2. ایجاد یک URL موقت برای Blob در حافظه مرورگر
+      const url = window.URL.createObjectURL(blob);
+
+      // 3. ایجاد یک لینک دانلود مخفی
+      const link = document.createElement("a");
+      link.href = url;
+
+      // 4. استخراج نام فایل از URL یا استفاده از یک نام پیش‌فرض
+      const fileName = audioSrc.split("/").pop() || "download.mp3";
+      link.setAttribute("download", fileName);
+
+      // 5. افزودن لینک به صفحه، کلیک روی آن و سپس حذف لینک
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // 6. آزاد کردن حافظه اشغال شده توسط URL موقت
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("خطا در دانلود فایل:", error);
+      // در صورت بروز خطا، می‌توان از روش قدیمی به عنوان جایگزین استفاده کرد
       const link = document.createElement("a");
       link.href = audioSrc;
       link.setAttribute("download", "");
