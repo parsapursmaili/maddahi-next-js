@@ -4,7 +4,6 @@ import "./globals.css";
 import { Geist, Geist_Mono } from "next/font/google";
 import { vazir } from "./font";
 import Script from "next/script";
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -53,6 +52,15 @@ export default function RootLayout({ children }) {
             gtag('js', new Date());
 
             gtag('config', 'G-XSH630MRCH');
+          `}
+        </Script>
+        <Script id="microsoft-clarity" strategy="lazyOnload">
+          {`
+            (function(c,l,a,r,i,t,y){
+              c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+              t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+              y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+            })(window, document, "clarity", "script", "srhbd3kuzu");
           `}
         </Script>
       </body>
