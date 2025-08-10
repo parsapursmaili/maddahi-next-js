@@ -1,5 +1,4 @@
-// /app/componenet/admin/AdminToolbar.js
-"use client"; // برای مدیریت رویداد کلیک و استفاده از هوک‌ها
+"use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -13,12 +12,14 @@ import {
   BarChartBig,
   LogOut,
   ShieldCheck,
+  ScrollText, // ★★★ آیکون جدید برای سوگنامه ایمپورت شد ★★★
 } from "lucide-react";
 
-// لینک‌های نوار ابزار
+// ★★★ لینک جدید سوگنامه به آرایه اضافه شد ★★★
 const adminLinks = [
   { href: "/admin", label: "داشبورد", icon: LayoutDashboard },
   { href: "/admin/posts", label: "پست‌ها", icon: FileText },
+  { href: "/admin/soogname", label: "سوگنامه", icon: ScrollText }, // <-- لینک جدید
   { href: "/admin/comments", label: "دیدگاه‌ها", icon: MessageSquare },
   { href: "/admin/terms", label: "دسته‌بندی‌ها", icon: Tags },
   { href: "/admin/statistics", label: "آمار", icon: BarChartBig },
@@ -30,12 +31,7 @@ export default function AdminToolbar() {
 
   const handleLogout = () => {
     startTransition(async () => {
-      // ۱. سرور اکشن را برای حذف کوکی صدا می‌زنیم
       await logout();
-
-      // ۲. صفحه را رفرش می‌کنیم. Next.js به طور خودکار لایوت را دوباره رندر می‌کند
-      // و چون دیگر لاگین نیستید، این نوار ابزار نمایش داده نخواهد شد.
-      // این بهترین و تمیزترین راه برای به‌روزرسانی UI پس از لاگ‌اوت است.
       router.refresh();
     });
   };
@@ -44,7 +40,6 @@ export default function AdminToolbar() {
     <div className="h-12 bg-black border-b border-[var(--accent-primary)]/40 shadow-lg shadow-[var(--accent-primary)]/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
         <div className="flex items-center justify-between h-full">
-          {/* بخش راست: لینک‌های سریع */}
           <div className="flex items-center gap-4">
             <Link
               href="/maddahi/admin"
@@ -71,7 +66,6 @@ export default function AdminToolbar() {
             </nav>
           </div>
 
-          {/* بخش چپ: دکمه خروج */}
           <button
             onClick={handleLogout}
             disabled={isPending}

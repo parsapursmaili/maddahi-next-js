@@ -4,7 +4,7 @@ export const db = await mysql.createPool({
   host: "localhost",
   user: "root",
   password: "",
-  database: "test",
+  database: "besooyeto_db",
   waitForConnections: true,
   connectionLimit: 100,
 });

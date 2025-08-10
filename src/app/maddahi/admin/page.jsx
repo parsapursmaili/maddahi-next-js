@@ -1,5 +1,3 @@
-// /app/admin/page.js
-
 import { isAuthenticated } from "@/app/maddahi/actions/auth";
 import { redirect } from "next/navigation";
 import { getAdminStats } from "@/app/maddahi/actions/getAdminStats";
@@ -13,18 +11,17 @@ import {
   FileSignature,
   Users,
   AlertTriangle,
-  BarChartBig, // آیکون جدید و مناسب‌تر برای آمار
-  ArrowUpRight, // آیکون بهتر برای لینک خارجی
+  BarChartBig,
+  ArrowUpRight,
+  ScrollText, // ★★★ آیکون جدید برای سوگنامه ایمپورت شد ★★★
 } from "lucide-react";
 
 // ====================================================================
-// کامپوننت کارت آمار بازطراحی شده
+// کامپوننت StatCard (بدون تغییر)
 // ====================================================================
 const StatCard = ({ icon, title, value, description }) => (
   <div className="group relative bg-[var(--background-secondary)] p-5 rounded-xl border border-[var(--border-primary)] transition-all duration-300 ease-in-out hover:border-[var(--accent-crystal-highlight)]/50">
-    {/* افکت نورانی در بالا کارت در زمان هاور */}
     <div className="absolute top-0 left-0 right-0 h-[1px] bg-[linear-gradient(to_right,transparent,var(--accent-crystal-highlight),transparent)] opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
-
     <div className="flex items-start justify-between">
       <div className="flex flex-col">
         <p className="text-sm font-medium text-[var(--foreground-secondary)] mb-2">
@@ -45,16 +42,14 @@ const StatCard = ({ icon, title, value, description }) => (
 );
 
 // ====================================================================
-// کامپوننت کارت لینک‌های اصلی (Bento Grid) بازطراحی شده
+// کامپوننت NavLinkCard (بدون تغییر)
 // ====================================================================
 const NavLinkCard = ({ href, icon, title, description, className = "" }) => (
   <Link
     href={href}
     className={`group relative flex flex-col justify-between p-6 bg-[var(--background-secondary)] rounded-2xl border border-[var(--border-primary)] transition-all duration-300 overflow-hidden hover:border-[var(--accent-primary)]/70 hover:shadow-[0_0_30px_rgba(var(--accent-primary-rgb),0.1)] ${className}`}
   >
-    {/* افکت نور پس‌زمینه که در هاور بزرگ می‌شود */}
     <div className="absolute -bottom-1/2 -right-1/2 w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,rgba(var(--accent-primary-rgb),0.1)_0%,transparent_35%)] opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 transition-all duration-500 ease-in-out"></div>
-
     <div className="relative z-10 flex justify-between items-start">
       <div>
         <h3 className="text-2xl font-bold text-[var(--foreground-primary)] mb-2">
@@ -100,10 +95,8 @@ export default async function AdminDashboardPage() {
   const stats = statsResult.data;
 
   return (
-    // افزودن کلاس برای پس‌زمینه آئورا
     <div className="min-h-screen bg-[var(--background-primary)] text-[var(--foreground-primary)] p-4 sm:p-6 lg:p-8 aurora-background">
       <div className="max-w-7xl mx-auto">
-        {/* هدر صفحه */}
         <header className="mb-12">
           <div className="flex items-center gap-3 mb-2">
             <LayoutDashboard className="w-9 h-9 text-[var(--accent-primary)]" />
@@ -116,7 +109,6 @@ export default async function AdminDashboardPage() {
           </p>
         </header>
 
-        {/* بخش آمار کلی */}
         <section className="mb-16">
           <h2 className="text-xl font-semibold mb-6 text-[var(--foreground-secondary)] border-b border-[var(--border-primary)] pb-3">
             آمار کلی
@@ -172,7 +164,6 @@ export default async function AdminDashboardPage() {
           </div>
         </section>
 
-        {/* بخش لینک‌های اصلی با چیدمان Bento */}
         <section>
           <h2 className="text-xl font-semibold mb-6 text-[var(--foreground-secondary)] border-b border-[var(--border-primary)] pb-3">
             دسترسی سریع
@@ -183,10 +174,10 @@ export default async function AdminDashboardPage() {
               icon={<FileText size={32} />}
               title="مدیریت پست‌ها"
               description="ایجاد، ویرایش و حذف نوشته‌ها و برگه‌های سایت."
-              className="lg:col-span-2" // این کارت دو ستون را در نمایشگر بزرگ اشغال می‌کند
+              className="lg:col-span-2"
             />
             <NavLinkCard
-              href="/maddahi/admin/statistics" // لینک جدید به صفحه آمار
+              href="/maddahi/admin/statistics"
               icon={<BarChartBig size={32} />}
               title="آمار و تحلیل"
               description="مشاهده آمار بازدید، محتوا و کاربران."
@@ -197,12 +188,21 @@ export default async function AdminDashboardPage() {
               title="مدیریت دیدگاه‌ها"
               description="بررسی، تایید و پاسخ به نظرات کاربران."
             />
+
+            {/* ★★★ کارت جدید برای مدیریت سوگنامه‌ها اضافه شد ★★★ */}
+            <NavLinkCard
+              href="/maddahi/admin/soogname"
+              icon={<ScrollText size={32} />}
+              title="مدیریت سوگنامه‌ها"
+              description="ایجاد و ویرایش سوگنامه‌ها و اشعار مناسبتی."
+            />
+
             <NavLinkCard
               href="/maddahi/admin/terms"
               icon={<Tags size={32} />}
               title="مدیریت دسته‌بندی‌ها"
               description="سازماندهی دسته‌بندی‌ها و برچسب‌های محتوا."
-              className="lg:col-span-2" // این کارت هم دو ستون را اشغال می‌کند
+              className="lg:col-span-2"
             />
           </div>
         </section>

@@ -17,7 +17,7 @@ const getDb = async () => {
       host: "localhost",
       user: "root",
       password: "",
-      database: "test",
+      database: "besooyeto_db",
       waitForConnections: true,
       connectionLimit: 100,
       dateStrings: true,

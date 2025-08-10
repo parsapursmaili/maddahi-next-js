@@ -10,7 +10,7 @@ export const getDb = async () => {
       host: "localhost",
       user: "root",
       password: "",
-      database: "test", // نام دیتابیس خود را اینجا وارد کنید
+      database: "besooyeto_db", // نام دیتابیس خود را اینجا وارد کنید
       waitForConnections: true,
       connectionLimit: 100,
     });
