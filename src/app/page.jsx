@@ -5,11 +5,7 @@ import Slider from "@/app/maddahi/componenet/Slider2";
 import { db } from "@/app/maddahi/lib/db/mysql";
 import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl";
 
-// بازبینی و افزایش زمان revalidate برای کاهش فراخوانی‌های دیتابیس
-// ۲ ساعت = ۷۲۰۰ ثانیه
-// =================================================================
-//  بخش واکشی اطلاعات (بدون تغییر در منطق)
-// =================================================================
+export const revalidate = 60;
 
 async function fetchFeaturedMaddahs() {
   const featuredIds = [108, 24, 2, 10];
