@@ -2,13 +2,13 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { BookOpen, Eye, Users, MessageSquarePlus } from "lucide-react"; // آیکون‌های لازم
+import { BookOpen, Eye, Users, MessageSquarePlus } from "lucide-react";
 import { getSoognamePageData } from "./actions";
 import SoognamePlayer from "./SoognamePlayer";
 import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl";
-// کامپوننت‌های عمومی کامنت
 import CommentForm from "@/app/maddahi/componenet/comments/CommentForm";
 import CommentThread from "@/app/maddahi/componenet/comments/CommentThread";
+import SoognameViewCounter from "./ViewCounter";
 
 // تابع کمکی برای ایجاد جداکننده بخش‌ها
 function SectionDivider() {
@@ -64,9 +64,7 @@ export default async function SoognamePage({ params }) {
   const fullThumbnailUrl = soogname.thumbnail
     ? createApiImageUrl(soogname.thumbnail, { size: "560" })
     : null;
-
-  // ★★★ متن alt بهینه برای تصویر ★★★
-  const imageAltText = soogname.title.substring(0, 70); // محدود کردن طول برای سئو
+  const imageAltText = soogname.title.substring(0, 70);
 
   return (
     <main className="relative flex min-h-screen flex-col items-center bg-[#0a0a0a] py-12 sm:py-16">
@@ -76,7 +74,6 @@ export default async function SoognamePage({ params }) {
           aria-hidden="true"
         ></div>
 
-        {/* ★★★ هدر جدید و کامل، مشابه صفحه پست ★★★ */}
         <header className="relative flex flex-col md:flex-row items-center p-6 sm:p-8 md:p-12 gap-8">
           {fullThumbnailUrl && (
             <div className="group relative h-48 w-48 md:h-56 md:w-56 flex-shrink-0">
@@ -90,7 +87,8 @@ export default async function SoognamePage({ params }) {
               />
             </div>
           )}
-          <div className="flex flex-col items-center md:items-start text-center md:text-right flex-grow">
+          {/* ★★★ اصلاح CSS: اضافه کردن کلاس `relative` به این div ★★★ */}
+          <div className="relative flex flex-col items-center md:items-start text-center md:text-right flex-grow">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-[#f5f6f7] to-[#a3fff4] bg-clip-text text-transparent mb-4 leading-tight">
               {soogname.title}
             </h1>
@@ -107,7 +105,6 @@ export default async function SoognamePage({ params }) {
                 ))}
               </div>
             )}
-            {/* ★★★ بخش تگ‌ها (مشابه مناسبت‌ها در صفحه پست) ★★★ */}
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-x-4 gap-y-2 mb-6 justify-center md:justify-start">
                 {tags.map((tag) => (
@@ -121,22 +118,21 @@ export default async function SoognamePage({ params }) {
                 ))}
               </div>
             )}
-            {/* ★★★ بخش جدید نمایش بازدید ★★★ */}
             <div className="flex items-center gap-2 text-[#a3a3a3]">
               <Eye className="w-5 h-5 text-[#00b4a0]/80" />
-              <span>
-                {soogname.view_count?.toLocaleString("fa-IR") || "۰"} بازدید
-              </span>
+              {/* ★★★ ادغام کامپوننت جدید شمارش بازدید ★★★ */}
+              <SoognameViewCounter
+                soognameId={soogname.id}
+                initialViews={soogname.view_count || 0}
+              />
             </div>
           </div>
         </header>
 
-        {/* بخش پلیر صوتی */}
         <section className="px-4 sm:px-8 md:px-12 pb-8">
           <SoognamePlayer playlist={playlist} />
         </section>
 
-        {/* بخش محتوا */}
         {soogname.content && (
           <>
             <SectionDivider />
@@ -153,7 +149,6 @@ export default async function SoognamePage({ params }) {
           </>
         )}
 
-        {/* ★★★ بخش جدید و کامل کامنت‌ها ★★★ */}
         <SectionDivider />
         <div className="bg-[#0a0a0a]/30 sm:rounded-b-2xl">
           <section className="p-6 sm:p-8 md:p-12">

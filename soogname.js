@@ -31,7 +31,7 @@ const createSoognameTables = async (db) => {
         date DATE,
         url VARCHAR(255),
         type boolean,
-        view int,
+        view int default 0,
         thumbnail VARCHAR(255)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci; 
     `); // ★★★ این بخش برای تعیین انکودینگ صحیح اضافه شده است ★★★

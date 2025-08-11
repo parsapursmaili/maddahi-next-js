@@ -3,7 +3,7 @@
 import { db } from "@/app/maddahi/lib/db/mysql";
 import { notFound } from "next/navigation";
 import { unstable_cache as cache } from "next/cache";
-
+import { isAuthenticated } from "@/app/maddahi/actions/auth"; // ایمپورت تابع احراز هویت
 /**
  * یک تابع کمکی برای تبدیل لیست تخت کامنت‌ها به ساختار درختی.
  * این تابع کامنت‌های پاسخ را به عنوان فرزندان کامنت والد قرار می‌دهد.
@@ -96,3 +96,35 @@ export const getSoognamePageData = cache(
     tags: ["soogname"],
   }
 );
+
+export async function incrementSoognameView(soognameId) {
+  try {
+    // اگر کاربر لاگین کرده باشد (ادمین)، بازدید شمارش نمی‌شود
+    if (!(await isAuthenticated())) {
+      // ثبت یا افزایش بازدید روزانه
+      const dailyViewQuery = `
+        INSERT INTO daily_soogname_views (soogname_id, view_date, view_count)
+        VALUES (?, CURDATE(), 1)
+        ON DUPLICATE KEY UPDATE view_count = view_count + 1
+      `;
+      await db.query(dailyViewQuery, [soognameId]);
+
+      
+      await db.query("UPDATE soogname SET view = view + 1 WHERE id = ?", [
+        soognameId,
+      ]);
+    }
+
+    // واکشی و بازگرداندن تعداد بازدید کل
+    const [view] = await db.query(`SELECT view FROM soogname WHERE id = ?`, [
+      soognameId,
+    ]);
+    return view[0].view;
+  } catch (error) {
+    console.error(
+      `Error incrementing view for soogname ID ${soognameId}:`,
+      error
+    );
+    return 0; // در صورت خطا، صفر برمی‌گردانیم
+  }
+}
