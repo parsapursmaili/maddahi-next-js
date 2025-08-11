@@ -24,7 +24,6 @@ const nestComments = (comments) => {
 
 export const getPostPageData = cache(
   async (slug) => {
-    // SELECT * به صورت خودکار فیلد video_link را هم شامل می‌شود
     const [postRows] = await db.query(
       "SELECT * FROM posts WHERE name = ? AND status = 'publish' LIMIT 1",
       [slug]
@@ -43,8 +42,9 @@ export const getPostPageData = cache(
         `SELECT t.ID, t.name, t.slug FROM wp_term_relationships wtr INNER JOIN terms t ON t.ID = wtr.term_taxonomy_id AND t.taxonomy = 'post_tag' WHERE object_id = ?`,
         [post.ID]
       ),
+      // ★★★ تغییر اصلی اینجا اعمال شده است ★★★
       db.query(
-        `SELECT id, parent_id, name, text, created_at FROM comments WHERE post_id = ? AND status = 1 ORDER BY created_at DESC`,
+        `SELECT id, parent_id, name, text, created_at FROM comments WHERE post_id = ? AND post_type = 'post' AND status = 1 ORDER BY created_at DESC`,
         [post.ID]
       ),
     ]);
@@ -54,32 +54,32 @@ export const getPostPageData = cache(
     const rawComments = commentsRows[0] || [];
 
     let moshabeh = [];
-    const monasebatIds = monasebat.map((tag) => tag.ID);
-    if (monasebatIds.length > 0) {
+    if (monasebat.length > 0) {
+      const monasebatIds = monasebat.map((tag) => tag.ID);
       const [moshabehRows] = await db.query(
         `
-        SELECT DISTINCT p.ID, p.title, p.name, p.thumbnail, p.thumbnail_alt FROM posts AS p
-        JOIN wp_term_relationships AS wtr ON p.ID = wtr.object_id
-        WHERE wtr.term_taxonomy_id IN (?) AND p.ID != ? and p.status = 'publish'
-        ORDER BY RAND() LIMIT 6;
-      `,
+          SELECT DISTINCT p.ID, p.title, p.name, p.thumbnail, p.thumbnail_alt FROM posts AS p
+          JOIN wp_term_relationships AS wtr ON p.ID = wtr.object_id
+          WHERE wtr.term_taxonomy_id IN (?) AND p.ID != ? and p.status = 'publish'
+          ORDER BY RAND() LIMIT 6;
+        `,
         [monasebatIds, post.ID]
       );
       moshabeh = moshabehRows;
     }
 
     let latestFromMaddah = [];
-    const maddahIds = maddah.map((cat) => cat.ID);
-    if (maddahIds.length > 0) {
+    if (maddah.length > 0) {
+      const maddahIds = maddah.map((cat) => cat.ID);
       const [latestRows] = await db.query(
         `
-        SELECT DISTINCT p.ID, p.title, p.name, p.thumbnail, p.thumbnail_alt
-        FROM posts AS p
-        JOIN wp_term_relationships AS wtr ON p.ID = wtr.object_id
-        WHERE wtr.term_taxonomy_id IN (?) AND p.ID != ? and p.status = 'publish'
-        ORDER BY p.date DESC
-        LIMIT 6;
-      `,
+          SELECT DISTINCT p.ID, p.title, p.name, p.thumbnail, p.thumbnail_alt
+          FROM posts AS p
+          JOIN wp_term_relationships AS wtr ON p.ID = wtr.object_id
+          WHERE wtr.term_taxonomy_id IN (?) AND p.ID != ? and p.status = 'publish'
+          ORDER BY p.date DESC
+          LIMIT 6;
+        `,
         [maddahIds, post.ID]
       );
       latestFromMaddah = latestRows;
@@ -97,8 +97,8 @@ export const getPostPageData = cache(
       totalCommentsCount: rawComments.length,
     };
   },
-  ["getPostPageData"], // کلید منحصر به فرد برای این تابع کش
+  ["getPostPageData"],
   {
-    tags: ["posts"], // برچسب‌گذاری برای باطل‌سازی کش
+    tags: ["posts"], // این بخش بدون تغییر باقی ماند
   }
 );

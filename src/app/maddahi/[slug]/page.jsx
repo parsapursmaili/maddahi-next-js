@@ -5,8 +5,8 @@ import { notFound } from "next/navigation";
 import { getPostPageData } from "./post";
 import MusicPlayer from "@/app/maddahi/componenet/singleplayer";
 import Slider from "@/app/maddahi/componenet/Slider2";
-import Comment from "./CommentForm";
-import CommentThread from "./CommentThread";
+import CommentForm from "../componenet/comments/CommentForm";
+import CommentThread from "../componenet/comments/CommentThread";
 import ServerViewCounter from "@/app/maddahi/componenet/incview";
 import Link from "next/link";
 import ScriptEmbed from "@/app/maddahi/componenet/ScriptEmbed";
@@ -286,7 +286,12 @@ export default async function ProductPage({ params }) {
               />
               <div className="mb-10">
                 {comments.length > 0 ? (
-                  <CommentThread comments={comments} postId={post.ID} />
+                  // ★★★ تغییر ۲: پاس دادن postType="post" به کامپوننت ★★★
+                  <CommentThread
+                    comments={comments}
+                    postId={post.ID}
+                    postType="post"
+                  />
                 ) : (
                   <div className="text-center py-10 px-4 text-[#525252] bg-[#171717]/50 rounded-lg ring-1 ring-[#333333]">
                     <MessageSquarePlus className="w-10 h-10 mx-auto mb-4 text-[#00b4a0]/50" />
@@ -298,7 +303,8 @@ export default async function ProductPage({ params }) {
                 id="comment-form"
                 className="rounded-xl border border-dashed border-[#333333] p-6 bg-[#171717]/50 scroll-mt-20 transition-all duration-300 ring-2 ring-transparent focus-within:ring-[#00b4a0]/50 focus-within:border-solid focus-within:border-[#00b4a0]/30"
               >
-                <Comment postId={post.ID} />
+                {/* ★★★ تغییر ۳: پاس دادن postType="post" به کامپوننت ★★★ */}
+                <CommentForm postId={post.ID} postType="post" />
               </div>
             </div>
           </section>

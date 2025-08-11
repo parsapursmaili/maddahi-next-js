@@ -5,7 +5,7 @@ import { revalidateTag } from "next/cache";
 
 const ITEMS_PER_PAGE = 20;
 
-// واکشی لیست سوگنامه‌ها برای نمایش در پنل ادمین (بدون تغییر)
+// تابع getAdminSoogname بدون تغییر باقی می‌ماند
 export async function getAdminSoogname({ s = "", page = 1 }) {
   const offset = (page - 1) * ITEMS_PER_PAGE;
   const searchQuery = `%${s}%`;
@@ -26,7 +26,7 @@ export async function getAdminSoogname({ s = "", page = 1 }) {
   };
 }
 
-// واکشی اطلاعات کامل یک سوگنامه برای فرم ویرایش (بدون تغییر)
+// ★★★ واکشی اطلاعات با حفظ ترتیب پست‌های مرتبط ★★★
 export async function getSoognameById(id) {
   if (!id) return null;
   const [[soogname]] = await db.query("SELECT * FROM soogname WHERE id = ?", [
@@ -34,8 +34,9 @@ export async function getSoognameById(id) {
   ]);
   if (!soogname) return null;
 
+  // ★★★ کوئری برای گرفتن ID پست‌ها با ترتیب ذخیره‌شده ★★★
   const [relatedPosts] = await db.query(
-    "SELECT post_id FROM soogname_posts WHERE soogname_id = ?",
+    "SELECT post_id FROM soogname_posts WHERE soogname_id = ? ORDER BY display_order ASC",
     [id]
   );
   const [relatedTerms] = await db.query(
@@ -45,54 +46,58 @@ export async function getSoognameById(id) {
 
   soogname.related_posts = relatedPosts.map((p) => p.post_id);
   soogname.related_terms = relatedTerms.map((t) => t.term_id);
+  soogname.type = Boolean(soogname.type);
 
   return soogname;
 }
 
-// --- ★★★ شروع بازنویسی کامل با منطق صحیح ★★★ ---
+// ★★★ بازنویسی کامل با منطق جدید ذخیره‌سازی ترتیب ★★★
 
-// ایجاد یک سوگنامه جدید (بازنویسی شده با منطق postActions)
+// ایجاد سوگنامه جدید
 export async function createSoogname(id, formData) {
-  // id اینجا استفاده نمی‌شود اما برای هماهنگی با فرم وجود دارد
   const {
     title,
     content,
     date,
     url,
     thumbnail,
+    status,
+    type,
     related_posts = [],
     related_terms = [],
   } = formData;
 
-  if (!title) {
-    return { success: false, message: "عنوان نمی‌تواند خالی باشد." };
-  }
+  if (!title) return { success: false, message: "عنوان نمی‌تواند خالی باشد." };
 
   const connection = await db.getConnection();
   await connection.beginTransaction();
 
   try {
-    // 1. ساخت آبجکت داده‌ها، دقیقاً مشابه postActions
     const soognameData = {
       title,
       content: content || "",
       date: date ? new Date(date) : new Date(),
       url: url || null,
       thumbnail: thumbnail || null,
+      status,
+      type,
     };
-
-    // 2. استفاده از کوئری "SET ?" که ثابت شده کار می‌کند
     const [result] = await connection.query(
       "INSERT INTO soogname SET ?",
       soognameData
     );
     const newId = result.insertId;
 
-    // 3. مدیریت روابط (بدون تغییر)
+    // ★★★ ذخیره پست‌های مرتبط با ترتیب جدید ★★★
     if (related_posts.length > 0) {
-      const postValues = related_posts.map((postId) => [newId, postId]);
+      // آرایه‌ای از مقادیر برای INSERT دسته‌جمعی می‌سازیم: [soogname_id, post_id, order]
+      const postValues = related_posts.map((postId, index) => [
+        newId,
+        postId,
+        index,
+      ]);
       await connection.query(
-        "INSERT INTO soogname_posts (soogname_id, post_id) VALUES ?",
+        "INSERT INTO soogname_posts (soogname_id, post_id, display_order) VALUES ?",
         [postValues]
       );
     }
@@ -106,11 +111,7 @@ export async function createSoogname(id, formData) {
 
     await connection.commit();
     revalidateTag("soogname");
-    return {
-      success: true,
-      message: "سوگنامه با موفقیت ایجاد شد.",
-      newId,
-    };
+    return { success: true, message: "سوگنامه با موفقیت ایجاد شد.", newId };
   } catch (error) {
     await connection.rollback();
     console.error("Error creating soogname:", error);
@@ -120,7 +121,7 @@ export async function createSoogname(id, formData) {
   }
 }
 
-// به‌روزرسانی یک سوگنامه موجود (بازنویسی شده با منطق postActions)
+// به‌روزرسانی سوگنامه موجود
 export async function updateSoogname(id, formData) {
   const {
     title,
@@ -128,33 +129,32 @@ export async function updateSoogname(id, formData) {
     date,
     url,
     thumbnail,
+    status,
+    type,
     related_posts = [],
     related_terms = [],
   } = formData;
-  if (!title) {
-    return { success: false, message: "عنوان نمی‌تواند خالی باشد." };
-  }
+  if (!title) return { success: false, message: "عنوان نمی‌تواند خالی باشد." };
 
   const connection = await db.getConnection();
   await connection.beginTransaction();
 
   try {
-    // 1. ساخت آبجکت داده‌ها
     const soognameData = {
       title,
       content: content || "",
       date: date ? new Date(date) : new Date(),
       url: url || null,
       thumbnail: thumbnail || null,
+      status,
+      type,
     };
-
-    // 2. استفاده از کوئری "SET ?" برای به‌روزرسانی
     await connection.query("UPDATE soogname SET ? WHERE id = ?", [
       soognameData,
       id,
     ]);
 
-    // 3. به‌روزرسانی روابط (بدون تغییر)
+    // ★★★ پاک کردن تمام رکوردهای قدیمی و نوشتن مجدد با ترتیب جدید ★★★
     await connection.query("DELETE FROM soogname_posts WHERE soogname_id = ?", [
       id,
     ]);
@@ -163,9 +163,13 @@ export async function updateSoogname(id, formData) {
     ]);
 
     if (related_posts.length > 0) {
-      const postValues = related_posts.map((postId) => [id, postId]);
+      const postValues = related_posts.map((postId, index) => [
+        id,
+        postId,
+        index,
+      ]);
       await connection.query(
-        "INSERT INTO soogname_posts (soogname_id, post_id) VALUES ?",
+        "INSERT INTO soogname_posts (soogname_id, post_id, display_order) VALUES ?",
         [postValues]
       );
     }
@@ -189,9 +193,7 @@ export async function updateSoogname(id, formData) {
   }
 }
 
-// --- ★★★ پایان بازنویسی ★★★ ---
-
-// حذف یک سوگنامه (بدون تغییر)
+// توابع deleteSoogname و searchPostsForSelector بدون تغییر باقی می‌مانند
 export async function deleteSoogname(id) {
   try {
     await db.query("DELETE FROM soogname WHERE id = ?", [id]);
@@ -203,7 +205,6 @@ export async function deleteSoogname(id) {
   }
 }
 
-// اکشن کمکی برای جستجوی پست‌ها (بدون تغییر)
 export async function searchPostsForSelector(query) {
   if (!query) return [];
   const searchQuery = `%${query}%`;

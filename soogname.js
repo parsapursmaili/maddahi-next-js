@@ -26,9 +26,12 @@ const createSoognameTables = async (db) => {
       CREATE TABLE soogname (
         id INT AUTO_INCREMENT PRIMARY KEY,
         title TEXT NOT NULL,
+        status ENUM('draft', 'published', 'archived') NOT NULL DEFAULT 'published',
         content LONGTEXT,
         date DATE,
         url VARCHAR(255),
+        type boolean,
+        view int,
         thumbnail VARCHAR(255)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci; 
     `); // ★★★ این بخش برای تعیین انکودینگ صحیح اضافه شده است ★★★
@@ -42,6 +45,7 @@ const createSoognameTables = async (db) => {
         id INT AUTO_INCREMENT PRIMARY KEY,
         soogname_id INT NOT NULL,
         post_id INT NOT NULL,
+        display_order tinyint(1) not null default 0,
         FOREIGN KEY (soogname_id) REFERENCES soogname(id) ON DELETE CASCADE,
         FOREIGN KEY (post_id) REFERENCES posts(ID) ON DELETE CASCADE,
         UNIQUE KEY soogname_post_unique (soogname_id, post_id)

@@ -1,11 +1,11 @@
-// app/components/comments/CommentThread.jsx
 "use client";
 
 import { useState } from "react";
 import { MessageSquare } from "lucide-react";
 import ReplyForm from "./ReplyForm";
 
-function CommentItem({ comment, postId }) {
+// ★★★ ۳. کامپوننت داخلی CommentItem اکنون postType را به عنوان prop دریافت می‌کند ★★★
+function CommentItem({ comment, postId, postType }) {
   const [isReplying, setIsReplying] = useState(false);
   const hasReplies = comment.children && comment.children.length > 0;
 
@@ -42,9 +42,11 @@ function CommentItem({ comment, postId }) {
 
         {isReplying && (
           <div className="mt-4 animate-fade-in">
+            {/* ★★★ ۴. (نکته حیاتی) پراپ postType به ReplyForm پاس داده می‌شود ★★★ */}
             <ReplyForm
               postId={postId}
               parentId={comment.id}
+              postType={postType} // این خط مشکل را حل می‌کند
               onSubmitted={() => setIsReplying(false)}
             />
           </div>
@@ -52,7 +54,12 @@ function CommentItem({ comment, postId }) {
 
         {hasReplies && (
           <div className="mt-4 pl-4 md:pl-6 border-r-2 border-dashed border-[var(--border-secondary)]">
-            <CommentThread comments={comment.children} postId={postId} />
+            {/* ★★★ ۵. پراپ postType در فراخوانی بازگشتی نیز پاس داده می‌شود (برای پاسخ به پاسخ‌ها) ★★★ */}
+            <CommentThread
+              comments={comment.children}
+              postId={postId}
+              postType={postType}
+            />
           </div>
         )}
       </div>
@@ -60,11 +67,18 @@ function CommentItem({ comment, postId }) {
   );
 }
 
-export default function CommentThread({ comments, postId }) {
+// ★★★ ۱. کامپوننت اصلی CommentThread اکنون postType را به عنوان prop دریافت می‌کند ★★★
+export default function CommentThread({ comments, postId, postType }) {
   return (
     <div className="space-y-6">
       {comments.map((comment) => (
-        <CommentItem key={comment.id} comment={comment} postId={postId} />
+        // ★★★ ۲. پراپ postType از اینجا به کامپوننت داخلی CommentItem پاس داده می‌شود ★★★
+        <CommentItem
+          key={comment.id}
+          comment={comment}
+          postId={postId}
+          postType={postType}
+        />
       ))}
     </div>
   );

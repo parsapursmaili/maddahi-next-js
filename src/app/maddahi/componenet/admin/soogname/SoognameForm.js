@@ -32,9 +32,10 @@ const defaultData = {
   related_terms: [],
   url: "",
   thumbnail: "",
+  status: "published", // <-- فیلد جدید
+  type: false, // <-- فیلد جدید (false یعنی 0)
 };
 
-// --- ★★★ تابع اصلاح‌شده برای ساخت URL با محدودیت طول 50 کاراکتر ★★★ ---
 const generateReadableUrl = (text) =>
   text
     .toString()
@@ -43,7 +44,7 @@ const generateReadableUrl = (text) =>
     .replace(/[\s_]+/g, "-")
     .replace(/[^\u0600-\u06FF\uFB8A\u067E\u0686\u06AFa-z0-9-]+/g, "")
     .replace(/-+/g, "-")
-    .substring(0, 50); // <-- تغییر به 50 کاراکتر
+    .substring(0, 50);
 
 export default function SoognameForm({ initialData, onFormSubmit, onCancel }) {
   const [formData, setFormData] = useState(defaultData);
@@ -51,6 +52,7 @@ export default function SoognameForm({ initialData, onFormSubmit, onCancel }) {
   const [terms, setTerms] = useState({ categories: [], tags: [] });
   const [openSections, setOpenSections] = useState([
     "publish",
+    "type", // <-- بخش جدید به صورت پیش‌فرض باز باشد
     "posts",
     "categories",
     "tags",
@@ -62,7 +64,7 @@ export default function SoognameForm({ initialData, onFormSubmit, onCancel }) {
 
   useEffect(() => {
     const data = initialData?.id
-      ? { ...defaultData, ...initialData }
+      ? { ...defaultData, ...initialData, type: Boolean(initialData.type) } // <-- تبدیل 0/1 به boolean
       : defaultData;
 
     setFormData({
@@ -110,7 +112,6 @@ export default function SoognameForm({ initialData, onFormSubmit, onCancel }) {
     if (!isUrlManuallyEdited) {
       setIsUrlManuallyEdited(true);
     }
-    // محدود کردن طول URL ورودی کاربر نیز ایده خوبی است
     handleDataChange({ url: e.target.value.substring(0, 50) });
   };
 
@@ -264,6 +265,24 @@ export default function SoognameForm({ initialData, onFormSubmit, onCancel }) {
               isOpen={openSections.includes("publish")}
               onToggle={() => toggleSection("publish")}
             >
+              {/* ★★★ فیلد وضعیت (Status) اضافه شد ★★★ */}
+              <div>
+                <label htmlFor="status" className={labelClasses}>
+                  وضعیت
+                </label>
+                <select
+                  id="status"
+                  name="status"
+                  value={formData.status}
+                  onChange={(e) => handleDataChange({ status: e.target.value })}
+                  className={inputFieldClasses}
+                >
+                  <option value="published">منتشر شده</option>
+                  <option value="draft">پیش‌نویس</option>
+                  <option value="archived">بایگانی شده</option>
+                </select>
+              </div>
+
               <div>
                 <label htmlFor="shamsi-date" className={labelClasses}>
                   تاریخ
@@ -293,6 +312,51 @@ export default function SoognameForm({ initialData, onFormSubmit, onCancel }) {
                   className={inputFieldClasses}
                   dir="ltr"
                 />
+              </div>
+            </CollapsibleSection>
+
+            {/* ★★★ بخش نوع سوگنامه (Type) اضافه شد ★★★ */}
+            <CollapsibleSection
+              title="نوع سوگنامه"
+              isOpen={openSections.includes("type")}
+              onToggle={() => toggleSection("type")}
+            >
+              <div className="space-y-2">
+                <span className={labelClasses}>آیا سوگنامه مناسبتی هست؟</span>
+                <div className="flex items-center gap-x-6">
+                  <div className="flex items-center">
+                    <input
+                      id="type-no"
+                      name="type"
+                      type="radio"
+                      checked={!formData.type}
+                      onChange={() => handleDataChange({ type: false })}
+                      className="h-4 w-4 border-[var(--border-primary)] text-[var(--accent-primary)] focus:ring-[var(--accent-primary)]"
+                    />
+                    <label
+                      htmlFor="type-no"
+                      className="mr-2 block text-sm text-[var(--foreground-primary)]"
+                    >
+                      خیر
+                    </label>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      id="type-yes"
+                      name="type"
+                      type="radio"
+                      checked={!!formData.type}
+                      onChange={() => handleDataChange({ type: true })}
+                      className="h-4 w-4 border-[var(--border-primary)] text-[var(--accent-primary)] focus:ring-[var(--accent-primary)]"
+                    />
+                    <label
+                      htmlFor="type-yes"
+                      className="mr-2 block text-sm text-[var(--foreground-primary)]"
+                    >
+                      بله
+                    </label>
+                  </div>
+                </div>
               </div>
             </CollapsibleSection>
 

@@ -1,8 +1,6 @@
-// /components/CommentManager.js
-
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   MessageSquare,
@@ -16,7 +14,8 @@ import {
   Send,
   Link as LinkIcon,
   Loader2,
-  FileScan, // آیکون جدید برای "در حال بازبینی"
+  FileScan,
+  MoreVertical, // آیکون جدید
 } from "lucide-react";
 import {
   updateCommentStatus,
@@ -24,13 +23,11 @@ import {
   addCommentReply,
   deleteCommentPermanently,
 } from "@/app/maddahi/actions/commentActions";
-import EditCommentModal from "./EditCommentModal"; // این کامپوننت بدون تغییر باقی می‌ماند
+import EditCommentModal from "./EditCommentModal";
 import { timeAgo } from "@/app/maddahi/lib/utils/formatDate";
 
-// تعریف وضعیت‌های جدید
 const STATUS = { PENDING: 0, APPROVED: 1, REVIEWING: 2 };
 
-// پیکربندی نمایش وضعیت‌های جدید
 const statusConfig = {
   [STATUS.PENDING]: {
     text: "در انتظار تایید",
@@ -42,9 +39,9 @@ const statusConfig = {
   [STATUS.APPROVED]: {
     text: "منتشر شده",
     icon: Check,
-    color: "text-[var(--success)]",
-    bg: "bg-[var(--success)]/10",
-    ring: "ring-[var(--success)]/30",
+    color: "text-green-400",
+    bg: "bg-green-400/10",
+    ring: "ring-green-400/30",
   },
   [STATUS.REVIEWING]: {
     text: "در حال بازبینی",
@@ -55,22 +52,28 @@ const statusConfig = {
   },
 };
 
-// تعریف تب‌های جدید
 const TABS = [
   { id: "all", label: "همه", icon: List },
-  { id: STATUS.PENDING, label: "در انتظار تایید", icon: Clock },
+  { id: STATUS.PENDING, label: "در انتظار", icon: Clock },
   { id: STATUS.APPROVED, label: "منتشر شده", icon: Check },
-  { id: STATUS.REVIEWING, label: "در حال بازبینی", icon: FileScan },
+  { id: STATUS.REVIEWING, label: "بازبینی", icon: FileScan },
 ];
 
-const InlineReplyForm = ({ parentId, postId, onReplySuccess, onCancel }) => {
+const InlineReplyForm = ({
+  parentId,
+  postId,
+  postType,
+  onReplySuccess,
+  onCancel,
+}) => {
   const [text, setText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!text.trim()) return;
     setIsSubmitting(true);
-    const result = await addCommentReply({ text, parentId, postId });
+    const result = await addCommentReply({ text, parentId, postId, postType });
     if (result.success) {
       onReplySuccess(result.newComment);
     } else {
@@ -78,27 +81,28 @@ const InlineReplyForm = ({ parentId, postId, onReplySuccess, onCancel }) => {
     }
     setIsSubmitting(false);
   };
+
   return (
     <form onSubmit={handleSubmit} className="mt-4 space-y-3">
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder="پاسخ خود را بنویسید..."
-        className="w-full bg-[var(--background-tertiary)] border border-[var(--border-secondary)] rounded-lg p-3 text-sm text-[var(--foreground-primary)] transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--background-secondary)] focus:ring-[var(--accent-crystal-highlight)]"
+        placeholder="پاسخ خود را بنویسید (به عنوان مدیر)..."
+        className="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500"
         rows="3"
       />
       <div className="flex items-center justify-end gap-3">
         <button
           type="button"
           onClick={onCancel}
-          className="text-xs text-[var(--foreground-muted)] hover:text-[var(--foreground-primary)] transition px-3 py-1"
+          className="text-xs text-gray-400 hover:text-white px-3 py-1"
         >
           لغو
         </button>
         <button
           type="submit"
           disabled={isSubmitting}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent-primary)] text-sm text-[var(--background-primary)] font-semibold hover:opacity-90 transition disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-teal-500 text-sm text-white font-semibold hover:bg-teal-600 disabled:opacity-50"
         >
           {isSubmitting ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -112,6 +116,37 @@ const InlineReplyForm = ({ parentId, postId, onReplySuccess, onCancel }) => {
   );
 };
 
+const MobileActionsMenu = ({ children }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative md:hidden" ref={menuRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="p-2 rounded-full hover:bg-white/10 text-gray-400"
+      >
+        <MoreVertical className="w-5 h-5" />
+      </button>
+      {isOpen && (
+        <div className="absolute left-0 top-full mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-10 p-2 flex flex-col items-start">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const CommentCard = ({
   comment,
   onStatusChange,
@@ -122,96 +157,113 @@ const CommentCard = ({
   const [isReplying, setIsReplying] = useState(false);
   const statusInfo = statusConfig[comment.status];
 
+  const actionButtons = [
+    comment.status !== STATUS.APPROVED && {
+      key: "approve",
+      title: "تایید و انتشار",
+      onClick: () => onStatusChange(comment.id, STATUS.APPROVED),
+      icon: Check,
+      className: "text-green-400 hover:bg-green-400/10",
+    },
+    comment.status !== STATUS.PENDING && {
+      key: "pending",
+      title: "انتقال به در انتظار تایید",
+      onClick: () => onStatusChange(comment.id, STATUS.PENDING),
+      icon: Clock,
+      className: "text-yellow-400 hover:bg-yellow-400/10",
+    },
+    comment.status !== STATUS.REVIEWING && {
+      key: "review",
+      title: "انتقال به در حال بازبینی",
+      onClick: () => onStatusChange(comment.id, STATUS.REVIEWING),
+      icon: FileScan,
+      className: "text-blue-400 hover:bg-blue-400/10",
+    },
+    {
+      key: "edit",
+      title: "ویرایش",
+      onClick: () => onEdit(comment),
+      icon: Pencil,
+      className: "text-gray-400 hover:bg-white/10",
+    },
+    {
+      key: "delete",
+      title: "حذف دائمی",
+      onClick: () => onPermanentDelete(comment.id),
+      icon: Trash2,
+      className: "text-red-500 hover:bg-red-500/10",
+    },
+  ].filter(Boolean);
+
   return (
-    <div className="bg-[var(--background-secondary)] rounded-xl border border-[var(--border-primary)] shadow-lg shadow-black/10 p-4 sm:p-5 group">
-      <header className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-[var(--background-tertiary)] rounded-full flex items-center justify-center border border-[var(--border-secondary)]">
-            <User className="w-5 h-5 text-[var(--foreground-muted)]" />
+    <div className="bg-gray-900 rounded-xl border border-gray-800 p-4 sm:p-5 group">
+      <header className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-3 flex-shrink min-w-0">
+          <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center border border-gray-700 flex-shrink-0">
+            <User className="w-5 h-5 text-gray-500" />
           </div>
-          <div>
-            <p className="font-bold text-[var(--foreground-primary)]">
-              {comment.name}
-            </p>
-            <p className="text-xs text-[var(--foreground-secondary)]">
+          <div className="min-w-0">
+            <p className="font-bold text-white truncate">{comment.name}</p>
+            <p className="text-xs text-gray-400">
               {timeAgo(comment.created_at)}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           {statusInfo && (
             <div
-              className={`flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-full ${statusInfo.bg} ${statusInfo.color} ring-1 ring-inset ${statusInfo.ring}`}
+              className={`hidden sm:flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-full ${statusInfo.bg} ${statusInfo.color} ring-1 ring-inset ${statusInfo.ring}`}
             >
               <statusInfo.icon className="w-3.5 h-3.5" />
               <span>{statusInfo.text}</span>
             </div>
           )}
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-            {/* <<<<<<<<<<<<<<< شروع منطق جدید دکمه‌ها >>>>>>>>>>>>>>>>> */}
-            {comment.status !== STATUS.APPROVED && (
+          {/* دسکتاپ: دکمه‌های افقی */}
+          <div className="hidden md:flex opacity-0 group-hover:opacity-100 transition-opacity items-center gap-1">
+            {actionButtons.map((btn) => (
               <button
-                onClick={() => onStatusChange(comment.id, STATUS.APPROVED)}
-                title="تایید و انتشار"
-                className="p-2 rounded-full text-[var(--success)] hover:bg-[var(--success)]/10"
+                key={btn.key}
+                onClick={btn.onClick}
+                title={btn.title}
+                className={`p-2 rounded-full ${btn.className}`}
               >
-                <Check className="w-4 h-4" />
+                <btn.icon className="w-4 h-4" />
               </button>
-            )}
-            {comment.status !== STATUS.PENDING && (
-              <button
-                onClick={() => onStatusChange(comment.id, STATUS.PENDING)}
-                title="انتقال به در انتظار تایید"
-                className="p-2 rounded-full text-yellow-400 hover:bg-yellow-400/10"
-              >
-                <Clock className="w-4 h-4" />
-              </button>
-            )}
-            {comment.status !== STATUS.REVIEWING && (
-              <button
-                onClick={() => onStatusChange(comment.id, STATUS.REVIEWING)}
-                title="انتقال به در حال بازبینی"
-                className="p-2 rounded-full text-blue-400 hover:bg-blue-400/10"
-              >
-                <FileScan className="w-4 h-4" />
-              </button>
-            )}
-            <button
-              onClick={() => onEdit(comment)}
-              title="ویرایش"
-              className="p-2 rounded-full text-[var(--foreground-secondary)] hover:bg-white/10"
-            >
-              <Pencil className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => onPermanentDelete(comment.id)}
-              title="حذف دائمی"
-              className="p-2 rounded-full text-[var(--error)] hover:bg-[var(--error)]/10"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-            {/* <<<<<<<<<<<<<<< پایان منطق جدید دکمه‌ها >>>>>>>>>>>>>>>>> */}
+            ))}
           </div>
+          {/* موبایل: منوی سه نقطه */}
+          <MobileActionsMenu>
+            {actionButtons.map((btn) => (
+              <button
+                key={btn.key}
+                onClick={btn.onClick}
+                className={`w-full flex items-center gap-3 text-left p-2 rounded-md text-sm ${btn.className}`}
+              >
+                <btn.icon className="w-4 h-4" />
+                <span>{btn.title}</span>
+              </button>
+            ))}
+          </MobileActionsMenu>
         </div>
       </header>
-      <div className="mt-4 text-[var(--foreground-primary)] text-base leading-relaxed whitespace-pre-wrap">
+      <div className="mt-4 text-gray-200 text-base leading-relaxed whitespace-pre-wrap break-words">
         {comment.text}
       </div>
-      <footer className="mt-4 pt-4 border-t border-dashed border-[var(--border-secondary)]">
+      <footer className="mt-4 pt-4 border-t border-dashed border-gray-800">
         <div className="flex justify-between items-center">
-          {comment.post_title && (
+          {comment.post_title && comment.post_link && (
             <Link
-              href={`/maddahi/${comment.post_slug}`}
+              href={comment.post_link}
               target="_blank"
-              className="flex items-center gap-2 text-xs text-[var(--foreground-secondary)] hover:text-[var(--accent-primary)] transition-colors"
+              className="flex items-center gap-2 text-xs text-gray-400 hover:text-teal-400 transition-colors max-w-[70%]"
             >
-              <LinkIcon className="w-3 h-3" />
-              <span>پست: {comment.post_title}</span>
+              <LinkIcon className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate">مطلب: {comment.post_title}</span>
             </Link>
           )}
           <button
             onClick={() => setIsReplying(!isReplying)}
-            className="flex items-center gap-1.5 text-sm font-semibold text-[var(--foreground-secondary)] hover:text-[var(--accent-primary)] transition"
+            className="flex items-center gap-1.5 text-sm font-semibold text-gray-400 hover:text-teal-400 transition"
           >
             <Reply className="w-4 h-4" />
             <span>{isReplying ? "بستن" : "پاسخ"}</span>
@@ -221,6 +273,7 @@ const CommentCard = ({
           <InlineReplyForm
             parentId={comment.id}
             postId={comment.post_id}
+            postType={comment.post_type}
             onCancel={() => setIsReplying(false)}
             onReplySuccess={(newComment) => {
               setIsReplying(false);
@@ -239,8 +292,8 @@ const RecursiveCommentRenderer = ({ comment, allComments, ...props }) => {
     <div className="relative">
       <CommentCard comment={comment} {...props} />
       {children.length > 0 && (
-        <div className="pl-6 sm:pl-10 mt-5 relative before:absolute before:top-0 before:bottom-0 before:right-5 before:w-px before:bg-[var(--border-secondary)]">
-          <div className="space-y-5">
+        <div className="pl-4 sm:pl-8 mt-4 relative before:absolute before:top-0 before:bottom-0 before:right-4 sm:before:right-5 before:w-px before:bg-gray-800">
+          <div className="space-y-4">
             {children.map((child) => (
               <RecursiveCommentRenderer
                 key={child.id}
@@ -281,7 +334,7 @@ export default function CommentManager({ initialComments }) {
     );
     const result = await updateCommentStatus(id, newStatus);
     if (!result.success) {
-      setComments(originalComments); // بازگرداندن به حالت اولیه در صورت خطا
+      setComments(originalComments);
       alert(result.message || "خطا در تغییر وضعیت");
     }
   };
@@ -293,7 +346,6 @@ export default function CommentManager({ initialComments }) {
       )
     ) {
       const originalComments = [...comments];
-      // حذف دیدگاه و تمام فرزندان آن از state برای آپدیت لحظه‌ای UI
       const idsToDelete = new Set([id]);
       let changed = true;
       while (changed) {
@@ -310,10 +362,9 @@ export default function CommentManager({ initialComments }) {
         });
       }
       setComments((prev) => prev.filter((c) => !idsToDelete.has(c.id)));
-
       const result = await deleteCommentPermanently(id);
       if (!result.success) {
-        setComments(originalComments); // بازگرداندن به حالت اولیه در صورت خطا
+        setComments(originalComments);
         alert(result.message || "خطا در حذف دائمی");
       }
     }
@@ -332,20 +383,20 @@ export default function CommentManager({ initialComments }) {
   };
 
   const handleReplySuccess = (newComment) => {
-    setComments((prev) => [...prev, newComment]);
+    setComments((prev) => [newComment, ...prev]);
   };
 
   return (
     <>
-      <div className="p-4 sm:p-6 lg:p-8 min-h-screen bg-[var(--background-primary)] font-sans">
-        <div className="max-w-4xl mx-auto">
-          <header className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight text-[var(--foreground-primary)] flex items-center gap-3">
-              <MessageSquare className="w-8 h-8 text-[var(--accent-primary)]" />{" "}
-              مرکز فرماندهی دیدگاه‌ها
+      <div className="p-2 sm:p-6 lg:p-8 min-h-screen bg-gray-950 text-white font-sans">
+        <div className="max-w-5xl mx-auto">
+          <header className="mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
+              <MessageSquare className="w-7 h-7 text-teal-400" />
+              مدیریت دیدگاه‌ها
             </h1>
           </header>
-          <div className="mb-8 border-b border-[var(--border-primary)]">
+          <div className="mb-6 border-b border-gray-800">
             <nav className="-mb-px flex space-x-0 sm:space-x-4 overflow-x-auto">
               {TABS.map((tab) => {
                 const isActive = activeTab === tab.id;
@@ -359,18 +410,20 @@ export default function CommentManager({ initialComments }) {
                     onClick={() => setActiveTab(tab.id)}
                     className={`${
                       isActive
-                        ? "border-[var(--accent-primary)] text-[var(--accent-primary)]"
-                        : "border-transparent text-[var(--foreground-secondary)] hover:text-[var(--foreground-primary)] hover:border-[var(--border-secondary)]"
-                    } group inline-flex items-center py-4 px-2 sm:px-3 border-b-2 font-medium text-sm transition-colors duration-200 whitespace-nowrap`}
+                        ? "border-teal-400 text-teal-400"
+                        : "border-transparent text-gray-400 hover:text-white hover:border-gray-600"
+                    } 
+                    group inline-flex items-center py-4 px-2 sm:px-3 border-b-2 font-medium text-sm transition-colors duration-200 whitespace-nowrap`}
                   >
                     <tab.icon className="mr-2 h-5 w-5" />
-                    <span>{tab.label}</span>
+                    <span className="hidden sm:inline">{tab.label}</span>
                     <span
                       className={`${
                         isActive
-                          ? "bg-[var(--accent-primary)] text-[var(--background-primary)]"
-                          : "bg-[var(--background-tertiary)] text-[var(--foreground-secondary)] group-hover:bg-[var(--border-secondary)]"
-                      } ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium`}
+                          ? "bg-teal-400 text-black"
+                          : "bg-gray-800 text-gray-300 group-hover:bg-gray-700"
+                      } 
+                    ml-2 py-0.5 px-2 rounded-full text-xs font-medium`}
                     >
                       {count}
                     </span>
@@ -379,7 +432,7 @@ export default function CommentManager({ initialComments }) {
               })}
             </nav>
           </div>
-          <main className="space-y-5">
+          <main className="space-y-4">
             {rootComments.length > 0 ? (
               rootComments.map((comment) => (
                 <RecursiveCommentRenderer
@@ -393,12 +446,12 @@ export default function CommentManager({ initialComments }) {
                 />
               ))
             ) : (
-              <div className="text-center py-16 px-4 bg-[var(--background-secondary)] rounded-xl border border-[var(--border-primary)]">
-                <MessageSquare className="mx-auto h-12 w-12 text-[var(--foreground-muted)]" />
-                <h3 className="mt-4 text-lg font-medium text-[var(--foreground-primary)]">
+              <div className="text-center py-16 px-4 bg-gray-900 rounded-xl border border-gray-800">
+                <MessageSquare className="mx-auto h-12 w-12 text-gray-600" />
+                <h3 className="mt-4 text-lg font-medium text-white">
                   بدون دیدگاه
                 </h3>
-                <p className="mt-2 text-sm text-[var(--foreground-secondary)]">
+                <p className="mt-2 text-sm text-gray-400">
                   در این دسته‌بندی دیدگاهی برای نمایش وجود ندارد.
                 </p>
               </div>

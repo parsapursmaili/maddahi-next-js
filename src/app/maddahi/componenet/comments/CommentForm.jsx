@@ -1,7 +1,7 @@
-// app/componenet/comments.js
 "use client";
 
 import { useTransition } from "react";
+// ★★★ مسیر اکشن را به مسیر جدید و صحیح به‌روز کنید ★★★
 import { submitComment } from "@/app/maddahi/actions/submitComment";
 import { useState } from "react";
 import {
@@ -13,16 +13,17 @@ import {
   Mail,
 } from "lucide-react";
 
-const Comment = ({ postId }) => {
+// ★★★ تغییر ۱: کامپوننت postType را به عنوان prop دریافت می‌کند ★★★
+const CommentForm = ({ postId, postType }) => {
   const [isPending, startTransition] = useTransition();
   const [submissionStatus, setSubmissionStatus] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    formData.append("postId", postId);
+    // formData.append("postId", postId); // این دیگر لازم نیست چون در JSX اضافه شده
 
-    setSubmissionStatus(null); // Reset status on new submission
+    setSubmissionStatus(null);
 
     startTransition(async () => {
       const result = await submitComment(formData);
@@ -30,9 +31,8 @@ const Comment = ({ postId }) => {
 
       if (result.success) {
         e.target.reset();
-        setTimeout(() => setSubmissionStatus(null), 6000); // Hide success message after 6 seconds
+        setTimeout(() => setSubmissionStatus(null), 6000);
       }
-      // Error message will persist until user tries again
     });
   };
 
@@ -42,8 +42,11 @@ const Comment = ({ postId }) => {
         شما هم نظر خود را بنویسید
       </h3>
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* ★★★ تغییر ۲: دو فیلد مخفی برای ارسال داده‌های ضروری ★★★ */}
+        <input type="hidden" name="postId" value={postId} />
+        <input type="hidden" name="postType" value={postType} />
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          {/* فیلد نام با آیکون */}
           <div className="relative">
             <User className="absolute right-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--foreground-muted)]" />
             <input
@@ -55,7 +58,6 @@ const Comment = ({ postId }) => {
               placeholder="نام شما (ضروری)"
             />
           </div>
-          {/* فیلد ایمیل با آیکون */}
           <div className="relative">
             <Mail className="absolute right-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--foreground-muted)]" />
             <input
@@ -68,7 +70,6 @@ const Comment = ({ postId }) => {
           </div>
         </div>
 
-        {/* فیلد متن نظر */}
         <div>
           <label htmlFor="commentText" className="sr-only">
             متن نظر
@@ -83,7 +84,6 @@ const Comment = ({ postId }) => {
           ></textarea>
         </div>
 
-        {/* دکمه ارسال بازطراحی شده */}
         <div>
           <button
             type="submit"
@@ -109,7 +109,6 @@ const Comment = ({ postId }) => {
           </button>
         </div>
 
-        {/* پیام وضعیت ارسال با طراحی بهتر */}
         {submissionStatus && (
           <div
             className={`flex items-center justify-center gap-3 mt-4 text-center font-medium text-sm p-4 rounded-lg animate-fade-in
@@ -132,4 +131,4 @@ const Comment = ({ postId }) => {
   );
 };
 
-export default Comment;
+export default CommentForm;
