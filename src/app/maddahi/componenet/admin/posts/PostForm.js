@@ -12,11 +12,10 @@ import {
 import getTerms from "@/app/maddahi/actions/terms";
 import { toShamsi } from "@/app/maddahi/lib/utils/formatDate";
 
-// کامپوننت های جدید
 import PostMainContent from "./PostMainContent";
 import PostSidebar from "./PostSidebar";
 import PostFormActions from "./PostFormActions";
-import CollapsibleSection from "./CollapsibleSection"; // Import CollapsibleSection
+import CollapsibleSection from "./CollapsibleSection";
 
 const defaultPost = {
   ID: null,
@@ -93,7 +92,8 @@ export default function PostForm({
 
     setFormData({
       ...initialData,
-      name: initialData.name ? decodeURIComponent(initialData.name) : "",
+      // ★ ویرایش: چون name از سرور به صورت دیکود شده می‌آید، دیگر نیازی به decodeURIComponent نیست
+      name: initialData.name || "",
       description: initialData.description || "",
       extra_metadata: extraData || null,
       date: dateValue,
@@ -197,29 +197,19 @@ export default function PostForm({
     if (loadingAction) return;
     setLoadingAction("submit");
 
-    // ★★★ شروع ویرایش: تنظیم خودکار متن جایگزین تصویر ★★★
-    // یک کپی از داده‌های فرم ایجاد می‌کنیم تا مستقیماً state را تغییر ندهیم
     const finalFormData = { ...formData };
-
-    // اگر متن جایگزین خالی بود، عنوان پست را برای آن قرار بده
     if (!finalFormData.thumbnail_alt?.trim() && finalFormData.title.trim()) {
       finalFormData.thumbnail_alt = finalFormData.title.trim();
     }
-    // ★★★ پایان ویرایش ★★★
 
-    // از داده‌های نهایی شده برای ارسال به سرور استفاده می‌کنیم
-    const dataToSend = {
-      ...finalFormData,
-      name: encodeURIComponent(finalFormData.name),
-    };
-
+    // ★ ویرایش: دیگر نیازی به encode کردن فیلد name قبل از ارسال نیست.
+    // کل آبجکت finalFormData به صورت مستقیم ارسال می‌شود.
     const result = postForEditing.ID
-      ? await updatePost(postForEditing.ID, dataToSend, pathname)
-      : await createPost(dataToSend, pathname);
+      ? await updatePost(postForEditing.ID, finalFormData, pathname)
+      : await createPost(finalFormData, pathname);
 
     if (result?.success) {
       setMessage({ type: "success", text: result.message });
-      // فرم را با داده‌های نهایی (شامل آلت احتمالی جدید) به‌روز می‌کنیم
       onFormSubmit({
         ...finalFormData,
         ID: postForEditing.ID || result.newPostId,

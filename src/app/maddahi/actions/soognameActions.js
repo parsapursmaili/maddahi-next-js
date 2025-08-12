@@ -1,3 +1,4 @@
+// /app/maddahi/actions/soognameActions.js
 "use server";
 
 import { db } from "@/app/maddahi/lib/db/mysql";
@@ -5,7 +6,6 @@ import { revalidateTag } from "next/cache";
 
 const ITEMS_PER_PAGE = 20;
 
-// تابع getAdminSoogname بدون تغییر باقی می‌ماند
 export async function getAdminSoogname({ s = "", page = 1 }) {
   const offset = (page - 1) * ITEMS_PER_PAGE;
   const searchQuery = `%${s}%`;
@@ -26,7 +26,6 @@ export async function getAdminSoogname({ s = "", page = 1 }) {
   };
 }
 
-// ★★★ واکشی اطلاعات با حفظ ترتیب پست‌های مرتبط ★★★
 export async function getSoognameById(id) {
   if (!id) return null;
   const [[soogname]] = await db.query("SELECT * FROM soogname WHERE id = ?", [
@@ -34,7 +33,6 @@ export async function getSoognameById(id) {
   ]);
   if (!soogname) return null;
 
-  // ★★★ کوئری برای گرفتن ID پست‌ها با ترتیب ذخیره‌شده ★★★
   const [relatedPosts] = await db.query(
     "SELECT post_id FROM soogname_posts WHERE soogname_id = ? ORDER BY display_order ASC",
     [id]
@@ -48,18 +46,16 @@ export async function getSoognameById(id) {
   soogname.related_terms = relatedTerms.map((t) => t.term_id);
   soogname.type = Boolean(soogname.type);
 
+  // ★ نکته: فیلد url به صورت دیکود شده از دیتابیس خوانده و ارسال می‌شود
   return soogname;
 }
 
-// ★★★ بازنویسی کامل با منطق جدید ذخیره‌سازی ترتیب ★★★
-
-// ایجاد سوگنامه جدید
 export async function createSoogname(id, formData) {
   const {
     title,
     content,
     date,
-    url,
+    url, // <-- این url اکنون دیکود شده است
     thumbnail,
     status,
     type,
@@ -77,7 +73,7 @@ export async function createSoogname(id, formData) {
       title,
       content: content || "",
       date: date ? new Date(date) : new Date(),
-      url: url || null,
+      url: url || null, // ★ نکته: url دیکود شده در دیتابیس ذخیره می‌شود
       thumbnail: thumbnail || null,
       status,
       type,
@@ -88,9 +84,7 @@ export async function createSoogname(id, formData) {
     );
     const newId = result.insertId;
 
-    // ★★★ ذخیره پست‌های مرتبط با ترتیب جدید ★★★
     if (related_posts.length > 0) {
-      // آرایه‌ای از مقادیر برای INSERT دسته‌جمعی می‌سازیم: [soogname_id, post_id, order]
       const postValues = related_posts.map((postId, index) => [
         newId,
         postId,
@@ -111,6 +105,7 @@ export async function createSoogname(id, formData) {
 
     await connection.commit();
     revalidateTag("soogname");
+    // ★ نکته: اگر revalidatePath وجود داشت، باید از url دیکود شده استفاده می‌کرد.
     return { success: true, message: "سوگنامه با موفقیت ایجاد شد.", newId };
   } catch (error) {
     await connection.rollback();
@@ -121,13 +116,12 @@ export async function createSoogname(id, formData) {
   }
 }
 
-// به‌روزرسانی سوگنامه موجود
 export async function updateSoogname(id, formData) {
   const {
     title,
     content,
     date,
-    url,
+    url, // <-- این url اکنون دیکود شده است
     thumbnail,
     status,
     type,
@@ -144,7 +138,7 @@ export async function updateSoogname(id, formData) {
       title,
       content: content || "",
       date: date ? new Date(date) : new Date(),
-      url: url || null,
+      url: url || null, // ★ نکته: url دیکود شده در دیتابیس ذخیره می‌شود
       thumbnail: thumbnail || null,
       status,
       type,
@@ -154,7 +148,6 @@ export async function updateSoogname(id, formData) {
       id,
     ]);
 
-    // ★★★ پاک کردن تمام رکوردهای قدیمی و نوشتن مجدد با ترتیب جدید ★★★
     await connection.query("DELETE FROM soogname_posts WHERE soogname_id = ?", [
       id,
     ]);
@@ -193,7 +186,6 @@ export async function updateSoogname(id, formData) {
   }
 }
 
-// توابع deleteSoogname و searchPostsForSelector بدون تغییر باقی می‌مانند
 export async function deleteSoogname(id) {
   try {
     await db.query("DELETE FROM soogname WHERE id = ?", [id]);

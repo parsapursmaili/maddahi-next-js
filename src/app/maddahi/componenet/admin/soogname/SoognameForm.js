@@ -1,10 +1,11 @@
+// /app/maddahi/components/soogname/SoognameForm.js
 "use client";
 
-import Link from "next/link"; // ایمپورت Link
+import Link from "next/link";
 import { useState, useEffect, useTransition } from "react";
 import dynamic from "next/dynamic";
 import moment from "jalali-moment";
-import { Save, AlertCircle, ExternalLink } from "lucide-react"; // ایمپورت ExternalLink
+import { Save, AlertCircle, ExternalLink } from "lucide-react";
 import { toShamsi } from "@/app/maddahi/lib/utils/formatDate";
 import {
   createSoogname,
@@ -32,8 +33,8 @@ const defaultData = {
   related_terms: [],
   url: "",
   thumbnail: "",
-  status: "published", // <-- فیلد جدید
-  type: false, // <-- فیلد جدید (false یعنی 0)
+  status: "published",
+  type: false,
 };
 
 const generateReadableUrl = (text) =>
@@ -52,7 +53,7 @@ export default function SoognameForm({ initialData, onFormSubmit, onCancel }) {
   const [terms, setTerms] = useState({ categories: [], tags: [] });
   const [openSections, setOpenSections] = useState([
     "publish",
-    "type", // <-- بخش جدید به صورت پیش‌فرض باز باشد
+    "type",
     "posts",
     "categories",
     "tags",
@@ -64,12 +65,13 @@ export default function SoognameForm({ initialData, onFormSubmit, onCancel }) {
 
   useEffect(() => {
     const data = initialData?.id
-      ? { ...defaultData, ...initialData, type: Boolean(initialData.type) } // <-- تبدیل 0/1 به boolean
+      ? { ...defaultData, ...initialData, type: Boolean(initialData.type) }
       : defaultData;
 
     setFormData({
       ...data,
-      url: data.url ? decodeURIComponent(data.url) : "",
+      // ★ ویرایش: چون url از سرور به صورت دیکود شده می‌آید، دیگر نیازی به decodeURIComponent نیست
+      url: data.url || "",
     });
 
     setShamsiDate(toShamsi(data.date, "jYYYY/jM/jD"));
@@ -150,10 +152,9 @@ export default function SoognameForm({ initialData, onFormSubmit, onCancel }) {
     if (isLoading) return;
 
     startTransition(async () => {
-      const dataToSend = {
-        ...formData,
-        url: encodeURIComponent(formData.url),
-      };
+      // ★ ویرایش: دیگر نیازی به encode کردن url نیست.
+      // آبجکت formData مستقیماً به سرور ارسال می‌شود.
+      const dataToSend = { ...formData };
 
       const action = formData.id ? updateSoogname : createSoogname;
       const result = await action(formData.id, dataToSend);
@@ -265,7 +266,6 @@ export default function SoognameForm({ initialData, onFormSubmit, onCancel }) {
               isOpen={openSections.includes("publish")}
               onToggle={() => toggleSection("publish")}
             >
-              {/* ★★★ فیلد وضعیت (Status) اضافه شد ★★★ */}
               <div>
                 <label htmlFor="status" className={labelClasses}>
                   وضعیت
@@ -315,7 +315,6 @@ export default function SoognameForm({ initialData, onFormSubmit, onCancel }) {
               </div>
             </CollapsibleSection>
 
-            {/* ★★★ بخش نوع سوگنامه (Type) اضافه شد ★★★ */}
             <CollapsibleSection
               title="نوع سوگنامه"
               isOpen={openSections.includes("type")}
@@ -413,7 +412,6 @@ export default function SoognameForm({ initialData, onFormSubmit, onCancel }) {
                 >
                   {isLoading ? "..." : "حذف"}
                 </button>
-                {/* +++ بخش اضافه شده برای لینک مشاهده سوگنامه +++ */}
                 <Link
                   href={`/maddahi/soogname/${formData.url}`}
                   target="_blank"
@@ -422,7 +420,6 @@ export default function SoognameForm({ initialData, onFormSubmit, onCancel }) {
                 >
                   <ExternalLink size={16} />
                 </Link>
-                {/* +++ پایان بخش اضافه شده +++ */}
               </>
             )}
             {isDirty && !isLoading && (

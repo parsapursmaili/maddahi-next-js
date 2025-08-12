@@ -34,10 +34,10 @@ const buildCommentTree = (comments) => {
 export const getSoognamePageData = cache(
   async (slug) => {
     if (!slug) notFound();
-
+    const decode = decodeURIComponent(slug);
     const [soognameRows] = await db.query(
       "SELECT * FROM soogname WHERE url = ? AND status = 'published' LIMIT 1",
-      [slug]
+      [decode]
     );
 
     if (!soognameRows || soognameRows.length === 0) {
@@ -109,7 +109,6 @@ export async function incrementSoognameView(soognameId) {
       `;
       await db.query(dailyViewQuery, [soognameId]);
 
-      
       await db.query("UPDATE soogname SET view = view + 1 WHERE id = ?", [
         soognameId,
       ]);

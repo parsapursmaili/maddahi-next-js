@@ -120,11 +120,7 @@ export default async function SoognamePage({ params }) {
             )}
             <div className="flex items-center gap-2 text-[#a3a3a3]">
               <Eye className="w-5 h-5 text-[#00b4a0]/80" />
-              {/* ★★★ ادغام کامپوننت جدید شمارش بازدید ★★★ */}
-              <SoognameViewCounter
-                soognameId={soogname.id}
-                initialViews={soogname.view_count || 0}
-              />
+              <SoognameViewCounter soognameId={soogname.id} />
             </div>
           </div>
         </header>

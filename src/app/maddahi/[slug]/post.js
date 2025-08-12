@@ -24,10 +24,13 @@ const nestComments = (comments) => {
 
 export const getPostPageData = cache(
   async (slug) => {
+    const decode = decodeURIComponent(slug);
+
     const [postRows] = await db.query(
       "SELECT * FROM posts WHERE name = ? AND status = 'publish' LIMIT 1",
-      [slug]
+      [decode]
     );
+
     if (!postRows || postRows.length === 0) {
       notFound();
     }

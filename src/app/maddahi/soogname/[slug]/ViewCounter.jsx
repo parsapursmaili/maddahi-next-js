@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { incrementSoognameView } from "./actions"; // ایمپورت از اکشن‌های همین پوشه
 
-export default function SoognameViewCounter({ soognameId, initialViews }) {
+export default function SoognameViewCounter({ soognameId }) {
   // مقدار اولیه را هم با || 0 ایمن می‌کنیم تا از همان ابتدا null نباشد.
-  const [currentViews, setCurrentViews] = useState(initialViews || 0);
+  const [currentViews, setCurrentViews] = useState(0);
 
   useEffect(() => {
     // جلوگیری از شمارش بازدید توسط ربات‌ها

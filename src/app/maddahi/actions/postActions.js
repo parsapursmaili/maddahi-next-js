@@ -4,7 +4,7 @@
 import { db } from "@/app/maddahi/lib/db/mysql";
 import { revalidatePath, revalidateTag } from "next/cache";
 
-// توابع کمکی slugify, generateUniqueSlug, manageTermRelationships بدون تغییر باقی می‌مانند
+// توابع کمکی slugify, generateUniqueSlug, manageTermRelationships
 const slugify = (text) => {
   return text
     .toString()
@@ -16,17 +16,17 @@ const slugify = (text) => {
     .substring(0, 70);
 };
 
-async function generateUniqueSlug(encodedSlugInput, currentId = null) {
-  const decodedSlug = decodeURIComponent(encodedSlugInput);
-  let slug = slugify(decodedSlug);
+// ★ ویرایش: این تابع اکنون با اسلاگ‌های دیکود شده کار می‌کند
+async function generateUniqueSlug(slugInput, currentId = null) {
+  let slug = slugify(slugInput);
   let isUnique = false;
   let counter = 1;
   const originalSlug = slug;
 
   while (!isUnique) {
-    const slugToQuery = encodeURIComponent(slug);
+    // اسلاگ به صورت مستقیم و دیکود شده در کوئری استفاده می‌شود
     let query = "SELECT ID FROM posts WHERE name = ?";
-    const params = [slugToQuery];
+    const params = [slug];
 
     if (currentId) {
       query += " AND ID != ?";
@@ -42,7 +42,8 @@ async function generateUniqueSlug(encodedSlugInput, currentId = null) {
       counter++;
     }
   }
-  return encodeURIComponent(slug);
+  // اسلاگ دیکود شده و منحصر به فرد بازگردانده می‌شود
+  return slug;
 }
 
 async function manageTermRelationships(postId, categories = [], tags = []) {
@@ -95,14 +96,13 @@ export async function createPost(formData, revalidateUrl) {
   }
 
   try {
-    const slugInput = name || encodeURIComponent(title);
+    // ★ ویرایش: ورودی برای اسلاگ (name یا title) به صورت دیکود شده به تابع ارسال می‌شود
+    const slugInput = name || title;
     const uniqueSlug = await generateUniqueSlug(slugInput, null);
 
-    // ویرایش: بررسی می‌کنیم که اگر هیچ دسته‌بندی انتخاب نشده بود، دسته پیش‌فرض (ID: 12) را قرار بده.
     const finalCategories =
       categories && categories.length > 0 ? categories : [12];
 
-    // کد جدید و اصلاح شده
     const secondThumbnail = extra_metadata?.second_thumbnail;
 
     const postData = {
@@ -110,15 +110,14 @@ export async function createPost(formData, revalidateUrl) {
       content: content || "",
       thumbnail: thumbnail || null,
       status: status || "draft",
+      // ★ ویرایش: اسلاگ دیکود شده در دیتابیس ذخیره می‌شود
       name: uniqueSlug,
       link: link || null,
       video_link: video_link || null,
       description: description,
-      // ویرایش: تبدیل مقدار 'rozeh' به بولین (1 یا 0)
       rozeh: rozeh === "هست" ? 1 : 0,
       thumbnail_alt: thumbnail_alt || null,
       comment_status: comment_status || "open",
-      // ویرایش: فقط در صورت وجود تامبنیل دوم، JSON ساخته می‌شود
       extra_metadata: secondThumbnail
         ? JSON.stringify({ second_thumbnail: secondThumbnail })
         : null,
@@ -131,13 +130,13 @@ export async function createPost(formData, revalidateUrl) {
     const [result] = await db.query("INSERT INTO posts SET ?", postData);
     const newPostId = result.insertId;
 
-    // ویرایش: از آرایه دسته‌بندی‌های نهایی برای ذخیره استفاده می‌کنیم.
     await manageTermRelationships(newPostId, finalCategories, tags);
 
     revalidateTag("posts");
     revalidatePath(revalidateUrl);
     if (status === "publish") {
-      revalidatePath(`/maddahi/${decodeURIComponent(uniqueSlug)}`);
+      // ★ ویرایش: مسیر با اسلاگ دیکود شده revalidate می‌شود
+      revalidatePath(`/maddahi/${uniqueSlug}`);
     }
 
     return {
@@ -182,19 +181,20 @@ export async function updatePost(postId, formData, revalidateUrl) {
       "SELECT name FROM posts WHERE ID = ?",
       [postId]
     );
-    const oldSlugEncoded = oldPostRows.length > 0 ? oldPostRows[0].name : null;
+    // ★ ویرایش: اسلاگ قدیمی به صورت دیکود شده از دیتابیس خوانده می‌شود
+    const oldSlug = oldPostRows.length > 0 ? oldPostRows[0].name : null;
 
-    // ویرایش: بررسی می‌کنیم که اگر هیچ دسته‌بندی انتخاب نشده بود، دسته پیش‌فرض (ID: 12) را قرار بده.
     const finalCategories =
       categories && categories.length > 0 ? categories : [12];
 
-    const uniqueSlugEncoded = await generateUniqueSlug(name, postId);
-    // کد جدید و اصلاح شده
+    // ★ ویرایش: اسلاگ جدید نیز به صورت دیکود شده تولید می‌شود
+    const uniqueSlug = await generateUniqueSlug(name, postId);
     const secondThumbnail = extra_metadata?.second_thumbnail;
 
     const postData = {
       title,
-      name: uniqueSlugEncoded,
+      // ★ ویرایش: اسلاگ جدید و دیکود شده در دیتابیس ذخیره می‌شود
+      name: uniqueSlug,
       content: content || "",
       thumbnail: thumbnail || null,
       status: status || "draft",
@@ -214,19 +214,17 @@ export async function updatePost(postId, formData, revalidateUrl) {
       postId,
     ]);
 
-    // ویرایش: از آرایه دسته‌بندی‌های نهایی برای به‌روزرسانی استفاده می‌کنیم.
     await manageTermRelationships(postId, finalCategories, tags);
-
     await connection.commit();
 
     revalidateTag("posts");
 
-    const newSlugDecoded = decodeURIComponent(uniqueSlugEncoded);
-    revalidatePath(`/maddahi/${newSlugDecoded}`);
+    // ★ ویرایش: مسیر جدید با اسلاگ دیکود شده revalidate می‌شود
+    revalidatePath(`/maddahi/${uniqueSlug}`);
 
-    if (oldSlugEncoded && oldSlugEncoded !== uniqueSlugEncoded) {
-      const oldSlugDecoded = decodeURIComponent(oldSlugEncoded);
-      revalidatePath(`/maddahi/${oldSlugDecoded}`);
+    // ★ ویرایش: اگر اسلاگ قدیمی تغییر کرده بود، آن هم با مقدار دیکود شده revalidate می‌شود
+    if (oldSlug && oldSlug !== uniqueSlug) {
+      revalidatePath(`/maddahi/${oldSlug}`);
     }
     revalidatePath(revalidateUrl);
 
@@ -256,8 +254,8 @@ export async function deletePost(postId, revalidateUrl) {
       "SELECT name FROM posts WHERE ID = ?",
       [postId]
     );
-    const slugToDelete =
-      postRows.length > 0 ? decodeURIComponent(postRows[0].name) : null;
+    // ★ ویرایش: اسلاگ از دیتابیس به صورت دیکود شده خوانده می‌شود و نیازی به decodeURIComponent نیست
+    const slugToDelete = postRows.length > 0 ? postRows[0].name : null;
 
     await connection.query(
       "DELETE FROM wp_term_relationships WHERE object_id = ?",
@@ -269,6 +267,7 @@ export async function deletePost(postId, revalidateUrl) {
     revalidateTag("posts");
     revalidatePath(revalidateUrl);
     if (slugToDelete) {
+      // ★ ویرایش: مسیر با اسلاگ دیکود شده revalidate می‌شود
       revalidatePath(`/maddahi/${slugToDelete}`);
     }
 
