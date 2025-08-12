@@ -42,7 +42,7 @@ export async function generateMetadata({ params }) {
       title: soogname.title,
       description: description,
       images: [imageUrl],
-      url: `https://besooyeto.ir/soogname/${slug}`,
+      url: `https://besooyeto.ir/maddahi/soogname/${slug}`,
       type: "music.album",
     },
     twitter: {
@@ -89,7 +89,7 @@ export default async function SoognamePage({ params }) {
           )}
           {/* ★★★ اصلاح CSS: اضافه کردن کلاس `relative` به این div ★★★ */}
           <div className="relative flex flex-col items-center md:items-start text-center md:text-right flex-grow">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-[#f5f6f7] to-[#a3fff4] bg-clip-text text-transparent mb-4 leading-tight">
+            <h1 className="pt-5 text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-[#f5f6f7] to-[#a3fff4] bg-clip-text text-transparent mb-4 leading-tight">
               {soogname.title}
             </h1>
             {maddah.length > 0 && (
