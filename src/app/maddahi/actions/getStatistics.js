@@ -19,7 +19,7 @@ export async function getDashboardStatistics() {
       "SELECT COUNT(id) as pendingCommentsCount FROM comments WHERE status = 0"
     );
     const [[{ totalViews }]] = await db.query(
-      "SELECT SUM(CAST(view AS UNSIGNED)) as totalViews FROM posts WHERE type = 'post'"
+      "SELECT SUM(view) as totalViews FROM posts WHERE type = 'post'"
     );
     const [[{ todaysViews }]] = await db.query(
       "SELECT SUM(view_count) as todaysViews FROM daily_post_views WHERE view_date = CURDATE()"
@@ -43,7 +43,7 @@ export async function getDashboardStatistics() {
       month: toShamsi(item.month + "-01", "jMMMM jYYYY"),
     }));
     const [allTimeTopPosts] = await db.query(`
-      SELECT ID, title, link, CAST(view AS UNSIGNED) as total_views
+      SELECT ID, title, link, view as total_views
       FROM posts WHERE type = 'post' ORDER BY total_views DESC LIMIT 10;
     `);
     const [topCategories] = await db.query(`
@@ -232,7 +232,7 @@ export async function getPaginatedTopPosts({ range = "all", page = 1 }) {
       case "all":
       default:
         query = `
-          SELECT ID, title, link, CAST(view AS UNSIGNED) as views
+          SELECT ID, title, link, view as views
           FROM posts WHERE type = 'post'
           ORDER BY views DESC
           LIMIT ? OFFSET ?;

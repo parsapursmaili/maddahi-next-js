@@ -24,7 +24,7 @@ export default async function getPosts(params) {
       orderby = "ORDER BY RAND()"; // مرتب‌سازی تصادفی
       break;
     case 2:
-      orderby = "ORDER BY CAST(p.view AS UNSIGNED) DESC"; // بر اساس تعداد بازدید نزولی
+      orderby = "ORDER BY view DESC"; // بر اساس تعداد بازدید نزولی
       break;
     default:
       orderby = "ORDER BY RAND()"; // پیش‌فرض: تصادفی
@@ -122,7 +122,7 @@ export default async function getPosts(params) {
       // کوئری مجموع بازدیدها نیز نیازی به ORDER BY ندارد
       queriesToExecute.push(
         db.query(
-          `SELECT SUM(CAST(p.view AS UNSIGNED)) as total_views_sum FROM posts p ${where}`,
+          `SELECT SUM(p.view) as total_views_sum FROM posts p ${where}`,
           values
         )
       );

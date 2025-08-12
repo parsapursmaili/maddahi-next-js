@@ -148,7 +148,7 @@ export default async function PrestigeLandingPageV3() {
   const [featuredMaddahs, latestSlides, popularSlides] = await Promise.all([
     fetchFeaturedMaddahs(),
     fetchPosts("date desc"),
-    fetchPosts("CAST(view AS UNSIGNED) desc"),
+    fetchPosts("view desc"),
   ]);
 
   return (

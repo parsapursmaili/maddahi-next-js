@@ -20,7 +20,7 @@ export const getTopMaddahs = cache(
           t.name, 
           t.slug, 
           tm.image_url,
-          SUM(CAST(p.view AS UNSIGNED)) as total_views
+          SUM(view) as total_views
         FROM terms AS t
         JOIN wp_term_relationships AS tr ON t.ID = tr.term_taxonomy_id
         JOIN posts AS p ON tr.object_id = p.ID

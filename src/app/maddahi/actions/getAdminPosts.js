@@ -32,7 +32,7 @@ export default async function getAdminPosts(params) {
       orderby = "ORDER BY RAND()"; // تصادفی
       break;
     case 2:
-      orderby = "ORDER BY CAST(p.view AS UNSIGNED) DESC"; // پربازدیدترین
+      orderby = "ORDER BY view DESC"; // پربازدیدترین
       break;
     default:
       orderby = "ORDER BY p.date DESC"; // پیش‌فرض: جدیدترین

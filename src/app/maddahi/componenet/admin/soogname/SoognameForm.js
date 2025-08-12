@@ -1,10 +1,10 @@
 "use client";
 
+import Link from "next/link"; // ایمپورت Link
 import { useState, useEffect, useTransition } from "react";
 import dynamic from "next/dynamic";
 import moment from "jalali-moment";
-import { Save, AlertCircle } from "lucide-react";
-
+import { Save, AlertCircle, ExternalLink } from "lucide-react"; // ایمپورت ExternalLink
 import { toShamsi } from "@/app/maddahi/lib/utils/formatDate";
 import {
   createSoogname,
@@ -402,19 +402,31 @@ export default function SoognameForm({ initialData, onFormSubmit, onCancel }) {
           </p>
         )}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             {formData.id && (
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={isLoading}
-                className="px-6 py-2 text-sm transition-colors border rounded-md disabled:opacity-50 text-[var(--error)] border-[var(--error)] hover:bg-red-500/10"
-              >
-                {isLoading ? "..." : "حذف"}
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={isLoading}
+                  className="px-6 py-2 text-sm transition-colors border rounded-md disabled:opacity-50 text-[var(--error)] border-[var(--error)] hover:bg-red-500/10"
+                >
+                  {isLoading ? "..." : "حذف"}
+                </button>
+                {/* +++ بخش اضافه شده برای لینک مشاهده سوگنامه +++ */}
+                <Link
+                  href={`/maddahi/soogname/${formData.url}`}
+                  target="_blank"
+                  title="مشاهده صفحه"
+                  className="p-2 text-sm transition-colors rounded-md text-[var(--foreground-secondary)] hover:bg-[var(--background-tertiary)]"
+                >
+                  <ExternalLink size={16} />
+                </Link>
+                {/* +++ پایان بخش اضافه شده +++ */}
+              </>
             )}
             {isDirty && !isLoading && (
-              <div className="flex items-center gap-2 text-sm text-yellow-400 animate-pulse">
+              <div className="flex items-center gap-2 text-sm text-yellow-400 animate-pulse ml-4">
                 <AlertCircle size={16} />
                 <span>تغییرات ذخیره‌نشده</span>
               </div>

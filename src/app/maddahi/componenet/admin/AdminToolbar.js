@@ -12,14 +12,13 @@ import {
   BarChartBig,
   LogOut,
   ShieldCheck,
-  ScrollText, // ★★★ آیکون جدید برای سوگنامه ایمپورت شد ★★★
+  ScrollText,
 } from "lucide-react";
 
-// ★★★ لینک جدید سوگنامه به آرایه اضافه شد ★★★
 const adminLinks = [
   { href: "/admin", label: "داشبورد", icon: LayoutDashboard },
   { href: "/admin/posts", label: "پست‌ها", icon: FileText },
-  { href: "/admin/soogname", label: "سوگنامه", icon: ScrollText }, // <-- لینک جدید
+  { href: "/admin/soogname", label: "سوگنامه", icon: ScrollText },
   { href: "/admin/comments", label: "دیدگاه‌ها", icon: MessageSquare },
   { href: "/admin/terms", label: "دسته‌بندی‌ها", icon: Tags },
   { href: "/admin/statistics", label: "آمار", icon: BarChartBig },
@@ -52,7 +51,7 @@ export default function AdminToolbar() {
               <span>پنل مدیریت</span>
             </Link>
             <div className="w-px h-5 bg-[var(--border-secondary)] hidden sm:block"></div>
-            <nav className="hidden sm:flex items-center gap-3">
+            <nav className="flex items-center gap-3">
               {adminLinks.map((link) => (
                 <Link
                   key={link.href}

@@ -20,7 +20,6 @@ export const fixExtraMetadataNullsForMariaDB = async () => {
       "شروع اسکریپت (نسخه سازگار با MariaDB) برای اصلاح مقادیر 'null'..."
     );
 
-    // کوئری اصلاح شده که CAST(... AS JSON) را حذف کرده و با MariaDB سازگار است
     const [updateResult] = await db.query(`
       UPDATE posts
       SET extra_metadata = NULL

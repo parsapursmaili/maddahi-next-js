@@ -2,8 +2,8 @@ import Slider from "@/app/maddahi/componenet/Slider2";
 import SliderWithViews from "@/app/maddahi/componenet/SliderWithViews";
 import RandomMaddahCard from "@/app/maddahi/componenet/RandomMaddahCard";
 import { db } from "@/app/maddahi/lib/db/mysql";
-import Link from "next/link"; // ★ ایمپورت کامپوننت Link
-import { ArrowLeft } from "lucide-react"; // ★ ایمپورت آیکون فلش
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 export const revalidate = 1800; // 30 دقیقه
 
@@ -22,7 +22,7 @@ async function fetchPosts(orderby = "date desc", limit = 12) {
 export default async function Home() {
   const [latestSlides, popularSlides, randomSlides] = await Promise.all([
     fetchPosts("date desc", 12),
-    fetchPosts("CAST(view AS UNSIGNED) desc", 12),
+    fetchPosts("view desc", 12),
     fetchPosts("RAND()", 12),
   ]);
 

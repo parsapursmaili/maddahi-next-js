@@ -1,6 +1,6 @@
 // /app/maddahi/components/admin/PostFormActions.js
-import { Save, AlertCircle } from "lucide-react";
-
+import Link from "next/link";
+import { Save, AlertCircle, ExternalLink } from "lucide-react"; // ExternalLink اضافه شد
 export default function PostFormActions({
   postForEditing,
   loadingAction,
@@ -24,16 +24,28 @@ export default function PostFormActions({
         </p>
       )}
       <div className="flex items-center justify-between">
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           {postForEditing.ID && (
-            <button
-              type="button"
-              onClick={handleDelete}
-              disabled={!!loadingAction}
-              className="px-6 py-2 text-sm transition-colors border rounded-md disabled:opacity-50 text-[var(--error)] border-[var(--error)] hover:bg-red-500/10"
-            >
-              {loadingAction === "delete" ? "در حال حذف..." : "حذف"}
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={!!loadingAction}
+                className="px-6 py-2 text-sm transition-colors border rounded-md disabled:opacity-50 text-[var(--error)] border-[var(--error)] hover:bg-red-500/10"
+              >
+                {loadingAction === "delete" ? "در حال حذف..." : "حذف"}
+              </button>
+              {/* +++ بخش اضافه شده برای لینک مشاهده پست +++ */}
+              <Link
+                href={`/maddahi/soogname/${postForEditing.url}`} // <-- فرض بر این است که آدرس به این شکل است
+                target="_blank"
+                title="مشاهده صفحه"
+                className="p-2 text-sm transition-colors rounded-md text-[var(--foreground-secondary)] hover:bg-[var(--background-tertiary)]"
+              >
+                <ExternalLink size={16} />
+              </Link>
+              {/* +++ پایان بخش اضافه شده +++ */}
+            </>
           )}
           {isDirty && !loadingAction && (
             <div className="flex items-center gap-2 text-sm text-yellow-400 animate-pulse ml-4">
