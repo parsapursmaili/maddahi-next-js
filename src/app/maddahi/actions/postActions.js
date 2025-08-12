@@ -86,7 +86,6 @@ export async function createPost(formData, revalidateUrl) {
     description,
     rozeh,
     thumbnail_alt,
-    comment_status,
     extra_metadata,
     date,
   } = formData;
@@ -117,7 +116,6 @@ export async function createPost(formData, revalidateUrl) {
       description: description,
       rozeh: rozeh === "هست" ? 1 : 0,
       thumbnail_alt: thumbnail_alt || null,
-      comment_status: comment_status || "open",
       extra_metadata: secondThumbnail
         ? JSON.stringify({ second_thumbnail: secondThumbnail })
         : null,
@@ -164,7 +162,6 @@ export async function updatePost(postId, formData, revalidateUrl) {
     description,
     rozeh,
     thumbnail_alt,
-    comment_status,
     extra_metadata,
     date,
   } = formData;
@@ -203,7 +200,6 @@ export async function updatePost(postId, formData, revalidateUrl) {
       description: description,
       rozeh: rozeh === "هست" ? 1 : 0,
       thumbnail_alt: thumbnail_alt || null,
-      comment_status: comment_status || "open",
       extra_metadata: secondThumbnail
         ? JSON.stringify({ second_thumbnail: secondThumbnail })
         : null,

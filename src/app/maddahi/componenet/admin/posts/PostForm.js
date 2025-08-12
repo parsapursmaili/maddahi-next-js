@@ -31,7 +31,6 @@ const defaultPost = {
   link: "",
   video_link: "",
   description: "",
-  comment_status: "open",
   extra_metadata: null,
   date: null,
 };
