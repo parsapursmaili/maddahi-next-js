@@ -40,9 +40,10 @@ export default function AdminToolbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
         <div className="flex items-center justify-between h-full">
           <div className="flex items-center gap-4">
+            {/* این لینک در حالت موبایل مخفی و در دسکتاپ نمایش داده می‌شود */}
             <Link
               href="/maddahi/admin"
-              className="flex items-center gap-2 text-sm text-[var(--foreground-primary)] font-semibold"
+              className="hidden sm:flex items-center gap-2 text-sm text-[var(--foreground-primary)] font-semibold"
             >
               <ShieldCheck
                 className="text-[var(--accent-crystal-highlight)]"
@@ -50,6 +51,7 @@ export default function AdminToolbar() {
               />
               <span>پنل مدیریت</span>
             </Link>
+            {/* این جداکننده نیز فقط در دسکتاپ نمایش داده می‌شود */}
             <div className="w-px h-5 bg-[var(--border-secondary)] hidden sm:block"></div>
             <nav className="flex items-center gap-3">
               {adminLinks.map((link) => (

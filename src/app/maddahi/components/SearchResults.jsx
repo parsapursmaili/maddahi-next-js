@@ -9,8 +9,9 @@ import {
   FaSearch,
   FaRegArrowAltCircleLeft,
 } from "react-icons/fa";
-import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl"; // ۱. وارد کردن تابع کمکی
+import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl";
 
+// استایل انیمیشن Shimmer بدون تغییر باقی می‌ماند
 const ShimmerStyle = () => (
   <style jsx global>{`
     @keyframes shimmer {
@@ -49,18 +50,21 @@ const itemVariants = {
   exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } },
 };
 
+// اسکلت لودینگ برای هماهنگی با طراحی ریسپانسیو جدید بروزرسانی شد
 const SkeletonItem = () => (
   <motion.li
     variants={itemVariants}
     className="bg-[var(--background-secondary)]/50 rounded-xl p-3 overflow-hidden"
   >
-    <div className="flex items-center gap-4">
-      <div className="flex-shrink-0 w-20 h-20 bg-[var(--background-secondary)] rounded-lg relative shimmer-bg"></div>
-      <div className="flex-grow min-w-0 space-y-3">
+    <div className="flex items-center gap-3 sm:gap-4">
+      {/* سایز تصویر در موبایل کوچکتر شده است */}
+      <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 bg-[var(--background-secondary)] rounded-lg relative shimmer-bg"></div>
+      <div className="flex-grow min-w-0 space-y-2.5 sm:space-y-3">
         <div className="h-5 bg-[var(--background-secondary)] rounded w-3/4 relative shimmer-bg"></div>
         <div className="h-4 bg-[var(--background-secondary)] rounded w-1/2 relative shimmer-bg"></div>
       </div>
-      <div className="hidden sm:block h-8 bg-[var(--background-secondary)] rounded-full w-24 relative shimmer-bg"></div>
+      {/* بخش آمار در دسکتاپ نمایش داده می‌شود */}
+      <div className="hidden sm:block flex-shrink-0 h-8 bg-[var(--background-secondary)] rounded-full w-24 relative shimmer-bg"></div>
     </div>
   </motion.li>
 );
@@ -76,12 +80,12 @@ export default function SearchResults({
       <>
         <ShimmerStyle />
         <motion.ul
-          className="space-y-4"
+          className="space-y-3 sm:space-y-4"
           initial="hidden"
           animate="visible"
           variants={listVariants}
         >
-          {[...Array(4)].map((_, i) => (
+          {[...Array(5)].map((_, i) => (
             <SkeletonItem key={i} />
           ))}
         </motion.ul>
@@ -89,35 +93,37 @@ export default function SearchResults({
     );
   }
 
+  // بهبود ظاهر پیام اولیه با آیکون بزرگتر
   if (query.length < 2) {
     return (
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="text-center py-16 text-[var(--foreground-muted)] flex flex-col items-center gap-4"
+        className="text-center py-20 text-[var(--foreground-muted)] flex flex-col items-center gap-5"
       >
-        <FaRegArrowAltCircleLeft className="text-5xl opacity-30" />
-        <p>برای دیدن نتایج، در کادر بالا جستجو کنید.</p>
+        <FaRegArrowAltCircleLeft className="text-6xl opacity-20" />
+        <p className="text-lg">برای دیدن نتایج، در کادر بالا جستجو کنید.</p>
       </motion.div>
     );
   }
 
+  // بهبود ظاهر پیام "نتیجه‌ای یافت نشد"
   if (!isInitialLoading && results.length === 0) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center py-16 flex flex-col items-center gap-4 text-[var(--foreground-muted)]"
+        className="text-center py-20 flex flex-col items-center gap-4 text-[var(--foreground-muted)]"
       >
-        <FaSearch className="text-5xl opacity-30" />
-        <p className="text-lg">
+        <FaSearch className="text-6xl opacity-20" />
+        <p className="text-xl">
           هیچ نوایی برای «
           <span className="font-semibold text-[var(--foreground-secondary)]">
             {query}
           </span>
           » یافت نشد.
         </p>
-        <p className="text-sm">
+        <p className="text-base">
           عبارت دیگری را امتحان کنید یا از املای آن مطمئن شوید.
         </p>
       </motion.div>
@@ -135,7 +141,7 @@ export default function SearchResults({
           `${totalResults.toLocaleString("fa-IR")} نتیجه یافت شد`}
       </motion.div>
       <motion.ul
-        className="space-y-4"
+        className="space-y-3 sm:space-y-4"
         variants={listVariants}
         initial="hidden"
         animate="visible"
@@ -148,6 +154,7 @@ export default function SearchResults({
   );
 }
 
+// کامپوننت آیتم نتیجه جستجو با طراحی کاملاً ریسپانسیو
 function PostResultItem({ post }) {
   const maddahName = post.cat?.[0]?.name;
   const viewCount = post.view
@@ -160,14 +167,15 @@ function PostResultItem({ post }) {
         href={`/maddahi/${post.name}`}
         className="block bg-[var(--background-secondary)]/70 rounded-xl p-3 group transition-all duration-300 ease-out hover:bg-[var(--background-tertiary)] hover:shadow-lg hover:shadow-[var(--accent-primary)]/5 hover:translate-y-[-3px] hover:scale-[1.01]"
       >
-        <div className="flex items-center gap-4">
-          <div className="flex-shrink-0 w-20 h-20 relative rounded-lg overflow-hidden border-2 border-transparent group-hover:border-[var(--accent-primary)]/50 transition-all duration-300">
+        <div className="flex items-center gap-3 sm:gap-4">
+          {/* ۱. تصویر با سایز ریسپانسیو */}
+          <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 relative rounded-lg overflow-hidden border-2 border-transparent group-hover:border-[var(--accent-primary)]/50 transition-all duration-300">
             {post.thumbnail ? (
               <Image
                 src={createApiImageUrl(post.thumbnail, { size: "150" })}
                 alt={post.title}
                 fill
-                sizes="80px"
+                sizes="(max-width: 640px) 64px, 80px"
                 className="object-cover transition-transform duration-500 ease-out group-hover:scale-110"
               />
             ) : (
@@ -176,21 +184,27 @@ function PostResultItem({ post }) {
               </div>
             )}
           </div>
+
+          {/* ۲. بخش محتوا با قابلیت رشد و جلوگیری از سرریز شدن */}
           <div className="flex-grow min-w-0">
+            {/* ۳. عنوان با سایز و برش متن ریسپانسیو */}
             <h3
-              className="font-bold text-lg text-[var(--foreground-primary)] mb-1.5 transition-colors group-hover:text-[var(--accent-primary)]"
+              className="font-bold text-base sm:text-lg text-[var(--foreground-primary)] transition-colors group-hover:text-[var(--accent-primary)] truncate"
               title={post.title}
             >
               {post.title}
             </h3>
+            {/* ۴. نام مداح با سایز ریسپانسیو */}
             {maddahName && (
-              <p className="text-md text-[var(--foreground-secondary)]">
+              <p className="text-sm sm:text-md text-[var(--foreground-secondary)] mt-1 truncate">
                 {maddahName}
               </p>
             )}
           </div>
-          <div className="flex flex-col items-end gap-2.5 ml-4 self-center">
-            <div className="hidden sm:flex items-center gap-2 text-sm text-[var(--foreground-muted)]">
+
+          {/* ۵. بخش آمار و تگ‌ها، در موبایل مخفی و در دسکتاپ بهینه نمایش داده می‌شود */}
+          <div className="hidden sm:flex flex-col items-end gap-2.5 ml-2 flex-shrink-0">
+            <div className="flex items-center gap-2 text-sm text-[var(--foreground-muted)]">
               <FaRegEye />
               <span>{viewCount}</span>
             </div>
