@@ -3,7 +3,7 @@
 import { isAuthenticated } from "@/app/maddahi/actions/auth"; // <-- استفاده از اکشن جدید و استاندارد
 import { redirect } from "next/navigation"; // <-- ایمپورت redirect برای هدایت کاربر
 import { getTermsForAdmin } from "@/app/maddahi/actions/termActions";
-import TermManager from "@/app/maddahi/componenet/admin/terms/TermManager";
+import TermManager from "@/app/maddahi/components/admin/terms/TermManager";
 
 export default async function AdminPage() {
   // ۱. وضعیت احراز هویت را بررسی می‌کنیم

@@ -2,7 +2,7 @@
 import { isAuthenticated } from "@/app/maddahi/actions/auth"; // مسیر را مطابق پروژه خود تنظیم کنید
 import { redirect } from "next/navigation";
 import { getDashboardStatistics } from "@/app/maddahi/actions/getStatistics";
-import StatisticsDashboard from "@/app/maddahi/componenet/admin/statistics/StatisticsDashboard";
+import StatisticsDashboard from "@/app/maddahi/components/admin/statistics/StatisticsDashboard";
 
 export const metadata = {
   title: "پنل آمار",

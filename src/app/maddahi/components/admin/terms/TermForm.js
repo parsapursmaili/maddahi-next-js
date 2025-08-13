@@ -8,11 +8,11 @@ import {
   updateTermWithMetadata,
   deleteTermWithMetadata,
 } from "@/app/maddahi/actions/termActions";
-import ImageUploader from "@/app/maddahi/componenet/ImageUploader";
+import ImageUploader from "@/app/maddahi/components/ImageUploader";
 
 // TiptapEditor اکنون از استایل‌های گلوبال استفاده می‌کند
 const TiptapEditor = dynamic(
-  () => import("@/app/maddahi/componenet/TiptapEditor"),
+  () => import("@/app/maddahi/components/TiptapEditor"),
   {
     ssr: false,
   }

@@ -6,8 +6,8 @@ import { BookOpen, Eye, Users, MessageSquarePlus } from "lucide-react";
 import { getSoognamePageData } from "./actions";
 import SoognamePlayer from "./SoognamePlayer";
 import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl";
-import CommentForm from "@/app/maddahi/componenet/comments/CommentForm";
-import CommentThread from "@/app/maddahi/componenet/comments/CommentThread";
+import CommentForm from "@/app/maddahi/components/comments/CommentForm";
+import CommentThread from "@/app/maddahi/components/comments/CommentThread";
 import SoognameViewCounter from "./ViewCounter";
 
 // تابع کمکی برای ایجاد جداکننده بخش‌ها

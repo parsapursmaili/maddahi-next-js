@@ -2,7 +2,7 @@
 
 import { isAuthenticated } from "@/app/maddahi/actions/auth";
 import { redirect } from "next/navigation";
-import SoognameManager from "@/app/maddahi/componenet/admin/soogname/SoognameManager";
+import SoognameManager from "@/app/maddahi/components/admin/soogname/SoognameManager";
 
 export default async function AdminSoognamePage() {
   const isAuth = await isAuthenticated();

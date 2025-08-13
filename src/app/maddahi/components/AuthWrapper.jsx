@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { isAuthenticated } from "@/app/maddahi/actions/auth"; // همان Server Action قبلی
-import AdminToolbar from "@/app/maddahi/componenet/admin/AdminToolbar";
+import AdminToolbar from "@/app/maddahi/components/admin/AdminToolbar";
 
 export default function AuthWrapper() {
   const [isAuth, setIsAuth] = useState(false);

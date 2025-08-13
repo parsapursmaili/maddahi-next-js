@@ -1,11 +1,11 @@
 // app/layout.js
 
 import "./globals.css";
-import TopLoader from "./componenet/topLoader";
+import TopLoader from "./components/topLoader";
 import { Geist, Geist_Mono } from "next/font/google";
 import { vazir } from "./font";
-import Header from "@/app/maddahi/componenet/Header";
-import AuthWrapper from "@/app/maddahi/componenet/AuthWrapper";
+import Header from "@/app/maddahi/components/Header";
+import AuthWrapper from "@/app/maddahi/components/AuthWrapper";
 // ۱. کامپوننت Script را از next/script وارد کنید
 import Script from "next/script";
 

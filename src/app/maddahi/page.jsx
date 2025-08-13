@@ -1,6 +1,6 @@
-import Slider from "@/app/maddahi/componenet/Slider2";
-import SliderWithViews from "@/app/maddahi/componenet/SliderWithViews";
-import RandomMaddahCard from "@/app/maddahi/componenet/RandomMaddahCard";
+import Slider from "@/app/maddahi/components/Slider2";
+import SliderWithViews from "@/app/maddahi/components/SliderWithViews";
+import RandomMaddahCard from "@/app/maddahi/components/RandomMaddahCard";
 import { db } from "@/app/maddahi/lib/db/mysql";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";

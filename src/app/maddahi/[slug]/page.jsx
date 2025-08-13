@@ -3,13 +3,13 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getPostPageData } from "./post";
-import MusicPlayer from "@/app/maddahi/componenet/singleplayer";
-import Slider from "@/app/maddahi/componenet/Slider2";
-import CommentForm from "../componenet/comments/CommentForm";
-import CommentThread from "../componenet/comments/CommentThread";
-import ServerViewCounter from "@/app/maddahi/componenet/incview";
+import MusicPlayer from "@/app/maddahi/components/singleplayer";
+import Slider from "@/app/maddahi/components/Slider2";
+import CommentForm from "../components/comments/CommentForm";
+import CommentThread from "../components/comments/CommentThread";
+import ServerViewCounter from "@/app/maddahi/components/incview";
 import Link from "next/link";
-import ScriptEmbed from "@/app/maddahi/componenet/ScriptEmbed";
+import ScriptEmbed from "@/app/maddahi/components/ScriptEmbed";
 import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl";
 import {
   BookOpen,

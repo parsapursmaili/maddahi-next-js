@@ -1,9 +1,9 @@
 // /app/maddahi/components/admin/PostMainContent.js
 import dynamic from "next/dynamic";
-import ImageUploader from "@/app/maddahi/componenet/ImageUploader";
+import ImageUploader from "@/app/maddahi/components/ImageUploader";
 
 const TiptapEditor = dynamic(
-  () => import("@/app/maddahi/componenet/TiptapEditor"),
+  () => import("@/app/maddahi/components/TiptapEditor"),
   {
     ssr: false,
   }

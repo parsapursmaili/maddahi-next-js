@@ -3,13 +3,13 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import Maddahan from "@/app/maddahi/componenet/maddahiha/maddahan";
-import Pagination from "@/app/maddahi/componenet/maddahiha/pagination";
-import MusicPlayer from "@/app/maddahi/componenet/maddahiha/musicPlayer";
-import Posts from "@/app/maddahi/componenet/maddahiha/posts";
-import Reason from "@/app/maddahi/componenet/maddahiha/monasebatha";
-import Random from "@/app/maddahi/componenet/maddahiha/random";
-import Search from "@/app/maddahi/componenet/maddahiha/search";
+import Maddahan from "@/app/maddahi/components/maddahiha/maddahan";
+import Pagination from "@/app/maddahi/components/maddahiha/pagination";
+import MusicPlayer from "@/app/maddahi/components/maddahiha/musicPlayer";
+import Posts from "@/app/maddahi/components/maddahiha/posts";
+import Reason from "@/app/maddahi/components/maddahiha/monasebatha";
+import Random from "@/app/maddahi/components/maddahiha/random";
+import Search from "@/app/maddahi/components/maddahiha/search";
 import getPosts from "@/app/maddahi/actions/getPost";
 
 export default function MaddahiClientPage({
