@@ -1,12 +1,12 @@
-// /app/components/admin/statistics/AllTimeTopPostsTable.js
+// /app/components/admin/statistics/TopPostsTodayTable.js (فایل جدید)
 import Link from "next/link";
-import { ExternalLink, LineChart } from "lucide-react"; // آیکون نمودار اضافه شد
+import { ExternalLink, LineChart } from "lucide-react";
 
-const AllTimeTopPostsTable = ({ data }) => {
+const TopPostsTodayTable = ({ data }) => {
   if (!data || data.length === 0) {
     return (
       <p className="text-center text-[var(--foreground-muted)] py-8">
-        داده‌ای برای نمایش وجود ندارد.
+        امروز پستی بازدید نداشته است.
       </p>
     );
   }
@@ -17,10 +17,13 @@ const AllTimeTopPostsTable = ({ data }) => {
         <thead className="border-b border-[var(--border-secondary)]">
           <tr>
             <th className="p-3 text-sm font-semibold text-[var(--foreground-secondary)]">
+              #
+            </th>
+            <th className="p-3 text-sm font-semibold text-[var(--foreground-secondary)] text-right">
               عنوان پست
             </th>
             <th className="p-3 text-sm font-semibold text-[var(--foreground-secondary)] text-center">
-              کل بازدیدها
+              بازدید امروز
             </th>
             <th className="p-3 text-sm font-semibold text-[var(--foreground-secondary)] text-center">
               عملیات
@@ -28,18 +31,20 @@ const AllTimeTopPostsTable = ({ data }) => {
           </tr>
         </thead>
         <tbody>
-          {data.map((post) => (
+          {data.map((post, index) => (
             <tr
               key={post.ID}
               className="border-b border-[var(--border-primary)] hover:bg-[var(--background-tertiary)] transition-colors"
             >
+              <td className="p-3 text-[var(--foreground-muted)]">
+                {index + 1}
+              </td>
               <td className="p-3 text-[var(--foreground-primary)] font-medium">
                 {post.title}
               </td>
               <td className="p-3 text-center text-[var(--accent-primary)] font-bold">
-                {post.total_views.toLocaleString("fa-IR")}
+                {Number(post.daily_views || 0).toLocaleString("fa-IR")}
               </td>
-              {/* تغییر: اضافه شدن لینک به نمودار و حفظ لینک اصلی */}
               <td className="p-3">
                 <div className="flex items-center justify-center space-x-4 space-x-reverse">
                   <Link
@@ -69,4 +74,4 @@ const AllTimeTopPostsTable = ({ data }) => {
   );
 };
 
-export default AllTimeTopPostsTable;
+export default TopPostsTodayTable;

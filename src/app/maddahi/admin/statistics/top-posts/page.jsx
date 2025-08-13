@@ -1,7 +1,5 @@
-// /app/maddahi/admin/statistics/top-posts/page.js (فایل ویرایش شده)
-
 import { Suspense } from "react";
-import TopPostsClientView from "./TopPostsClientView"; // ایمپورت کامپوننت جدید کلاینت
+import TopPostsClientView from "./TopPostsClientView";
 import { Loader2 } from "lucide-react";
 
 function LoadingFallback() {

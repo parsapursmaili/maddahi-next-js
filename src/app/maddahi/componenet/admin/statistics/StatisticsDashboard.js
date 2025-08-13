@@ -4,27 +4,27 @@
 import Link from "next/link";
 import StatCard from "./StatCard";
 import ContentGrowthChart from "./ContentGrowthChart";
+import TopPostsTodayTable from "./TopPostsTodayTable"; // ★★★ جدید
 import TopPostsTable from "./TopPostsTable";
 import AllTimeTopPostsTable from "./AllTimeTopPostsTable";
 import CategoryPopularityChart from "./CategoryPopularityChart";
-import TopEngagementTable from "./TopEngagementTable";
 import {
   FileText,
   MessageSquare,
   Eye,
   CalendarClock,
   ArrowLeft,
-  Clock,
+  TrendingUp, // آیکون مناسب برای آمار روز
 } from "lucide-react";
 
 const StatisticsDashboard = ({ initialStats }) => {
   const {
     quickStats,
+    topPostsToday, // ★★★ جدید
     topPostsLast30Days,
     contentGrowth,
     allTimeTopPosts,
     topCategories,
-    topEngagementPosts,
   } = initialStats;
 
   return (
@@ -36,7 +36,7 @@ const StatisticsDashboard = ({ initialStats }) => {
         </p>
       </header>
 
-      {/* ★★★ اصلاح: اطمینان از تبدیل مقادیر به عدد قبل از فرمت‌بندی ★★★ */}
+      {/* اطمینان از تبدیل مقادیر به عدد قبل از فرمت‌بندی */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <StatCard
           icon={<FileText />}
@@ -67,7 +67,23 @@ const StatisticsDashboard = ({ initialStats }) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
         <div className="lg:col-span-3 space-y-8">
-          {/* ★★★ تغییر: جابجایی بخش "پربازدیدترین‌های ۳۰ روز اخیر" به بالا ★★★ */}
+          {/* ★★★ جدید: بخش پربازدیدترین‌های امروز ★★★ */}
+          <div className="bg-[var(--background-secondary)] p-4 rounded-lg border border-[var(--border-primary)]">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <TrendingUp size={20} /> پربازدیدترین‌های امروز
+              </h2>
+              <Link
+                href="/maddahi/admin/statistics/top-posts?range=day"
+                className="flex items-center gap-2 text-sm text-[var(--accent-primary)] hover:underline"
+              >
+                <span>مشاهده همه</span> <ArrowLeft size={16} />
+              </Link>
+            </div>
+            <TopPostsTodayTable data={topPostsToday} />
+          </div>
+
+          {/* ★★★ اصلاح: بخش پربازدیدترین‌های ۳۰ روز اخیر ★★★ */}
           <div className="bg-[var(--background-secondary)] p-4 rounded-lg border border-[var(--border-primary)]">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">
@@ -83,22 +99,7 @@ const StatisticsDashboard = ({ initialStats }) => {
             <TopPostsTable data={topPostsLast30Days} />
           </div>
 
-          <div className="bg-[var(--background-secondary)] p-4 rounded-lg border border-[var(--border-primary)]">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold flex items-center gap-2">
-                <Clock size={20} /> پست‌های درگیرکننده
-              </h2>
-              <Link
-                href="/maddahi/admin/statistics/top-engagement"
-                className="flex items-center gap-2 text-sm text-[var(--accent-primary)] hover:underline"
-              >
-                <span>تحلیل کامل</span> <ArrowLeft size={16} />
-              </Link>
-            </div>
-            <TopEngagementTable data={topEngagementPosts} />
-          </div>
-
-          {/* ★★★ تغییر: جابجایی بخش "پربازدیدترین پست‌های تمام دوران" به پایین ★★★ */}
+          {/* ★★★ بدون تغییر: بخش پربازدیدترین پست‌های تمام دوران ★★★ */}
           <div className="bg-[var(--background-secondary)] p-4 rounded-lg border border-[var(--border-primary)]">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">
@@ -115,7 +116,7 @@ const StatisticsDashboard = ({ initialStats }) => {
           </div>
         </div>
 
-        {/* ستون کناری (کوچکتر) */}
+        {/* ستون کناری (بدون تغییر) */}
         <div className="lg:col-span-2 space-y-8">
           <div className="bg-[var(--background-secondary)] p-4 rounded-lg border border-[var(--border-primary)]">
             <h2 className="text-xl font-semibold mb-4">
