@@ -1,21 +1,43 @@
+// app/maddahi/soogname/[slug]/page.jsx
+
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { BookOpen, Eye, Users, MessageSquarePlus } from "lucide-react";
+import {
+  BookOpen,
+  Eye,
+  Users,
+  MessageSquarePlus,
+  Sparkles, // ★★★ ایمپورت آیکون جدید
+  ArrowLeft, // ★★★ ایمپورت آیکون جدید
+} from "lucide-react";
 import { getSoognamePageData } from "./actions";
 import SoognamePlayer from "./SoognamePlayer";
 import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl";
 import CommentForm from "@/app/maddahi/components/comments/CommentForm";
 import CommentThread from "@/app/maddahi/components/comments/CommentThread";
 import SoognameViewCounter from "./ViewCounter";
+import Slider from "@/app/maddahi/components/Slider2"; // ★★★ ایمپورت کامپوننت اسلایدر
 
-// تابع کمکی برای ایجاد جداکننده بخش‌ها
+// ★★★ افزودن کامپوننت‌های کمکی از صفحه پست ★★★
 function SectionDivider() {
   return (
     <div className="w-1/2 h-px mx-auto bg-gradient-to-r from-transparent via-[#00b4a0]/30 to-transparent" />
   );
 }
+
+function SectionTitle({ icon, title, className = "" }) {
+  return (
+    <h2
+      className={`flex items-center justify-center gap-3 text-2xl font-bold text-[#f5f6f7] ${className}`}
+    >
+      {icon && <span className="text-[#00b4a0]">{icon}</span>}
+      <span>{title}</span>
+    </h2>
+  );
+}
+// ★★★ پایان افزودن کامپوننت‌های کمکی ★★★
 
 export async function generateStaticParams() {
   return [];
@@ -56,8 +78,17 @@ export async function generateMetadata({ params }) {
 
 export default async function SoognamePage({ params }) {
   const { slug } = params;
-  const { soogname, maddah, tags, playlist, comments, totalCommentsCount } =
-    await getSoognamePageData(slug);
+  // ★★★ دریافت دیتای جدید برای اسلایدرها ★★★
+  const {
+    soogname,
+    maddah,
+    tags,
+    playlist,
+    comments,
+    totalCommentsCount,
+    similarFromOccasion,
+    latestFromMaddah,
+  } = await getSoognamePageData(slug);
 
   if (!soogname) notFound();
 
@@ -65,6 +96,13 @@ export default async function SoognamePage({ params }) {
     ? createApiImageUrl(soogname.thumbnail, { size: "560" })
     : null;
   const imageAltText = soogname.title.substring(0, 70);
+
+  // ★★★ افزودن لینک‌های "مشاهده بیشتر" برای اسلایدرها ★★★
+  const similarOccasionLink =
+    tags.length > 0 ? `/maddahi/home/?monasebatha=${tags[0].ID}` : "#";
+  const latestFromMaddahLink =
+    maddah.length > 0 ? `/maddahi/home/?maddah=${maddah[0].ID}` : "#";
+  // ★★★ پایان افزودن لینک‌ها ★★★
 
   return (
     <main className="relative flex min-h-screen flex-col items-center bg-[#0a0a0a] py-12 sm:py-16">
@@ -87,7 +125,6 @@ export default async function SoognamePage({ params }) {
               />
             </div>
           )}
-          {/* ★★★ اصلاح CSS: اضافه کردن کلاس `relative` به این div ★★★ */}
           <div className="relative flex flex-col items-center md:items-start text-center md:text-right flex-grow">
             <h1 className="pt-5 text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-[#f5f6f7] to-[#a3fff4] bg-clip-text text-transparent mb-4 leading-tight">
               {soogname.title}
@@ -110,7 +147,7 @@ export default async function SoognamePage({ params }) {
                 {tags.map((tag) => (
                   <Link
                     key={tag.slug}
-                    href={`/maddahi/home/?tags=${tag.ID}`}
+                    href={`/maddahi/home/?monasebatha=${tag.ID}`}
                     className="text-xs text-[#a3a3a3] transition-colors duration-300 hover:text-[#a3fff4] hover:underline underline-offset-4"
                   >
                     #{tag.name.replace(/\s/g, "_")}
@@ -129,24 +166,72 @@ export default async function SoognamePage({ params }) {
           <SoognamePlayer playlist={playlist} />
         </section>
 
+        {/* ★★★ شروع بخش اسلایدر "آخرین از همین مداح" ★★★ */}
+        {latestFromMaddah.length > 0 && (
+          <>
+            <SectionDivider />
+            <section className="py-8 px-1">
+              <div className="flex flex-col items-center gap-3 px-6 sm:px-8 md:px-12 mb-6">
+                <SectionTitle
+                  icon={<Sparkles />}
+                  title="آخرین مداحی ها از همین مداح"
+                />
+                <Link
+                  href={latestFromMaddahLink}
+                  className="group flex items-center gap-2 text-sm font-medium text-[#a3a3a3] hover:text-[#a3fff4] transition-colors duration-300"
+                >
+                  <span>مشاهده ی بیشتر از همین مداح</span>
+                  <ArrowLeft className="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-1" />
+                </Link>
+              </div>
+              <Slider
+                slides={latestFromMaddah}
+                sliderId="latest-from-maddah-soogname"
+              />
+            </section>
+          </>
+        )}
+        {/* ★★★ پایان بخش اسلایدر "آخرین از همین مداح" ★★★ */}
+
+        {/* ★★★ شروع بخش اسلایدر "از همین مناسبت" ★★★ */}
+        {similarFromOccasion.length > 0 && (
+          <>
+            <SectionDivider />
+            <section className="py-8 px-1">
+              <div className="flex flex-col items-center gap-3 px-6 sm:px-8 md:px-12 mb-6">
+                <SectionTitle icon={<Sparkles />} title="از همین مناسبت" />
+                <Link
+                  href={similarOccasionLink}
+                  className="group flex items-center gap-2 text-sm font-medium text-[#a3a3a3] hover:text-[#a3fff4] transition-colors duration-300"
+                >
+                  <span>مشاهده ی بیشتر از همین مناسبت</span>
+                  <ArrowLeft className="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-1" />
+                </Link>
+              </div>
+              <Slider
+                slides={similarFromOccasion}
+                sliderId="similar-occasion-posts"
+              />
+            </section>
+          </>
+        )}
+        {/* ★★★ پایان بخش اسلایدر "از همین مناسبت" ★★★ */}
+
         {soogname.content && (
           <>
             <SectionDivider />
             <section className="p-6 sm:p-8 md:p-12">
-              <h2 className="flex items-center justify-center gap-3 text-2xl font-bold text-[#f5f6f7] mb-6">
-                <BookOpen className="text-[#00b4a0]" />
-                <span>متن و توضیحات</span>
-              </h2>
+              <SectionTitle icon={<BookOpen />} title="متن و توضیحات" />
               <div
-                className="prose prose-lg prose-invert max-w-none text-[#a3a3a3] prose-headings:text-[#f5f6f7]"
+                // ★★★ اصلاح: افزودن کلاس برای افزایش ارتفاع خط ★★★
+                className="prose ertefae-khat prose-lg prose-invert max-w-none text-[#a3a3a3] prose-headings:text-[#f5f6f7] prose-p:leading-relaxed mt-6"
                 dangerouslySetInnerHTML={{ __html: soogname.content }}
               />
             </section>
           </>
         )}
 
-        <SectionDivider />
-        <div className="bg-[#0a0a0a]/30 sm:rounded-b-2xl">
+        <div className="border-t border-[#262626] bg-[#0a0a0a]/30 sm:rounded-b-2xl">
           <section className="p-6 sm:p-8 md:p-12">
             <div className="max-w-4xl mx-auto">
               <h2 className="flex items-center justify-center gap-3 text-2xl font-bold text-[#f5f6f7] mb-8">

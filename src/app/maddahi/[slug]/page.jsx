@@ -92,7 +92,7 @@ export default async function ProductPage({ params }) {
       ? `/maddahi/home/?monasebatha=${monasebat[0].ID}`
       : "#";
   const latestFromMaddahLink =
-    maddah.length > 0 ? `/maddahi/category/${maddah[0].slug}` : "#";
+    maddah.length > 0 ? `/maddahi/home/?maddah=${maddah[0].ID}` : "#";
 
   const secondThumbnailPath = post.extra_metadata?.second_thumbnail;
   const fullSecondThumbnailUrl = secondThumbnailPath
@@ -242,7 +242,7 @@ export default async function ProductPage({ params }) {
             <section className="px-6 sm:px-8 md:px-12 py-8">
               <SectionTitle icon={<BookOpen />} title="متن و اشعار" />
               <div
-                className="prose prose-lg prose-invert max-w-none mt-6 text-[#a3a3a3] prose-headings:text-[#f5f6f7] prose-strong:text-[#f5f6f7] prose-a:text-[#a3fff4] prose-a:transition-colors hover:prose-a:text-[#00b4a0] prose-blockquote:border-r-[#00b4a0]"
+                className="prose ertefae-khat prose-lg prose-invert max-w-none mt-6 text-[#a3a3a3] prose-headings:text-[#f5f6f7] prose-strong:text-[#f5f6f7] prose-a:text-[#a3fff4] prose-a:transition-colors hover:prose-a:text-[#00b4a0] prose-blockquote:border-r-[#00b4a0] prose-p:leading-10"
                 dangerouslySetInnerHTML={{ __html: post.content }}
               />
             </section>

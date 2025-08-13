@@ -172,3 +172,6 @@ body {
     font-style: italic;
   }
 }
+.ertefae-khat p {
+  line-height: 2 !important;
+}

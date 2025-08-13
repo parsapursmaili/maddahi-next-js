@@ -1,25 +1,18 @@
+// app/maddahi/soogname/[slug]/actions.js
+
 "use server";
 
 import { db } from "@/app/maddahi/lib/db/mysql";
 import { notFound } from "next/navigation";
 import { unstable_cache as cache } from "next/cache";
-import { isAuthenticated } from "@/app/maddahi/actions/auth"; // ایمپورت تابع احراز هویت
-/**
- * یک تابع کمکی برای تبدیل لیست تخت کامنت‌ها به ساختار درختی.
- * این تابع کامنت‌های پاسخ را به عنوان فرزندان کامنت والد قرار می‌دهد.
- * @param {Array} comments - آرایه‌ای از کامنت‌ها که از دیتابیس واکشی شده.
- * @returns {Array} - آرایه‌ای از کامنت‌های ریشه که هرکدام می‌توانند شامل فرزندان باشند.
- */
+import { isAuthenticated } from "@/app/maddahi/actions/auth";
+
 const buildCommentTree = (comments) => {
   const commentMap = {};
   const nestedComments = [];
-
-  // ابتدا همه کامنت‌ها را در یک نقشه قرار می‌دهیم تا دسترسی سریع داشته باشیم.
   comments.forEach((comment) => {
     commentMap[comment.id] = { ...comment, children: [] };
   });
-
-  // سپس هر کامنت را بررسی کرده و در جای درست (زیر والد یا در سطح ریشه) قرار می‌دهیم.
   comments.forEach((comment) => {
     if (comment.parent_id && commentMap[comment.parent_id]) {
       commentMap[comment.parent_id].children.push(commentMap[comment.id]);
@@ -27,7 +20,6 @@ const buildCommentTree = (comments) => {
       nestedComments.push(commentMap[comment.id]);
     }
   });
-
   return nestedComments;
 };
 
@@ -61,12 +53,11 @@ export const getSoognamePageData = cache(
          ORDER BY sp.display_order ASC`,
         [soogname.id]
       ),
-      // کوئری برای واکشی کامنت‌های تایید شده با post_type صحیح
       db.query(
         `SELECT id, parent_id, name, text, created_at 
          FROM comments 
          WHERE post_id = ? AND post_type = 'soogname' AND status = 1 
-         ORDER BY created_at ASC`, // مرتب‌سازی بر اساس قدیمی‌ترین برای نمایش صحیح ترتیب
+         ORDER BY created_at ASC`,
         [soogname.id]
       ),
     ]);
@@ -75,13 +66,50 @@ export const getSoognamePageData = cache(
     const maddah = allTerms.filter((t) => t.taxonomy === "category");
     const tags = allTerms.filter((t) => t.taxonomy === "post_tag");
     const playlist = playlistRows[0] || [];
-
-    // پردازش و آماده‌سازی کامنت‌ها
     const rawComments = commentsRows[0] || [];
     const comments = buildCommentTree(rawComments);
     const totalCommentsCount = rawComments.length;
 
-    // ارسال کامنت‌های پردازش شده و تعداد کل آن‌ها به صفحه
+    // ★★★ شروع تغییرات: واکشی اطلاعات برای اسلایدرها ★★★
+    const playlistPostIds = playlist.map((p) => p.ID);
+    if (playlistPostIds.length === 0) {
+      // اگر پلی‌لیست خالی بود، یک مقدار غیرممکن قرار می‌دهیم تا کوئری خطا ندهد
+      playlistPostIds.push(0);
+    }
+
+    let similarFromOccasion = [];
+    if (tags.length > 0) {
+      const tagIds = tags.map((t) => t.ID);
+      const [similarRows] = await db.query(
+        `
+          SELECT DISTINCT p.ID, p.title, p.name, p.thumbnail, p.thumbnail_alt FROM posts AS p
+          JOIN wp_term_relationships AS wtr ON p.ID = wtr.object_id
+          WHERE wtr.term_taxonomy_id IN (?) AND p.ID NOT IN (?) and p.status = 'publish'
+          ORDER BY RAND() LIMIT 6;
+        `,
+        [tagIds, playlistPostIds]
+      );
+      similarFromOccasion = similarRows;
+    }
+
+    let latestFromMaddah = [];
+    if (maddah.length > 0) {
+      const maddahIds = maddah.map((m) => m.ID);
+      const [latestRows] = await db.query(
+        `
+          SELECT DISTINCT p.ID, p.title, p.name, p.thumbnail, p.thumbnail_alt
+          FROM posts AS p
+          JOIN wp_term_relationships AS wtr ON p.ID = wtr.object_id
+          WHERE wtr.term_taxonomy_id IN (?) AND p.ID NOT IN (?) and p.status = 'publish'
+          ORDER BY p.date DESC
+          LIMIT 6;
+        `,
+        [maddahIds, playlistPostIds]
+      );
+      latestFromMaddah = latestRows;
+    }
+    // ★★★ پایان تغییرات ★★★
+
     return {
       soogname,
       maddah,
@@ -89,6 +117,9 @@ export const getSoognamePageData = cache(
       playlist,
       comments,
       totalCommentsCount,
+      // ★★★ افزودن دیتای جدید به خروجی تابع ★★★
+      similarFromOccasion,
+      latestFromMaddah,
     };
   },
   ["getSoognamePageData"],
@@ -99,9 +130,7 @@ export const getSoognamePageData = cache(
 
 export async function incrementSoognameView(soognameId) {
   try {
-    // اگر کاربر لاگین کرده باشد (ادمین)، بازدید شمارش نمی‌شود
     if (!(await isAuthenticated())) {
-      // ثبت یا افزایش بازدید روزانه
       const dailyViewQuery = `
         INSERT INTO daily_soogname_views (soogname_id, view_date, view_count)
         VALUES (?, CURDATE(), 1)
@@ -113,8 +142,6 @@ export async function incrementSoognameView(soognameId) {
         soognameId,
       ]);
     }
-
-    // واکشی و بازگرداندن تعداد بازدید کل
     const [view] = await db.query(`SELECT view FROM soogname WHERE id = ?`, [
       soognameId,
     ]);
@@ -124,6 +151,6 @@ export async function incrementSoognameView(soognameId) {
       `Error incrementing view for soogname ID ${soognameId}:`,
       error
     );
-    return 0; // در صورت خطا، صفر برمی‌گردانیم
+    return 0;
   }
 }

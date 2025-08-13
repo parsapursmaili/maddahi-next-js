@@ -76,7 +76,7 @@ const TotalViewsCard = ({ totalViews, rangeLabel, dateRange }) => {
       </div>
       <div className="flex-1">
         <p className="text-lg font-semibold text-[var(--foreground-primary)]">
-          مجموع بازدید برای "{rangeLabel}"
+          مجموع بازدید برای &quot;{rangeLabel}&quot;
         </p>
         <p className="text-xs text-[var(--foreground-secondary)] mt-1">
           {dateText}
