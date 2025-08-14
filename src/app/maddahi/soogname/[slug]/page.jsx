@@ -58,7 +58,7 @@ export async function generateMetadata({ params }) {
     : "https://besooyeto.ir/default-og-image.jpg";
 
   return {
-    title: `${soogname.title} - مجموعه سوگنامه`,
+    title: `مجموعه سوگنامه ${soogname.title} - به سوی تو`,
     description: description,
     openGraph: {
       title: soogname.title,
