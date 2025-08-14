@@ -37,7 +37,7 @@ export default function PostFormActions({
               </button>
               {/* +++ بخش اضافه شده برای لینک مشاهده پست +++ */}
               <Link
-                href={`/maddahi/${postForEditing.url}`} // <-- فرض بر این است که آدرس به این شکل است
+                href={`/maddahi/${postForEditing.name}`} // <-- فرض بر این است که آدرس به این شکل است
                 target="_blank"
                 title="مشاهده صفحه"
                 className="p-2 text-sm transition-colors rounded-md text-[var(--foreground-secondary)] hover:bg-[var(--background-tertiary)]"
