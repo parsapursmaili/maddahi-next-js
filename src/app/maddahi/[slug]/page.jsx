@@ -94,7 +94,8 @@ export default async function ProductPage({ params }) {
   const latestFromMaddahLink =
     maddah.length > 0 ? `/maddahi/home/?maddah=${maddah[0].ID}` : "#";
 
-  const secondThumbnailPath = post.extra_metadata?.second_thumbnail;
+  const thumbnail2 = JSON.parse(post.extra_metadata);
+  const secondThumbnailPath = thumbnail2?.second_thumbnail;
   const fullSecondThumbnailUrl = secondThumbnailPath
     ? createApiImageUrl(secondThumbnailPath, { size: "300" })
     : null;
