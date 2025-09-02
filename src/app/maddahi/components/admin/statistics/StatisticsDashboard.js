@@ -1,10 +1,8 @@
-// /app/components/admin/statistics/StatisticsDashboard.js (اصلاح‌شده)
 "use client";
-
 import Link from "next/link";
 import StatCard from "./StatCard";
 import ContentGrowthChart from "./ContentGrowthChart";
-import TopPostsTodayTable from "./TopPostsTodayTable"; // ★★★ جدید
+import TopPostsTodayTable from "./TopPostsTodayTable";
 import TopPostsTable from "./TopPostsTable";
 import AllTimeTopPostsTable from "./AllTimeTopPostsTable";
 import CategoryPopularityChart from "./CategoryPopularityChart";
@@ -14,19 +12,17 @@ import {
   Eye,
   CalendarClock,
   ArrowLeft,
-  TrendingUp, // آیکون مناسب برای آمار روز
+  TrendingUp,
 } from "lucide-react";
-
 const StatisticsDashboard = ({ initialStats }) => {
   const {
     quickStats,
-    topPostsToday, // ★★★ جدید
+    topPostsToday,
     topPostsLast30Days,
     contentGrowth,
     allTimeTopPosts,
     topCategories,
   } = initialStats;
-
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-8 bg-[var(--background-primary)] text-[var(--foreground-primary)]">
       <header>
@@ -35,8 +31,6 @@ const StatisticsDashboard = ({ initialStats }) => {
           نمایی کلی از عملکرد وب‌سایت شما.
         </p>
       </header>
-
-      {/* اطمینان از تبدیل مقادیر به عدد قبل از فرمت‌بندی */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <StatCard
           icon={<FileText />}
@@ -64,10 +58,8 @@ const StatisticsDashboard = ({ initialStats }) => {
           value={Number(quickStats.totalViews || 0).toLocaleString("fa-IR")}
         />
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
         <div className="lg:col-span-3 space-y-8">
-          {/* ★★★ جدید: بخش پربازدیدترین‌های امروز ★★★ */}
           <div className="bg-[var(--background-secondary)] p-4 rounded-lg border border-[var(--border-primary)]">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold flex items-center gap-2">
@@ -82,8 +74,6 @@ const StatisticsDashboard = ({ initialStats }) => {
             </div>
             <TopPostsTodayTable data={topPostsToday} />
           </div>
-
-          {/* ★★★ اصلاح: بخش پربازدیدترین‌های ۳۰ روز اخیر ★★★ */}
           <div className="bg-[var(--background-secondary)] p-4 rounded-lg border border-[var(--border-primary)]">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">
@@ -98,8 +88,6 @@ const StatisticsDashboard = ({ initialStats }) => {
             </div>
             <TopPostsTable data={topPostsLast30Days} />
           </div>
-
-          {/* ★★★ بدون تغییر: بخش پربازدیدترین پست‌های تمام دوران ★★★ */}
           <div className="bg-[var(--background-secondary)] p-4 rounded-lg border border-[var(--border-primary)]">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">
@@ -115,8 +103,6 @@ const StatisticsDashboard = ({ initialStats }) => {
             <AllTimeTopPostsTable data={allTimeTopPosts} />
           </div>
         </div>
-
-        {/* ستون کناری (بدون تغییر) */}
         <div className="lg:col-span-2 space-y-8">
           <div className="bg-[var(--background-secondary)] p-4 rounded-lg border border-[var(--border-primary)]">
             <h2 className="text-xl font-semibold mb-4">
@@ -137,5 +123,4 @@ const StatisticsDashboard = ({ initialStats }) => {
     </div>
   );
 };
-
 export default StatisticsDashboard;

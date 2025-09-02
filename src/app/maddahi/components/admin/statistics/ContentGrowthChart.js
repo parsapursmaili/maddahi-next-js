@@ -1,6 +1,4 @@
-// /app/components/admin/statistics/ContentGrowthChart.js
 "use client";
-
 import {
   ResponsiveContainer,
   LineChart,
@@ -10,10 +8,7 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
-import CustomTooltip from "./charts/CustomTooltip"; // <-- این خط اضافه می‌شود
-
-// <<<<<<< کد const CustomTooltip که اینجا بود باید کاملاً حذف شود >>>>>>>>>
-
+import CustomTooltip from "./charts/CustomTooltip";
 const ContentGrowthChart = ({ data }) => {
   return (
     <ResponsiveContainer width="100%" height="100%">
@@ -32,7 +27,6 @@ const ContentGrowthChart = ({ data }) => {
           allowDecimals={false}
           tickLine={false}
         />
-        {/* اینجا بدون تغییر باقی می‌ماند */}
         <Tooltip
           content={<CustomTooltip />}
           cursor={{
@@ -54,5 +48,4 @@ const ContentGrowthChart = ({ data }) => {
     </ResponsiveContainer>
   );
 };
-
 export default ContentGrowthChart;

@@ -1,16 +1,9 @@
 "use server";
 
 import { db } from "@/app/maddahi/lib/db/mysql";
-import { toShamsi } from "@/app/maddahi/lib/utils/formatDate";
 
-/**
- * آمار سریع و کلی را برای نمایش در داشبورد اصلی پنل مدیریت واکشی می‌کند.
- * شامل تعداد پست‌ها، دیدگاه‌ها، بازدید کل و بازدید امروز.
- * @returns {Promise<object>} آبجکتی شامل وضعیت موفقیت و داده‌های آماری.
- */
 export async function getDashboardStatistics() {
   try {
-    // اجرای همزمان کوئری‌ها برای بهبود پرفورمنس
     const [
       [[{ postsCount }]],
       [[{ totalCommentsCount }]],
@@ -19,7 +12,7 @@ export async function getDashboardStatistics() {
       [[{ todaysViews }]],
       [topPostsToday],
       [topPostsLast30Days],
-      [contentGrowth],
+      [contentGrowth], // This is the problematic query
       [allTimeTopPosts],
       [topCategories],
     ] = await Promise.all([
@@ -32,40 +25,90 @@ export async function getDashboardStatistics() {
       db.query(
         "SELECT SUM(view_count) as todaysViews FROM daily_post_views WHERE view_date = CURDATE()"
       ),
-      db.query(`
-        SELECT p.ID, p.title, p.link, dv.view_count as daily_views
-        FROM posts p JOIN daily_post_views dv ON p.ID = dv.post_id
-        WHERE dv.view_date = CURDATE() ORDER BY daily_views DESC LIMIT 7;
-      `),
-      db.query(`
-        SELECT p.ID, p.title, p.link, SUM(dv.view_count) as monthly_views
-        FROM posts p JOIN daily_post_views dv ON p.ID = dv.post_id
-        WHERE dv.view_date >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-        GROUP BY p.ID, p.title, p.link ORDER BY monthly_views DESC LIMIT 7;
-      `),
-      db.query(`
-        SELECT DATE_FORMAT(date, '%Y-%m') as month, COUNT(ID) as count
-        FROM posts WHERE type = 'post' AND date >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
-        GROUP BY month ORDER BY month ASC;
-      `),
+      db.query(
+        `SELECT p.ID, p.title, p.link, dv.view_count as daily_views FROM posts p JOIN daily_post_views dv ON p.ID = dv.post_id WHERE dv.view_date = CURDATE() ORDER BY daily_views DESC LIMIT 7;`
+      ),
+      db.query(
+        `SELECT p.ID, p.title, p.link, SUM(dv.view_count) as monthly_views FROM posts p JOIN daily_post_views dv ON p.ID = dv.post_id WHERE dv.view_date >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY p.ID, p.title, p.link ORDER BY monthly_views DESC LIMIT 7;`
+      ),
+      // CORRECTED QUERY: Using 'date' column from 'posts' table
+      // این کوئری تاریخ را به صورت YYYY-MM-DD برمی‌گرداند
+      db.query(
+        `SELECT DATE(date) AS month, COUNT(ID) AS count FROM posts WHERE type = 'post' AND date >= DATE_SUB(NOW(), INTERVAL 12 MONTH) GROUP BY DATE(date) ORDER BY date ASC;`
+      ),
       db.query(
         "SELECT ID, title, link, view as total_views FROM posts WHERE type = 'post' ORDER BY total_views DESC LIMIT 10;"
       ),
-      db.query(`
-        SELECT t.name, COUNT(p.ID) as post_count
-        FROM terms AS t
-        JOIN wp_term_relationships AS rel ON t.ID = rel.term_taxonomy_id
-        JOIN posts AS p ON rel.object_id = p.ID
-        WHERE t.taxonomy = 'category' AND p.type = 'post'
-        GROUP BY t.name ORDER BY post_count DESC LIMIT 5;
-      `),
+      db.query(
+        `SELECT t.name, COUNT(p.ID) as post_count FROM terms AS t JOIN wp_term_relationships AS rel ON t.ID = rel.term_taxonomy_id JOIN posts AS p ON rel.object_id = p.ID WHERE t.taxonomy = 'category' AND p.type = 'post' GROUP BY t.name ORDER BY post_count DESC LIMIT 5;`
+      ),
     ]);
 
-    // فرمت کردن تاریخ‌ها برای نمودار رشد محتوا
-    const formattedContentGrowth = contentGrowth.map((item) => ({
-      ...item,
-      month: toShamsi(item.month + "-01", "jMMMM jYYYY"),
-    }));
+    // نکته: contentGrowth شامل ردیف‌هایی است که فیلد month به شکل 'YYYY-MM-DD' است.
+    // بازگرداندن منطق تبدیل و گروه‌بندی به تقویم شمسی ماهانه به اینجا
+    const persianGrowthData = new Map();
+
+    contentGrowth.forEach((item) => {
+      const date = new Date(item.month); // item.month در اینجا YYYY-MM-DD است
+      const year = new Intl.DateTimeFormat("fa-IR-u-nu-latn", {
+        calendar: "persian",
+        year: "numeric",
+      }).format(date);
+      const month = new Intl.DateTimeFormat("fa-IR-u-nu-latn", {
+        calendar: "persian",
+        month: "long",
+      }).format(date);
+      const key = `${year} ${month}`; // مثال: "۱۴۰۲ فروردین"
+      persianGrowthData.set(
+        key,
+        (persianGrowthData.get(key) || 0) + item.count
+      );
+    });
+
+    // مرتب سازی داده ها بر اساس تاریخ شمسی
+    const sortedFormattedContentGrowth = Array.from(persianGrowthData)
+      .sort((a, b) => {
+        // برای مرتب سازی دقیق، بهتر است تاریخ‌های ISO اصلی را حفظ کرده و بر اساس آنها مرتب کنیم
+        // اما اگر فقط فرمت شمسی ماه و سال را داریم، باید به روشی دیگر مرتب کنیم.
+        // برای سادگی، فعلا بر اساس String مرتب می کنیم (که ممکن است همیشه درست نباشد اگر سال ها متفاوت باشند)
+        // راه حل بهتر این است که یک فیلد date_sortable (ISO) به شی اضافه شود و بر اساس آن مرتب شود.
+        // اما با توجه به فرمت فعلی "YYYY ماه" (شمسی)، بهتر است آن را به شیوه ای که در ادامه می آید مرتب کنیم.
+
+        // مثال: "۱۴۰۲ فروردین"
+        const parsePersianDate = (dateString) => {
+          const parts = dateString.split(" "); // ["۱۴۰۲", "فروردین"]
+          const year = parseInt(parts[0].replace(/[^0-9]/g, "")); // ۱۴۰۲ -> 1402
+          const monthName = parts[1];
+          const persianMonths = [
+            "فروردین",
+            "اردیبهشت",
+            "خرداد",
+            "تیر",
+            "مرداد",
+            "شهریور",
+            "مهر",
+            "آبان",
+            "آذر",
+            "دی",
+            "بهمن",
+            "اسفند",
+          ];
+          const monthIndex = persianMonths.indexOf(monthName);
+          return { year, monthIndex };
+        };
+
+        const dateA = parsePersianDate(a[0]);
+        const dateB = parsePersianDate(b[0]);
+
+        if (dateA.year !== dateB.year) {
+          return dateA.year - dateB.year;
+        }
+        return dateA.monthIndex - dateB.monthIndex;
+      })
+      .map(([month, count]) => ({
+        month, // رشته ماه شمسی (مثال: "۱۴۰۲ فروردین")
+        count,
+      }));
 
     return {
       success: true,
@@ -79,7 +122,7 @@ export async function getDashboardStatistics() {
         },
         topPostsToday,
         topPostsLast30Days,
-        contentGrowth: formattedContentGrowth,
+        contentGrowth: sortedFormattedContentGrowth, // استفاده از داده‌های فرمت و مرتب شده
         allTimeTopPosts,
         topCategories,
       },
@@ -94,10 +137,6 @@ export async function getDashboardStatistics() {
   }
 }
 
-/**
- * لیست پست‌های پربازدید را بر اساس بازه زمانی مشخص شده، به صورت صفحه‌بندی شده واکشی می‌کند.
- * @returns {Promise<object>} آبجکتی شامل وضعیت موفقیت، لیست پست‌ها، و بازه زمانی دقیق.
- */
 export async function getPaginatedTopPosts({
   range = "all",
   page = 1,
@@ -106,13 +145,10 @@ export async function getPaginatedTopPosts({
 }) {
   const limit = 50;
   const offset = (page - 1) * limit;
-
   try {
     let postsQuery, totalViewsQuery;
     let queryParams = [];
     let postsParams = [];
-
-    // متغیرهایی برای نگهداری تاریخ شروع و پایان واقعی
     let queryStartDate = startDate;
     let queryEndDate = endDate;
     const today = new Date().toISOString().split("T")[0];
@@ -141,14 +177,14 @@ export async function getPaginatedTopPosts({
         case "week":
           whereClause = `WHERE dv.view_date >= DATE_SUB(NOW(), INTERVAL 7 DAY)`;
           const lastWeek = new Date();
-          lastWeek.setDate(lastWeek.getDate() - 6); // از ۷ روز پیش تا امروز
+          lastWeek.setDate(lastWeek.getDate() - 6);
           queryStartDate = lastWeek.toISOString().split("T")[0];
           queryEndDate = today;
           break;
         case "month":
           whereClause = `WHERE dv.view_date >= DATE_SUB(NOW(), INTERVAL 30 DAY)`;
           const lastMonth = new Date();
-          lastMonth.setDate(lastMonth.getDate() - 29); // از ۳۰ روز پیش تا امروز
+          lastMonth.setDate(lastMonth.getDate() - 29);
           queryStartDate = lastMonth.toISOString().split("T")[0];
           queryEndDate = today;
           break;
@@ -156,7 +192,7 @@ export async function getPaginatedTopPosts({
           whereClause = `WHERE dv.view_date >= DATE_SUB(NOW(), INTERVAL 1 YEAR)`;
           const lastYear = new Date();
           lastYear.setFullYear(lastYear.getFullYear() - 1);
-          lastYear.setDate(lastYear.getDate() + 1); // از یک سال پیش تا امروز
+          lastYear.setDate(lastYear.getDate() + 1);
           queryStartDate = lastYear.toISOString().split("T")[0];
           queryEndDate = today;
           break;
@@ -164,16 +200,13 @@ export async function getPaginatedTopPosts({
           if (startDate && endDate) {
             whereClause = `WHERE dv.view_date BETWEEN ? AND ?`;
             queryParams.push(startDate, endDate);
+            queryStartDate = startDate;
+            queryEndDate = endDate;
           }
           break;
       }
 
-      postsQuery = `
-        SELECT p.ID, p.title, p.link, SUM(dv.view_count) as views
-        FROM posts p JOIN daily_post_views dv ON p.ID = dv.post_id
-        ${whereClause} GROUP BY p.ID, p.title, p.link
-        ORDER BY SUM(dv.view_count) DESC LIMIT ? OFFSET ?;
-      `;
+      postsQuery = `SELECT p.ID, p.title, p.link, SUM(dv.view_count) as views FROM posts p JOIN daily_post_views dv ON p.ID = dv.post_id ${whereClause} GROUP BY p.ID, p.title, p.link ORDER BY SUM(dv.view_count) DESC LIMIT ? OFFSET ?;`;
       postsParams = [...queryParams, limit, offset];
       totalViewsQuery = `SELECT SUM(view_count) as totalViews FROM daily_post_views dv ${whereClause};`;
     }
@@ -182,13 +215,14 @@ export async function getPaginatedTopPosts({
     const [posts] = await db.query(postsQuery, postsParams);
     const totalViews = totalViewsResult ? totalViewsResult.totalViews : 0;
 
+    // RETURN ISO dates (YYYY-MM-DD) — کلاینت مسئول تبدیل به شمس/فارسی خواهد بود.
     return {
       success: true,
       data: {
         posts,
         totalViews: totalViews || 0,
-        startDate: queryStartDate,
-        endDate: queryEndDate,
+        startDate: queryStartDate || null, // ISO string or null
+        endDate: queryEndDate || null, // ISO string or null
       },
       hasMore: posts.length === limit,
     };
@@ -206,18 +240,20 @@ export async function getPaginatedTopPosts({
   }
 }
 
-/**
- * اولین تاریخ ثبت شده در آمار روزانه را برای نمایش "شروع ثبت آمار" پیدا می‌کند.
- * @returns {Promise<object>} آبجکتی شامل وضعیت موفقیت و اولین تاریخ.
- */
 export async function getFirstRecordDate() {
   try {
     const [[firstDateRecord]] = await db.query(
       "SELECT MIN(view_date) as first_date FROM daily_post_views"
     );
+
+    // برگرداندن ISO date (YYYY-MM-DD) یا null
+    const firstDateIso = firstDateRecord.first_date
+      ? new Date(firstDateRecord.first_date).toISOString().split("T")[0]
+      : null;
+
     return {
       success: true,
-      data: firstDateRecord.first_date,
+      data: firstDateIso,
     };
   } catch (error) {
     console.error("Error fetching first record date:", error);
@@ -229,36 +265,36 @@ export async function getFirstRecordDate() {
   }
 }
 
-/**
- * آمار بازدید روزانه یک پست خاص را در ۳۰ روز اخیر واکشی می‌کند.
- * @param {number|string} postId - شناسه پست مورد نظر.
- * @returns {Promise<object>} آبجکتی شامل وضعیت موفقیت و آمار بازدید پست.
- */
 export async function getPostMonthlyStats(postId) {
   if (!postId) {
-    return { success: false, message: "شناسه پست نامعتبر است." };
+    return {
+      success: false,
+      message: "شناسه پست نامعتبر است.",
+    };
   }
+
   try {
     const [[postDetails]] = await db.query(
       "SELECT title FROM posts WHERE ID = ?",
       [postId]
     );
+
     if (!postDetails) {
-      return { success: false, message: "پست مورد نظر یافت نشد." };
+      return {
+        success: false,
+        message: "پست مورد نظر یافت نشد.",
+      };
     }
+
     const [dailyViews] = await db.query(
-      `
-      SELECT DATE_FORMAT(view_date, '%Y-%m-%d') as date, view_count
-      FROM daily_post_views
-      WHERE post_id = ? AND view_date >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-      ORDER BY view_date ASC;
-      `,
+      "SELECT DATE_FORMAT(view_date, '%Y-%m-%d') as date, view_count FROM daily_post_views WHERE post_id = ? AND view_date >= DATE_SUB(NOW(), INTERVAL 30 DAY) ORDER BY view_date ASC;",
       [postId]
     );
 
+    // بازگشت تاریخ‌ها به صورت ISO (YYYY-MM-DD). کلاینت آنها را فرمت می‌کند.
     const formattedDailyViews = dailyViews.map((view) => ({
       ...view,
-      date: toShamsi(view.date, "jD jMMMM"),
+      date: view.date, // ISO string
     }));
 
     return {
@@ -270,6 +306,9 @@ export async function getPostMonthlyStats(postId) {
     };
   } catch (error) {
     console.error(`Error fetching stats for post ${postId}:`, error);
-    return { success: false, message: "خطا در دریافت آمار پست." };
+    return {
+      success: false,
+      message: "خطا در دریافت آمار پست.",
+    };
   }
 }
