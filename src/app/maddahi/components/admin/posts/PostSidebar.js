@@ -95,13 +95,13 @@ export default function PostSidebar({
       >
         <span className={labelClasses}>روضه</span>
         <div className="mt-2 flex gap-x-6">
-          {["هست", "نیست"].map((val) => (
+          {[1, 0].map((val) => (
             <label key={val} className="flex items-center">
               <input
                 type="radio"
                 name="rozeh"
                 value={val}
-                checked={formData.rozeh === val}
+                checked={formData.rozeh == val}
                 onChange={handleChange}
                 className="w-4 h-4 text-[var(--accent-primary)] focus:ring-[var(--accent-primary)]"
               />
