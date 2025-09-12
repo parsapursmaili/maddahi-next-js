@@ -1,5 +1,4 @@
 // app/posts/[slug]/page.jsx
-
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getPostPageData } from "./post";
@@ -22,33 +21,27 @@ import {
   Film,
   ArrowLeft,
 } from "lucide-react";
-
 export async function generateStaticParams() {
   return [];
 }
-
 export async function generateMetadata({ params }) {
   const { slug } = params;
   const { post } = await getPostPageData(slug);
-
   if (!post) {
     return {
       title: "پست یافت نشد",
       description: "محتوایی برای این آدرس یافت نشد.",
     };
   }
-
   const description =
     post.description ||
     post.content?.substring(0, 150) ||
     "محتوای این صفحه را مشاهده کنید.";
-
   const imageUrl = post.thumbnail
     ? `https://besooyeto.ir${createApiImageUrl(post.thumbnail, {
         size: "560x560",
       })}`
     : "https://besooyeto.ir/default-og-image.jpg";
-
   post.title = `${post.title} - به سوی تو`;
   return {
     title: post.title,
@@ -68,7 +61,6 @@ export async function generateMetadata({ params }) {
     },
   };
 }
-
 export default async function ProductPage({ params }) {
   const { slug } = params;
   const {
@@ -80,38 +72,30 @@ export default async function ProductPage({ params }) {
     comments,
     totalCommentsCount,
   } = await getPostPageData(slug);
-
   if (!post) notFound();
-
-  const fullThumbnailUrl = createApiImageUrl(post.thumbnail, {
-    size: "560",
-  });
-
+  const fullThumbnailUrl = createApiImageUrl(post.thumbnail, { size: "560" });
   const similarOccasionLink =
     monasebat.length > 0
       ? `/maddahi/home/?monasebatha=${monasebat[0].ID}`
       : "#";
   const latestFromMaddahLink =
     maddah.length > 0 ? `/maddahi/home/?maddah=${maddah[0].ID}` : "#";
-
   const thumbnail2 = JSON.parse(post.extra_metadata);
   const secondThumbnailPath = thumbnail2?.second_thumbnail;
   const fullSecondThumbnailUrl = secondThumbnailPath
     ? createApiImageUrl(secondThumbnailPath, { size: "300" })
     : null;
-
   return (
-    <main className="relative flex min-h-screen flex-col items-center bg-[#0a0a0a] py-16 sm:px-6 lg:px-8 overflow-x-hidden">
-      <article className="relative z-10 w-full max-w-5xl rounded-none sm:rounded-2xl bg-[#171717]/50 shadow-2xl shadow-black/40 backdrop-blur-2xl ring-1 ring-[#262626]">
+    <main className="relative flex min-h-screen flex-col items-center bg-background-primary py-16 sm:px-6 lg:px-8 overflow-x-hidden">
+      <article className="relative z-10 w-full max-w-5xl rounded-none sm:rounded-2xl bg-background-secondary/50 shadow-2xl shadow-black/40 backdrop-blur-2xl ring-1 ring-border-primary">
         <div
-          className="absolute inset-0 rounded-none sm:rounded-2xl ring-1 ring-inset ring-[#a3fff4]/10 pointer-events-none"
+          className="absolute inset-0 rounded-none sm:rounded-2xl ring-1 ring-inset ring-accent-crystal/10 pointer-events-none"
           aria-hidden="true"
         ></div>
-
         <header className="relative flex flex-col md:flex-row items-center p-6 sm:p-8 md:p-12 gap-8">
           {fullThumbnailUrl && (
             <div className="group relative h-48 w-48 md:h-56 md:w-56 flex-shrink-0">
-              <div className="absolute inset-0 z-0 -m-3 rounded-2xl bg-gradient-to-br from-[#a3fff4] to-[#00b4a0] opacity-0 blur-xl transition-all duration-700 group-hover:opacity-20 group-hover:blur-2xl"></div>
+              <div className="absolute inset-0 z-0 -m-3 rounded-2xl bg-gradient-to-br from-accent-crystal to-accent-primary opacity-0 blur-xl transition-all duration-700 group-hover:opacity-20 group-hover:blur-2xl"></div>
               <Image
                 src={fullThumbnailUrl}
                 alt={post.thumbnail_alt || post.title}
@@ -122,7 +106,7 @@ export default async function ProductPage({ params }) {
             </div>
           )}
           <div className="flex flex-col items-center md:items-start text-center md:text-left flex-grow">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-[#f5f6f7] to-[#a3fff4] bg-clip-text text-transparent mb-4 leading-tight text-right">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-foreground-primary to-accent-crystal bg-clip-text text-transparent mb-4 leading-tight text-right">
               {post.title}
             </h1>
             {maddah.length > 0 && (
@@ -131,7 +115,7 @@ export default async function ProductPage({ params }) {
                   <Link
                     key={m.slug}
                     href={`/maddahi/category/${m.slug}`}
-                    className="text-sm bg-[#00b4a0]/10 text-[#00b4a0] px-4 py-1.5 rounded-full font-medium transition-all duration-300 border border-transparent hover:border-[#a3fff4]/50 hover:bg-[#00b4a0]/20 hover:shadow-lg hover:shadow-[#00b4a0]/10"
+                    className="text-sm bg-accent-primary/10 text-accent-primary px-4 py-1.5 rounded-full font-medium transition-all duration-300 border border-transparent hover:border-accent-crystal/50 hover:bg-accent-primary/20 hover:shadow-lg hover:shadow-accent-primary/10"
                   >
                     {m.name}
                   </Link>
@@ -144,42 +128,39 @@ export default async function ProductPage({ params }) {
                   <Link
                     key={item.slug}
                     href={`/maddahi/home/?monasebatha=${item.ID}`}
-                    className="text-xs text-[#a3a3a3] transition-colors duration-300 hover:text-[#a3fff4] hover:underline underline-offset-4"
+                    className="text-xs text-foreground-secondary transition-colors duration-300 hover:text-accent-crystal hover:underline underline-offset-4"
                   >
                     #{item.name.replace(/\s/g, "_")}
                   </Link>
                 ))}
               </div>
             )}
-            <div className="flex items-center gap-2 text-[#a3a3a3]">
-              <Eye className="w-5 h-5 text-[#00b4a0]/80" />
+            <div className="flex items-center gap-2 text-foreground-secondary">
+              <Eye className="w-5 h-5 text-accent-primary/80" />
               <ServerViewCounter postId={parseInt(post.ID)} />
             </div>
           </div>
         </header>
-
         {post.rozeh === 1 && (
           <section className="px-6 sm:px-8 md:px-12 py-6">
-            <div className="flex items-center gap-4 rounded-lg bg-[#262626]/50 p-4 border-r-4 border-[#ef4444]">
-              <ShieldAlert className="h-8 w-8 flex-shrink-0 text-[#ef4444]" />
+            <div className="flex items-center gap-4 rounded-lg bg-background-tertiary/50 p-4 border-r-4 border-feedback-error">
+              <ShieldAlert className="h-8 w-8 flex-shrink-0 text-feedback-error" />
               <div>
-                <h3 className="font-bold text-[#f5f6f7]">
+                <h3 className="font-bold text-foreground-primary">
                   توجه: این قطعه صوتی حاوی روضه است
                 </h3>
-                <p className="text-sm text-[#a3a3a3]">
+                <p className="text-sm text-foreground-secondary">
                   پیشنهاد می‌شود برای حفظ حال معنوی، در شرایط مناسب شنیده شود.
                 </p>
               </div>
             </div>
           </section>
         )}
-
         {post.link && (
           <section className="px-5 flex justify-center items-center py-6">
             <MusicPlayer audioSrc={post.link} />
           </section>
         )}
-
         {post.video_link && (
           <>
             <SectionDivider />
@@ -189,13 +170,12 @@ export default async function ProductPage({ params }) {
                 title="نماهنگ و ویدیو"
                 className="mb-6"
               />
-              <div className="w-full max-w-3xl mx-auto aspect-video bg-[#0a0a0a] rounded-lg overflow-hidden ring-1 ring-[#262626]">
+              <div className="w-full max-w-3xl mx-auto aspect-video bg-background-primary rounded-lg overflow-hidden ring-1 ring-border-primary">
                 <ScriptEmbed htmlSnippet={post.video_link} />
               </div>
             </section>
           </>
         )}
-
         {fullSecondThumbnailUrl && (
           <>
             <SectionDivider />
@@ -216,17 +196,15 @@ export default async function ProductPage({ params }) {
             </section>
           </>
         )}
-
         {moshabeh.length > 0 && (
           <>
             <SectionDivider />
-            {/* ★★★ اصلاح: افزودن px-1 برای ایجاد فاصله ظریف در اطراف اسلایدر ★★★ */}
             <section className="py-8 px-1">
               <div className="flex flex-col items-center gap-3 px-6 sm:px-8 md:px-12 mb-6">
                 <SectionTitle icon={<Sparkles />} title="از همین مناسبت" />
                 <Link
                   href={similarOccasionLink}
-                  className="group flex items-center gap-2 text-sm font-medium text-[#a3a3a3] hover:text-[#a3fff4] transition-colors duration-300"
+                  className="group flex items-center gap-2 text-sm font-medium text-foreground-secondary hover:text-accent-crystal transition-colors duration-300"
                 >
                   <span>مشاهده ی بیشتر از همین مناسبت</span>
                   <ArrowLeft className="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-1" />
@@ -236,24 +214,21 @@ export default async function ProductPage({ params }) {
             </section>
           </>
         )}
-
         {post.content && (
           <>
             <SectionDivider />
             <section className="px-6 sm:px-8 md:px-12 py-8">
               <SectionTitle icon={<BookOpen />} title="متن و اشعار" />
               <div
-                className="prose ertefae-khat prose-lg prose-invert max-w-none mt-6 text-[#a3a3a3] prose-headings:text-[#f5f6f7] prose-strong:text-[#f5f6f7] prose-a:text-[#a3fff4] prose-a:transition-colors hover:prose-a:text-[#00b4a0] prose-blockquote:border-r-[#00b4a0] prose-p:leading-10"
+                className="prose ertefae-khat prose-lg prose-invert max-w-none mt-6 text-foreground-secondary prose-headings:text-foreground-primary prose-strong:text-foreground-primary prose-a:text-accent-crystal prose-a:transition-colors hover:prose-a:text-accent-primary prose-blockquote:border-r-accent-primary prose-p:leading-10"
                 dangerouslySetInnerHTML={{ __html: post.content }}
               />
             </section>
           </>
         )}
-
         {latestFromMaddah.length > 0 && (
           <>
             <SectionDivider />
-            {/* ★★★ اصلاح: افزودن px-1 برای ایجاد فاصله ظریف در اطراف اسلایدر ★★★ */}
             <section className="py-8 px-1">
               <div className="flex flex-col items-center gap-3 px-6 sm:px-8 md:px-12 mb-6">
                 <SectionTitle
@@ -262,7 +237,7 @@ export default async function ProductPage({ params }) {
                 />
                 <Link
                   href={latestFromMaddahLink}
-                  className="group flex items-center gap-2 text-sm font-medium text-[#a3a3a3] hover:text-[#a3fff4] transition-colors duration-300"
+                  className="group flex items-center gap-2 text-sm font-medium text-foreground-secondary hover:text-accent-crystal transition-colors duration-300"
                 >
                   <span>مشاهده ی بیشتر از همین مداح</span>
                   <ArrowLeft className="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-1" />
@@ -272,8 +247,7 @@ export default async function ProductPage({ params }) {
             </section>
           </>
         )}
-
-        <div className="border-t border-[#262626] bg-[#0a0a0a]/30 rounded-b-none sm:rounded-b-2xl">
+        <div className="border-t border-border-primary bg-background-primary/30 rounded-b-none sm:rounded-b-2xl">
           <section className="p-6 sm:p-8 md:p-12">
             <div className="max-w-3xl mx-auto">
               <SectionTitle
@@ -285,24 +259,22 @@ export default async function ProductPage({ params }) {
               />
               <div className="mb-10">
                 {comments.length > 0 ? (
-                  // ★★★ تغییر ۲: پاس دادن postType="post" به کامپوننت ★★★
                   <CommentThread
                     comments={comments}
                     postId={post.ID}
                     postType="post"
                   />
                 ) : (
-                  <div className="text-center py-10 px-4 text-[#525252] bg-[#171717]/50 rounded-lg ring-1 ring-[#333333]">
-                    <MessageSquarePlus className="w-10 h-10 mx-auto mb-4 text-[#00b4a0]/50" />
+                  <div className="text-center py-10 px-4 text-foreground-muted bg-background-secondary/50 rounded-lg ring-1 ring-border-secondary">
+                    <MessageSquarePlus className="w-10 h-10 mx-auto mb-4 text-accent-primary/50" />
                     <p>هنوز نظری ثبت نشده است. اولین نفر باشید!</p>
                   </div>
                 )}
               </div>
               <div
                 id="comment-form"
-                className="rounded-xl border border-dashed border-[#333333] p-6 bg-[#171717]/50 scroll-mt-20 transition-all duration-300 ring-2 ring-transparent focus-within:ring-[#00b4a0]/50 focus-within:border-solid focus-within:border-[#00b4a0]/30"
+                className="rounded-xl border border-dashed border-border-secondary p-6 bg-background-secondary/50 scroll-mt-20 transition-all duration-300 ring-2 ring-transparent focus-within:ring-accent-primary/50 focus-within:border-solid focus-within:border-accent-primary/30"
               >
-                {/* ★★★ تغییر ۳: پاس دادن postType="post" به کامپوننت ★★★ */}
                 <CommentForm postId={post.ID} postType="post" />
               </div>
             </div>
@@ -312,20 +284,18 @@ export default async function ProductPage({ params }) {
     </main>
   );
 }
-
 function SectionTitle({ icon, title, className = "" }) {
   return (
     <h2
-      className={`flex items-center justify-center gap-3 text-2xl font-bold text-[#f5f6f7] ${className}`}
+      className={`flex items-center justify-center gap-3 text-2xl font-bold text-foreground-primary ${className}`}
     >
-      {icon && <span className="text-[#00b4a0]">{icon}</span>}
+      {icon && <span className="text-accent-primary">{icon}</span>}
       <span>{title}</span>
     </h2>
   );
 }
-
 function SectionDivider() {
   return (
-    <div className="w-1/2 h-px mx-auto bg-gradient-to-r from-transparent via-[#00b4a0]/30 to-transparent" />
+    <div className="w-1/2 h-px mx-auto bg-gradient-to-r from-transparent via-accent-primary/30 to-transparent" />
   );
 }

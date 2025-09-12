@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@config "./tailwind.config.js";
 
 :root {
   /* ================================================== */
@@ -174,4 +175,10 @@ body {
 }
 .ertefae-khat p {
   line-height: 2 !important;
+}
+
+@media (max-width: 640px) {
+  .ertefae-khat p {
+    line-height: 2.3 !important;
+  }
 }

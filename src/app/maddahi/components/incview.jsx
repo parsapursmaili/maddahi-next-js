@@ -20,7 +20,7 @@ export default function ViewCounter({ postId }) {
   }, [postId]);
 
   return (
-    <h3 className="font-mono text-sm text-[var(--foreground-muted)]">
+    <h3 className=" text-sm">
       {(parseFloat(currentViews) || 0).toLocaleString("fa-IR")} بازدید
     </h3>
   );
