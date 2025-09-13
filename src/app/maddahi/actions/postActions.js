@@ -114,7 +114,7 @@ export async function createPost(formData, revalidateUrl) {
       link: link || null,
       video_link: video_link || null,
       description: description,
-      rozeh: rozeh === "هست" ? 1 : 0,
+      rozeh: rozeh,
       thumbnail_alt: thumbnail_alt || null,
       extra_metadata: secondThumbnail
         ? JSON.stringify({ second_thumbnail: secondThumbnail })
@@ -198,7 +198,7 @@ export async function updatePost(postId, formData, revalidateUrl) {
       link: link || null,
       video_link: video_link || null,
       description: description,
-      rozeh: rozeh === "هست" ? 1 : 0,
+      rozeh: rozeh,
       thumbnail_alt: thumbnail_alt || null,
       extra_metadata: secondThumbnail
         ? JSON.stringify({ second_thumbnail: secondThumbnail })

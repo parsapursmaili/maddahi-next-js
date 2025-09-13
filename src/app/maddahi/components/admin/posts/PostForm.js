@@ -27,7 +27,7 @@ const defaultPost = {
   categories: [],
   tags: [],
   status: "publish",
-  rozeh: "نیست",
+  rozeh: 0,
   link: "",
   video_link: "",
   description: "",

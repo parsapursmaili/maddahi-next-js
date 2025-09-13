@@ -95,17 +95,20 @@ export default function PostSidebar({
       >
         <span className={labelClasses}>روضه</span>
         <div className="mt-2 flex gap-x-6">
-          {[1, 0].map((val) => (
-            <label key={val} className="flex items-center">
+          {[
+            { label: "هست", value: 1 },
+            { label: "نیست", value: 0 },
+          ].map((option) => (
+            <label key={option.value} className="flex items-center">
               <input
                 type="radio"
                 name="rozeh"
-                value={val}
-                checked={formData.rozeh == val}
+                value={option.value}
+                checked={Number(formData.rozeh) === option.value}
                 onChange={handleChange}
                 className="w-4 h-4 text-[var(--accent-primary)] focus:ring-[var(--accent-primary)]"
               />
-              <span className="mr-2 text-sm">{val}</span>
+              <span className="mr-2 text-sm">{option.label}</span>
             </label>
           ))}
         </div>
