@@ -26,10 +26,10 @@ export async function getDashboardStatistics() {
         "SELECT SUM(view_count) as todaysViews FROM daily_post_views WHERE view_date = CURDATE()"
       ),
       db.query(
-        `SELECT p.ID, p.title, p.link, dv.view_count as daily_views FROM posts p JOIN daily_post_views dv ON p.ID = dv.post_id WHERE dv.view_date = CURDATE() ORDER BY daily_views DESC LIMIT 7;`
+        `SELECT p.name,p.ID, p.title, p.link, dv.view_count as daily_views FROM posts p JOIN daily_post_views dv ON p.ID = dv.post_id WHERE dv.view_date = CURDATE() ORDER BY daily_views DESC LIMIT 7;`
       ),
       db.query(
-        `SELECT p.ID, p.title, p.link, SUM(dv.view_count) as monthly_views FROM posts p JOIN daily_post_views dv ON p.ID = dv.post_id WHERE dv.view_date >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY p.ID, p.title, p.link ORDER BY monthly_views DESC LIMIT 7;`
+        `SELECT p.name,p.ID, p.title, p.link, SUM(dv.view_count) as monthly_views FROM posts p JOIN daily_post_views dv ON p.ID = dv.post_id WHERE dv.view_date >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY p.ID, p.title, p.link ORDER BY monthly_views DESC LIMIT 7;`
       ),
       // CORRECTED QUERY: Using 'date' column from 'posts' table
       // این کوئری تاریخ را به صورت YYYY-MM-DD برمی‌گرداند
@@ -37,7 +37,7 @@ export async function getDashboardStatistics() {
         `SELECT DATE(date) AS month, COUNT(ID) AS count FROM posts WHERE type = 'post' AND date >= DATE_SUB(NOW(), INTERVAL 12 MONTH) GROUP BY DATE(date) ORDER BY date ASC;`
       ),
       db.query(
-        "SELECT ID, title, link, view as total_views FROM posts WHERE type = 'post' ORDER BY total_views DESC LIMIT 10;"
+        "SELECT name,ID, title, link, view as total_views FROM posts WHERE type = 'post' ORDER BY total_views DESC LIMIT 10;"
       ),
       db.query(
         `SELECT t.name, COUNT(p.ID) as post_count FROM terms AS t JOIN wp_term_relationships AS rel ON t.ID = rel.term_taxonomy_id JOIN posts AS p ON rel.object_id = p.ID WHERE t.taxonomy = 'category' AND p.type = 'post' GROUP BY t.name ORDER BY post_count DESC LIMIT 5;`
@@ -154,7 +154,7 @@ export async function getPaginatedTopPosts({
     const today = new Date().toISOString().split("T")[0];
 
     if (range === "all") {
-      postsQuery = `SELECT ID, title, link, view as views FROM posts WHERE type = 'post' ORDER BY views DESC LIMIT ? OFFSET ?;`;
+      postsQuery = `SELECT name,ID, title, link, view as views FROM posts WHERE type = 'post' ORDER BY views DESC LIMIT ? OFFSET ?;`;
       postsParams = [limit, offset];
       totalViewsQuery = `SELECT SUM(view) as totalViews FROM posts WHERE type = 'post'`;
       queryStartDate = null;
@@ -265,7 +265,12 @@ export async function getFirstRecordDate() {
   }
 }
 
-export async function getPostMonthlyStats(postId) {
+/**
+ * گرفتن آمار پست بر اساس بازه زمانی
+ * @param {number|string} postId
+ * @param {"daily"|"monthly"|"quarterly"|"yearly"} range
+ */
+export async function getPostStats(postId, range = "daily") {
   if (!postId) {
     return {
       success: false,
@@ -286,22 +291,58 @@ export async function getPostMonthlyStats(postId) {
       };
     }
 
-    const [dailyViews] = await db.query(
-      "SELECT DATE_FORMAT(view_date, '%Y-%m-%d') as date, view_count FROM daily_post_views WHERE post_id = ? AND view_date >= DATE_SUB(NOW(), INTERVAL 30 DAY) ORDER BY view_date ASC;",
-      [postId]
-    );
+    let query = "";
+    let params = [postId];
 
-    // بازگشت تاریخ‌ها به صورت ISO (YYYY-MM-DD). کلاینت آنها را فرمت می‌کند.
-    const formattedDailyViews = dailyViews.map((view) => ({
+    if (range === "daily") {
+      query = `
+        SELECT DATE_FORMAT(view_date, '%Y-%m-%d') as date, view_count 
+        FROM daily_post_views 
+        WHERE post_id = ? 
+          AND view_date >= DATE_SUB(NOW(), INTERVAL 30 DAY) 
+        ORDER BY view_date ASC;
+      `;
+    } else if (range === "monthly") {
+      query = `
+        SELECT DATE_FORMAT(view_date, '%Y-%m') as date, SUM(view_count) as view_count 
+        FROM daily_post_views 
+        WHERE post_id = ? 
+          AND view_date >= DATE_SUB(NOW(), INTERVAL 12 MONTH) 
+        GROUP BY YEAR(view_date), MONTH(view_date)
+        ORDER BY date ASC;
+      `;
+    } else if (range === "quarterly") {
+      query = `
+        SELECT CONCAT(YEAR(view_date), '-Q', QUARTER(view_date)) as date, SUM(view_count) as view_count 
+        FROM daily_post_views 
+        WHERE post_id = ? 
+          AND view_date >= DATE_SUB(NOW(), INTERVAL 4 QUARTER) 
+        GROUP BY YEAR(view_date), QUARTER(view_date)
+        ORDER BY date ASC;
+      `;
+    } else if (range === "yearly") {
+      query = `
+        SELECT YEAR(view_date) as date, SUM(view_count) as view_count 
+        FROM daily_post_views 
+        WHERE post_id = ? 
+          AND view_date >= DATE_SUB(NOW(), INTERVAL 5 YEAR) 
+        GROUP BY YEAR(view_date)
+        ORDER BY date ASC;
+      `;
+    }
+
+    const [views] = await db.query(query, params);
+
+    const formattedViews = views.map((view) => ({
       ...view,
-      date: view.date, // ISO string
+      date: view.date,
     }));
 
     return {
       success: true,
       data: {
         title: postDetails.title,
-        views: formattedDailyViews,
+        views: formattedViews,
       },
     };
   } catch (error) {

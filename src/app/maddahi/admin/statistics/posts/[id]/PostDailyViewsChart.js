@@ -1,6 +1,7 @@
 // /app/components/admin/statistics/posts/PostDailyViewsChart.js
 "use client";
 
+import { useRouter } from "next/navigation";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -10,74 +11,117 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
-import CustomTooltip from "@/app/maddahi/components/admin/statistics/charts/CustomTooltip"; // ۱. وارد کردن کامپوننت سفارشی
+import CustomTooltip from "@/app/maddahi/components/admin/statistics/charts/CustomTooltip";
 
-const PostDailyViewsChart = ({ data }) => {
-  // اگر داده‌ای برای نمایش وجود نداشته باشد، یک پیام مناسب نمایش داده می‌شود
+const PostDailyViewsChart = ({ data, postId, currentRange }) => {
+  const router = useRouter();
+
+  const handleChangeRange = (range) => {
+    router.push(`/maddahi/admin/statistics/posts/${postId}?range=${range}`);
+  };
+
   if (!data || data.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex flex-col gap-4 h-full items-center justify-center">
+        <div className="flex gap-2">
+          {["daily", "monthly", "quarterly", "yearly"].map((r) => (
+            <button
+              key={r}
+              onClick={() => handleChangeRange(r)}
+              className={`px-3 py-1 rounded-md border text-sm transition-colors ${
+                currentRange === r
+                  ? "bg-[var(--accent-primary)] text-white"
+                  : "bg-[var(--background-secondary)] text-[var(--foreground-secondary)] hover:bg-[var(--background-tertiary)]"
+              }`}
+            >
+              {r === "daily"
+                ? "روزانه"
+                : r === "monthly"
+                ? "ماهانه"
+                : r === "quarterly"
+                ? "سه ماهه"
+                : "سالانه"}
+            </button>
+          ))}
+        </div>
         <p className="text-center text-[var(--foreground-muted)]">
-          داده بازدید روزانه برای این پست در ۳۰ روز اخیر ثبت نشده است.
+          داده‌ای برای نمایش وجود ندارد.
         </p>
       </div>
     );
   }
 
   return (
-    <ResponsiveContainer width="100%" height="100%">
-      <AreaChart
-        data={data}
-        margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-      >
-        {/* پس‌زمینه شبکه‌ای نمودار */}
-        <CartesianGrid stroke="var(--border-primary)" strokeDasharray="3 3" />
+    <div className="flex flex-col gap-4 h-full">
+      {/* کنترل انتخاب بازه */}
+      <div className="flex justify-center gap-2 text-sm flex-wrap">
+        {["daily", "monthly", "quarterly", "yearly"].map((r) => (
+          <button
+            key={r}
+            onClick={() => handleChangeRange(r)}
+            className={`px-3 py-1 rounded-md border transition-colors ${
+              currentRange === r
+                ? "bg-[var(--accent-primary)] text-white"
+                : "bg-[var(--background-secondary)] text-[var(--foreground-secondary)] hover:bg-[var(--background-tertiary)]"
+            }`}
+          >
+            {r === "daily"
+              ? "روزانه"
+              : r === "monthly"
+              ? "ماهانه"
+              : r === "quarterly"
+              ? "سه ماهه"
+              : "سالانه"}
+          </button>
+        ))}
+      </div>
 
-        {/* محور افقی (X) که تاریخ را نمایش می‌دهد */}
-        <XAxis
-          dataKey="date"
-          stroke="var(--foreground-muted)"
-          tickLine={false}
-        />
-
-        {/* محور عمودی (Y) که تعداد بازدید را نمایش می‌دهد */}
-        <YAxis
-          stroke="var(--foreground-muted)"
-          allowDecimals={false}
-          tickLine={false}
-        />
-
-        {/* ۲. جایگزینی Tooltip پیش‌فرض با کامپوننت سفارشی */}
-        <Tooltip content={<CustomTooltip />} />
-
-        {/* تعریف گرادینت زیبا برای پس‌زمینه نمودار */}
-        <defs>
-          <linearGradient id="colorView" x1="0" y1="0" x2="0" y2="1">
-            <stop
-              offset="5%"
-              stopColor="var(--accent-primary)"
-              stopOpacity={0.8}
-            />
-            <stop
-              offset="95%"
-              stopColor="var(--accent-primary)"
-              stopOpacity={0}
-            />
-          </linearGradient>
-        </defs>
-
-        {/* نمودار اصلی از نوع Area */}
-        <Area
-          type="monotone"
-          dataKey="view_count"
-          name="بازدید روز" // ۳. این نام در Tooltip برای نمایش بهتر استفاده می‌شود
-          stroke="var(--accent-crystal-highlight)"
-          strokeWidth={2}
-          fillOpacity={1}
-          fill="url(#colorView)"
-        />
-      </AreaChart>
-    </ResponsiveContainer>
+      {/* نمودار */}
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart
+          data={data}
+          margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
+        >
+          <CartesianGrid stroke="var(--border-primary)" strokeDasharray="3 3" />
+          <XAxis
+            dataKey="date"
+            stroke="var(--foreground-muted)"
+            tickLine={false}
+            interval="preserveStartEnd"
+            minTickGap={30}
+          />
+          <YAxis
+            stroke="var(--foreground-muted)"
+            allowDecimals={false}
+            tickLine={false}
+          />
+          <Tooltip content={<CustomTooltip />} />
+          <defs>
+            <linearGradient id="colorView" x1="0" y1="0" x2="0" y2="1">
+              <stop
+                offset="5%"
+                stopColor="var(--accent-primary)"
+                stopOpacity={0.8}
+              />
+              <stop
+                offset="95%"
+                stopColor="var(--accent-primary)"
+                stopOpacity={0}
+              />
+            </linearGradient>
+          </defs>
+          <Area
+            type="monotone"
+            dataKey="view_count"
+            name="بازدید"
+            stroke="var(--accent-crystal-highlight)"
+            strokeWidth={2}
+            fillOpacity={1}
+            fill="url(#colorView)"
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
   );
 };
 

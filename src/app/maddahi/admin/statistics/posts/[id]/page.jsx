@@ -1,19 +1,20 @@
 // /app/admin/statistics/posts/[id]/page.js
 import { isAuthenticated } from "@/app/maddahi/actions/auth";
 import { redirect } from "next/navigation";
-import { getPostMonthlyStats } from "@/app/maddahi/actions/getStatistics";
-import PostDailyViewsChart from "./PostDailyViewsChart"; // کامپوننت جدید
+import { getPostStats } from "@/app/maddahi/actions/getStatistics";
+import PostDailyViewsChart from "./PostDailyViewsChart";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-export default async function PostStatisticsPage({ params }) {
+export default async function PostStatisticsPage({ params, searchParams }) {
   const isAuth = await isAuthenticated();
   if (!isAuth) {
     redirect("/maddahi/login");
   }
 
   const { id } = params;
-  const result = await getPostMonthlyStats(id);
+  const range = searchParams.range || "daily"; // پیش‌فرض روزانه
+  const result = await getPostStats(id, range);
 
   if (!result.success) {
     return (
@@ -31,30 +32,45 @@ export default async function PostStatisticsPage({ params }) {
 
   return (
     <div className="p-4 md:p-6 lg:p-8 bg-[var(--background-primary)] text-[var(--foreground-primary)] min-h-screen">
-      <header className="flex items-center justify-between mb-8">
-        <div>
+      {/* هدر ریسپانسیو */}
+      <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div className="min-w-0">
           <p className="text-sm text-[var(--foreground-secondary)]">
-            آمار روزانه در ۳۰ روز اخیر
+            آمار بازدید (
+            {range === "daily"
+              ? "۳۰ روز اخیر"
+              : range === "monthly"
+              ? "۱۲ ماه اخیر"
+              : range === "quarterly"
+              ? "۴ فصل اخیر"
+              : "سال‌های اخیر"}
+            )
           </p>
           <h1
-            className="text-3xl font-bold text-ellipsis overflow-hidden whitespace-nowrap"
+            className="text-2xl md:text-3xl font-bold truncate"
             title={result.data.title}
           >
             {result.data.title}
           </h1>
         </div>
+
         <Link
           href="/maddahi/admin/statistics"
-          className="flex items-center gap-2 px-4 py-2 rounded-md bg-[var(--background-secondary)] hover:bg-[var(--background-tertiary)] transition-colors"
+          className="flex items-center gap-2 px-4 py-2 rounded-md bg-[var(--background-secondary)] hover:bg-[var(--background-tertiary)] transition-colors shrink-0"
         >
           <span>بازگشت</span>
           <ArrowRight size={16} />
         </Link>
       </header>
 
+      {/* محتوای اصلی */}
       <main className="bg-[var(--background-secondary)] p-4 rounded-lg border border-[var(--border-primary)]">
-        <div className="h-96">
-          <PostDailyViewsChart data={result.data.views} />
+        <div className="h-[28rem]">
+          <PostDailyViewsChart
+            data={result.data.views}
+            postId={id}
+            currentRange={range}
+          />
         </div>
       </main>
     </div>

@@ -50,15 +50,15 @@ const AllTimeTopPostsTable = ({ data }) => {
                     <LineChart size={14} />
                     <span>نمودار</span>
                   </Link>
-                  <a
-                    href={post.link}
+                  <Link
+                    href={`/maddahi/${post.name}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-[var(--foreground-secondary)] hover:text-[var(--accent-crystal-highlight)] transition-colors"
                     title="مشاهده پست"
                   >
                     <ExternalLink size={16} />
-                  </a>
+                  </Link>
                 </div>
               </td>
             </tr>
