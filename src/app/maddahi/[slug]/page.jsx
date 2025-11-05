@@ -10,7 +10,7 @@ import ServerViewCounter from "@/app/maddahi/components/incview";
 import Link from "next/link";
 import ScriptEmbed from "@/app/maddahi/components/ScriptEmbed";
 import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl";
-import { generateBlogPostingSchema } from "./schema";
+import { generatePostSchemas } from "./schema";
 import {
   BookOpen,
   Sparkles,

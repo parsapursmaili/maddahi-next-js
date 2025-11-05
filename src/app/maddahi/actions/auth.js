@@ -13,7 +13,6 @@ export async function isAuthenticated() {
   if (!token) {
     const t2 = performance.now();
     const t = t2 - t1;
-    console.log("Time: ", t);
     return false;
   }
 
@@ -21,7 +20,6 @@ export async function isAuthenticated() {
     await jose.jwtVerify(token, secret);
     const t2 = performance.now();
     const t = t2 - t1;
-    console.log("Time: ", t);
     return true;
   } catch (error) {
     return false;

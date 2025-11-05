@@ -14,7 +14,6 @@ export default async function Page() {
     if (parseInt(row.view) == null) {
     } else totalViews += parseInt(row.view);
   }
-  console.log("total: ", totalViews);
 
   return (
     // کانتینر اصلی صفحه: تمام صفحه رو می‌پوشونه و محتوا رو وسط قرار می‌ده

@@ -48,7 +48,6 @@ export async function generateMetadata({ params }) {
     ? createApiImageUrl(maddah.image_url, { size: "300" })
     : ``; // یک تصویر پیش‌فرض برای زمانی که تصویری وجود ندارد
 
-  console.log(imageUrl);
   return {
     title: title,
     description: description,
