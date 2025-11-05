@@ -26,51 +26,56 @@ export async function generateStaticParams() {
   return [];
 }
 export async function generateMetadata({ params }) {
-  const { slug } = params;
-  const { post } = await getPostPageData(slug);
+  const { slug } = params; // 🔑 دریافت maddah برای استفاده در اسکیما
+  const { post, maddah } = await getPostPageData(slug);
+  const siteUrl = "https://besooyeto.ir";
+
   if (!post) {
     return {
       title: "پست یافت نشد",
       description: "محتوایی برای این آدرس یافت نشد.",
     };
-  }
+  } // 1. تنظیم Canonical URL
 
-  const canonicalUrl = `https://besooyeto.ir/maddahi/${slug}`;
-  const blogPostingSchema = generateBlogPostingSchema(
-    post,
-    maddah,
-    canonicalUrl
-  );
+  const canonicalUrl = `${siteUrl}/maddahi/${slug}`;
+  // 2. تولید اسکیماهای نهایی
+  const postSchemas = generatePostSchemas(post, maddah, canonicalUrl); // 3. تنظیم متادیتای پایه (Title, Description, Image)
 
   const description =
     post.description ||
     post.content?.substring(0, 150) ||
     "محتوای این صفحه را مشاهده کنید.";
   const imageUrl = post.thumbnail
-    ? `https://besooyeto.ir${createApiImageUrl(post.thumbnail, {
+    ? `${siteUrl}${createApiImageUrl(post.thumbnail, {
         size: "560x560",
       })}`
-    : "https://besooyeto.ir/default-og-image.jpg";
-  post.title = `${post.title} - به سوی تو`;
+    : `${siteUrl}/favicon.webp`;
+  const finalTitle = `${post.title} - به سوی تو`; // عنوان نهایی
+
   return {
-    title: post.title,
+    title: finalTitle,
     description: description,
+    metadataBase: new URL(siteUrl),
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
-      title: post.title,
+      title: finalTitle,
       description: description,
       images: [imageUrl],
-      url: `https://besooyeto.ir/maddahi/${slug}`,
+      url: canonicalUrl,
       type: "article",
     },
     twitter: {
       card: "summary_large_image",
-      title: post.title,
+      title: finalTitle,
       description: description,
       images: [imageUrl],
-    },
-    "application/ld+json": [blogPostingSchema],
+    }, // 🔑 تزریق آرایه اسکیماها به Next.js
+    "application/ld+json": postSchemas,
   };
 }
+
 export default async function ProductPage({ params }) {
   const { slug } = params;
   const {
