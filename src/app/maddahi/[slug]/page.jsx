@@ -10,6 +10,7 @@ import ServerViewCounter from "@/app/maddahi/components/incview";
 import Link from "next/link";
 import ScriptEmbed from "@/app/maddahi/components/ScriptEmbed";
 import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl";
+import { generateBlogPostingSchema } from "./schema";
 import {
   BookOpen,
   Sparkles,
@@ -33,6 +34,14 @@ export async function generateMetadata({ params }) {
       description: "محتوایی برای این آدرس یافت نشد.",
     };
   }
+
+  const canonicalUrl = `https://besooyeto.ir/maddahi/${slug}`;
+  const blogPostingSchema = generateBlogPostingSchema(
+    post,
+    maddah,
+    canonicalUrl
+  );
+
   const description =
     post.description ||
     post.content?.substring(0, 150) ||
@@ -59,6 +68,7 @@ export async function generateMetadata({ params }) {
       description: description,
       images: [imageUrl],
     },
+    "application/ld+json": [blogPostingSchema],
   };
 }
 export default async function ProductPage({ params }) {

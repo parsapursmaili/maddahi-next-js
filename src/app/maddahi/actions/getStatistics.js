@@ -206,7 +206,7 @@ export async function getPaginatedTopPosts({
           break;
       }
 
-      postsQuery = `SELECT p.ID, p.title, p.link, SUM(dv.view_count) as views FROM posts p JOIN daily_post_views dv ON p.ID = dv.post_id ${whereClause} GROUP BY p.ID, p.title, p.link ORDER BY SUM(dv.view_count) DESC LIMIT ? OFFSET ?;`;
+      postsQuery = `SELECT p.name, p.ID, p.title, p.link, SUM(dv.view_count) as views FROM posts p JOIN daily_post_views dv ON p.ID = dv.post_id ${whereClause} GROUP BY p.ID, p.title, p.link ORDER BY SUM(dv.view_count) DESC LIMIT ? OFFSET ?;`;
       postsParams = [...queryParams, limit, offset];
       totalViewsQuery = `SELECT SUM(view_count) as totalViews FROM daily_post_views dv ${whereClause};`;
     }
