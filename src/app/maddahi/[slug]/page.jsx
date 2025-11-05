@@ -22,12 +22,15 @@ import {
   Film,
   ArrowLeft,
 } from "lucide-react";
+
 export async function generateStaticParams() {
   return [];
 }
+
+// تابع generateMetadata فقط برای متادیتای اصلی صفحه (بدون اسکیما)
 export async function generateMetadata({ params }) {
-  const { slug } = params; // 🔑 دریافت maddah برای استفاده در اسکیما
-  const { post, maddah } = await getPostPageData(slug);
+  const { slug } = params;
+  const { post } = await getPostPageData(slug);
   const siteUrl = "https://besooyeto.ir";
 
   if (!post) {
@@ -35,12 +38,9 @@ export async function generateMetadata({ params }) {
       title: "پست یافت نشد",
       description: "محتوایی برای این آدرس یافت نشد.",
     };
-  } // 1. تنظیم Canonical URL
+  }
 
   const canonicalUrl = `${siteUrl}/maddahi/${slug}`;
-  // 2. تولید اسکیماهای نهایی
-  const postSchemas = generatePostSchemas(post, maddah, canonicalUrl); // 3. تنظیم متادیتای پایه (Title, Description, Image)
-
   const description =
     post.description ||
     post.content?.substring(0, 150) ||
@@ -50,7 +50,7 @@ export async function generateMetadata({ params }) {
         size: "560x560",
       })}`
     : `${siteUrl}/favicon.webp`;
-  const finalTitle = `${post.title} - به سوی تو`; // عنوان نهایی
+  const finalTitle = `${post.title} - به سوی تو`;
 
   return {
     title: finalTitle,
@@ -71,8 +71,7 @@ export async function generateMetadata({ params }) {
       title: finalTitle,
       description: description,
       images: [imageUrl],
-    }, // 🔑 تزریق آرایه اسکیماها به Next.js
-    "application/ld+json": postSchemas,
+    },
   };
 }
 
@@ -87,7 +86,15 @@ export default async function ProductPage({ params }) {
     comments,
     totalCommentsCount,
   } = await getPostPageData(slug);
+
   if (!post) notFound();
+
+  // تولید اسکیما برای تزریق در بدنه صفحه
+  const siteUrl = "https://besooyeto.ir";
+  const canonicalUrl = `${siteUrl}/maddahi/${slug}`;
+  const postSchemas = generatePostSchemas(post, maddah, canonicalUrl);
+  const schemaString = JSON.stringify(postSchemas);
+
   const fullThumbnailUrl = createApiImageUrl(post.thumbnail, { size: "560" });
   const similarOccasionLink =
     monasebat.length > 0
@@ -100,8 +107,18 @@ export default async function ProductPage({ params }) {
   const fullSecondThumbnailUrl = secondThumbnailPath
     ? createApiImageUrl(secondThumbnailPath, { size: "300" })
     : null;
+
   return (
     <main className="relative flex min-h-screen flex-col items-center bg-background-primary py-16 sm:px-6 lg:px-8 overflow-x-hidden">
+      {/* تزریق نهایی اسکیما با استفاده از تگ استاندارد <script> */}
+      {postSchemas && (
+        <script
+          id="post-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: schemaString }}
+        />
+      )}
+
       <article className="relative z-10 w-full max-w-5xl rounded-none sm:rounded-2xl bg-background-secondary/50 shadow-2xl shadow-black/40 backdrop-blur-2xl ring-1 ring-border-primary">
         <div
           className="absolute inset-0 rounded-none sm:rounded-2xl ring-1 ring-inset ring-accent-crystal/10 pointer-events-none"
@@ -299,6 +316,7 @@ export default async function ProductPage({ params }) {
     </main>
   );
 }
+
 function SectionTitle({ icon, title, className = "" }) {
   return (
     <h2
@@ -309,6 +327,7 @@ function SectionTitle({ icon, title, className = "" }) {
     </h2>
   );
 }
+
 function SectionDivider() {
   return (
     <div className="w-1/2 h-px mx-auto bg-gradient-to-r from-transparent via-accent-primary/30 to-transparent" />
