@@ -5,7 +5,6 @@ import {
   getMediaLibrary,
   deleteImage,
 } from "@/app/maddahi/actions/uploadActions";
-import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl"; // ۱. وارد کردن تابع کمکی
 
 export default function MediaLibraryModal({
   onClose,
@@ -103,9 +102,7 @@ export default function MediaLibraryModal({
             <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4">
               {filteredImages.map((path) => {
                 // ۲. استفاده ساده از تابع کمکی
-                const apiImageUrl = createApiImageUrl(path, {
-                  size: "150",
-                });
+                const apiImageUrl = path
 
                 return (
                   <div

@@ -9,7 +9,6 @@ import {
   FaSearch,
   FaRegArrowAltCircleLeft,
 } from "react-icons/fa";
-import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl";
 
 // استایل انیمیشن Shimmer بدون تغییر باقی می‌ماند
 const ShimmerStyle = () => (
@@ -172,7 +171,7 @@ function PostResultItem({ post }) {
           <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 relative rounded-lg overflow-hidden border-2 border-transparent group-hover:border-[var(--accent-primary)]/50 transition-all duration-300">
             {post.thumbnail ? (
               <Image
-                src={createApiImageUrl(post.thumbnail, { size: "150" })}
+                src={post.thumbnail}
                 alt={post.title}
                 fill
                 sizes="(max-width: 640px) 64px, 80px"

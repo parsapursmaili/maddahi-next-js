@@ -3,9 +3,6 @@ import { memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { PlayIcon, PauseIcon } from "@heroicons/react/24/solid";
-// =================== شروع تغییر ===================
-import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl";
-// =================== پایان تغییر ===================
 
 const Posts = ({ posts, setHnadle, isPlay, setIndex, setPID, PID }) => {
   const handlePlayPause = (post, i) => {
@@ -26,7 +23,7 @@ const Posts = ({ posts, setHnadle, isPlay, setIndex, setPID, PID }) => {
 
         // =================== شروع تغییر ===================
         // ۱. ساخت URL تصویر با استفاده از تابع کمکی
-        const imageUrl = createApiImageUrl(post.thumbnail, { size: "150" });
+        const imageUrl = post.thumbnail
         // =================== پایان تغییر ===================
 
         return (

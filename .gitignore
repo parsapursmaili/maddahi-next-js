@@ -13,7 +13,12 @@
 # testing
 /coverage
 /storage
-
+<<<<<<< Updated upstream
+combined_files.txt
+=======
+*.py
+combien
+>>>>>>> Stashed changes
 # next.js
 /.next/
 /out/

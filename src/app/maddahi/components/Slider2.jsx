@@ -5,7 +5,6 @@ import { Navigation, FreeMode } from "swiper/modules";
 import Image from "next/image";
 import Link from "next/link";
 import { FaChevronLeft, FaChevronRight, FaMicrophoneAlt } from "react-icons/fa"; // ۱. آیکون میکروفون را وارد کنید
-import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl";
 
 import "./SliderCardView.css";
 import "swiper/css";
@@ -37,7 +36,6 @@ const SliderCardView = ({ slides, sliderId }) => {
         dir="rtl"
       >
         {slides.map((post) => {
-          const imageUrl = createApiImageUrl(post.thumbnail, { size: "300" });
 
           return (
             <SwiperSlide key={post.ID}>
@@ -46,9 +44,9 @@ const SliderCardView = ({ slides, sliderId }) => {
                 className="block outline-none group"
               >
                 <div className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden bg-[--background-tertiary] transition-transform duration-300 ease-out group-hover:scale-105">
-                  {imageUrl ? (
+                  {post.thumbnail ? (
                     <Image
-                      src={imageUrl}
+                      src={post.thumbnail}
                       alt={post.title}
                       fill
                       className="object-cover"
@@ -61,7 +59,7 @@ const SliderCardView = ({ slides, sliderId }) => {
                   )}
 
                   {/* این بخش فقط در صورت وجود تصویر، گرادینت را نمایش می‌دهد */}
-                  {imageUrl && (
+                  {post.thumbnail && (
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
                   )}
 

@@ -6,7 +6,6 @@ import { Navigation, FreeMode } from "swiper/modules";
 import Image from "next/image";
 import Link from "next/link";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl";
 import "./SliderConcept.css";
 import "swiper/css";
 import "swiper/css/navigation";
@@ -40,9 +39,7 @@ const SliderConcept11 = ({ slides, sliderId }) => {
         dir="rtl"
       >
         {slides.map((post) => {
-          const imageUrl = createApiImageUrl(post.thumbnail, {
-            size: "150",
-          });
+          const imageUrl =post.thumbnail
 
           return (
             <SwiperSlide key={post.ID}>

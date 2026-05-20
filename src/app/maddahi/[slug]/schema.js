@@ -1,6 +1,5 @@
 // app/posts/[slug]/schema.js (نسخه نهایی و کامل)
 
-import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl";
 
 /**
  * تابعی نهایی برای تولید آرایه‌ای از اسکیماهای JSON-LD
@@ -23,9 +22,7 @@ export function generatePostSchemas(post, maddah, canonicalUrl) {
     post.content?.substring(0, 150) ||
     "محتوای این صفحه را مشاهده کنید.";
   const thumbnailUrl = post.thumbnail
-    ? `https://besooyeto.ir${createApiImageUrl(post.thumbnail, {
-        size: "560x560",
-      })}`
+    ? `https://besooyeto.ir${post.thumbnail}`
     : "https://besooyeto.ir/default-og-image.jpg";
   const logoUrl = "https://besooyeto.ir/favicon.webp"; // آدرس لوگو/فاوآیکون
 

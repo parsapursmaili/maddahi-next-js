@@ -1,6 +1,4 @@
-// /app/maddahi/soogname/[slug]/SoognamePlayer.jsx
 "use client";
-
 import React, { useState, useRef, useEffect } from "react";
 import {
   Play,
@@ -15,54 +13,50 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-// ★★★ کامپوننت دکمه دانلود با رنگ‌های اصلاح شده ★★★
-const DownloadButton = ({ audioSrc }) => {
+const DownloadButton = ({ audioSrc, title }) => {
   const [downloadState, setDownloadState] = useState("idle");
-  const handleDownload = async () => {
+
+  const handleDownload = () => {
     if (!audioSrc || downloadState === "loading") return;
     setDownloadState("loading");
     try {
-      const response = await fetch(audioSrc);
-      if (!response.ok) throw new Error("Network response was not ok");
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      const fileName = decodeURIComponent(
-        audioSrc.split("/").pop() || "download.mp3"
-      );
-      link.setAttribute("download", fileName);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      setDownloadState("success");
+      const cleanTitle = (title || "nava").replace(/[/\\?%*:|"<>]/g, "-");
+      const filename = `${cleanTitle}.mp3`;
+      const secureUrl = audioSrc.replace(/^http:\/\//i, "https://");
+      const downloadUrl = `/maddahi/api/dl/${encodeURIComponent(filename)}?url=${encodeURIComponent(secureUrl)}`;
+
+      const iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      iframe.src = downloadUrl;
+      document.body.appendChild(iframe);
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+        setDownloadState("success");
+      }, 1000);
     } catch (error) {
-      console.error("Download error:", error);
       setDownloadState("error");
     } finally {
       setTimeout(() => setDownloadState("idle"), 2000);
     }
   };
+
   const renderIcon = () => {
     switch (downloadState) {
       case "loading":
         return <Loader size={18} className="animate-spin" />;
       case "success":
-        // اصلاح رنگ با متغیر CSS
         return <CheckCircle size={18} className="text-[var(--success)]" />;
       case "error":
-        // اصلاح رنگ با متغیر CSS
         return <AlertTriangle size={18} className="text-[var(--error)]" />;
       default:
         return <Download size={18} />;
     }
   };
+
   return (
     <button
       onClick={handleDownload}
       disabled={downloadState === "loading"}
-      // اصلاح رنگ هاور با متغیر CSS
       className="p-2 rounded-full transition-colors duration-300 hover:bg-[var(--background-tertiary)] disabled:opacity-50"
     >
       {renderIcon()}
@@ -74,7 +68,6 @@ const AudioWaveLoader = () => (
   <div className="flex items-center justify-center h-full w-full gap-1">
     <style jsx>{`
       .wave-bar {
-        /* اصلاح رنگ با متغیر CSS */
         background-color: var(--background-primary);
         width: 4px;
         height: 24px;
@@ -107,143 +100,101 @@ const AudioWaveLoader = () => (
   </div>
 );
 
-export default function SoognamePlayer({ playlist }) {
+export default function SoognamePlayer({ playlist, artistName, mainImage }) {
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoopingOne, setIsLoopingOne] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
-  const [isLoading, setIsLoading] = useState(false); // مقدار اولیه false باقی می‌ماند
-
+  const [isLoading, setIsLoading] = useState(false);
   const audioRef = useRef(null);
   const progressBarRef = useRef(null);
   const currentTrack = playlist[currentTrackIndex];
 
   useEffect(() => {
-    // ★★★ اصلاح اصلی: حذف setIsLoading(true) از اینجا ★★★
-    // با این تغییر، لودینگ اولیه فقط در پشت صحنه انجام شده و UI لودر را نشان نمی‌دهد
     if (audioRef.current && currentTrack) {
       audioRef.current.src = currentTrack.link;
-      audioRef.current.load(); // به مرورگر می‌گوییم فایل جدید را آماده کند
-      if (isPlaying) {
-        // اگر در حال پخش بودیم، ترک جدید را هم پخش کن
-        audioRef.current
-          .play()
-          .catch((e) => console.error("Error playing audio:", e));
-      }
+      audioRef.current.load();
+      if (isPlaying) audioRef.current.play().catch(() => {});
     }
-  }, [currentTrackIndex, currentTrack]); // isPlaying از وابستگی‌ها حذف شد چون باعث رفتارهای ناخواسته می‌شد
+    if ("mediaSession" in navigator && currentTrack) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: currentTrack.title,
+        artist: artistName || "به سوی تو",
+        album: "مجموعه سوگنامه",
+        artwork: [
+          {
+            src: mainImage || "/favicon.webp",
+            sizes: "512x512",
+            type: "image/webp",
+          },
+        ],
+      });
+      navigator.mediaSession.setActionHandler("play", handlePlayPause);
+      navigator.mediaSession.setActionHandler("pause", handlePlayPause);
+      navigator.mediaSession.setActionHandler("previoustrack", handlePrev);
+      navigator.mediaSession.setActionHandler("nexttrack", handleNext);
+    }
+  }, [currentTrackIndex, currentTrack]);
+
+  useEffect(() => {
+    if ("mediaSession" in navigator)
+      navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused";
+  }, [isPlaying]);
 
   const handlePlayPause = () => {
-    if (isPlaying) {
-      audioRef.current.pause();
-    } else {
-      // ★★★ اصلاح اصلی: لودر فقط در صورتی نمایش داده می‌شود که کاربر پلی را بزند و فایل آماده نباشد ★★★
-      if (audioRef.current.readyState < 3) {
-        setIsLoading(true);
-      }
-      audioRef.current
-        .play()
-        .catch((e) => console.error("Error playing audio:", e));
-    }
-    setIsPlaying(!isPlaying);
+    if (!audioRef.current) return;
+    if (audioRef.current.paused) audioRef.current.play().catch(() => {});
+    else audioRef.current.pause();
   };
 
-  const handleNext = () => {
-    setCurrentTrackIndex((prevIndex) => (prevIndex + 1) % playlist.length);
-    setIsPlaying(true);
-  };
-
-  const handlePrev = () => {
+  const handleNext = () =>
+    setCurrentTrackIndex((prev) => (prev + 1) % playlist.length);
+  const handlePrev = () =>
     setCurrentTrackIndex(
-      (prevIndex) => (prevIndex - 1 + playlist.length) % playlist.length
+      (prev) => (prev - 1 + playlist.length) % playlist.length,
     );
-    setIsPlaying(true);
-  };
-
-  const handleEnded = () => {
-    if (isLoopingOne) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play();
-    } else {
-      handleNext();
-    }
-  };
+  const handleEnded = () =>
+    isLoopingOne
+      ? ((audioRef.current.currentTime = 0), audioRef.current.play())
+      : handleNext();
 
   const handleTimeUpdate = () => {
-    const newTime = audioRef.current.currentTime;
-    setCurrentTime(newTime);
-    if (progressBarRef.current) {
-      const newDuration = audioRef.current.duration;
-      if (newDuration > 0) {
-        progressBarRef.current.style.setProperty(
-          "--progress",
-          `${(newTime / newDuration) * 100}%`
-        );
-      }
-    }
-  };
-
-  const onLoadedMetadata = () => {
-    setDuration(audioRef.current.duration);
-  };
-
-  const handleProgressSeek = (e) => {
-    if (!duration) return;
-    const progressBar = e.currentTarget;
-    const clickPosition = e.nativeEvent.offsetX;
-    const newTime = (clickPosition / progressBar.offsetWidth) * duration;
-    if (progressBarRef.current) {
+    setCurrentTime(audioRef.current.currentTime);
+    if (progressBarRef.current && audioRef.current.duration) {
       progressBarRef.current.style.setProperty(
         "--progress",
-        `${(newTime / duration) * 100}%`
+        `${(audioRef.current.currentTime / audioRef.current.duration) * 100}%`,
       );
     }
-    setCurrentTime(newTime);
-    audioRef.current.currentTime = newTime;
   };
 
   const formatTime = (time) => {
     if (isNaN(time) || time <= 0) return "00:00";
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
-      2,
-      "0"
-    )}`;
+    const min = Math.floor(time / 60),
+      sec = Math.floor(time % 60);
+    return `${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
   };
 
-  if (!playlist || playlist.length === 0) {
-    return (
-      <div className="text-center text-[var(--foreground-muted)] bg-[var(--background-secondary)] p-8 rounded-lg">
-        فایل صوتی برای این سوگنامه یافت نشد.
-      </div>
-    );
-  }
+  if (!playlist || playlist.length === 0) return null;
 
   return (
-    // ★★★ اصلاح رنگ‌های اصلی پلیر با متغیرهای CSS ★★★
     <div
       style={{ direction: "rtl" }}
       className="w-full bg-[var(--background-secondary)]/70 backdrop-blur-xl text-[var(--foreground-primary)] overflow-hidden sm:rounded-2xl ring-1 ring-black/20"
     >
       <audio
         ref={audioRef}
-        onLoadedMetadata={onLoadedMetadata}
+        onLoadedMetadata={() => setDuration(audioRef.current.duration)}
         onTimeUpdate={handleTimeUpdate}
         onEnded={handleEnded}
-        preload="metadata" // این گزینه باعث می‌شود مرورگر متادیتای صدا (مثل طول) را لود کند
+        preload="metadata"
         onWaiting={() => setIsLoading(true)}
-        onPlaying={() => {
-          setIsPlaying(true);
-          setIsLoading(false);
-        }}
+        onPlaying={() => setIsLoading(false)}
+        onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         onCanPlay={() => setIsLoading(false)}
-        onSeeking={() => setIsLoading(true)}
-        onSeeked={() => setIsLoading(false)}
       />
-
       <div className="p-4 sm:p-5">
         <div className="flex items-center justify-between gap-4">
           <div className="flex-grow min-w-0">
@@ -252,7 +203,10 @@ export default function SoognamePlayer({ playlist }) {
             </h3>
           </div>
           <div className="flex items-center gap-1 flex-shrink-0">
-            <DownloadButton audioSrc={currentTrack.link} />
+            <DownloadButton
+              audioSrc={currentTrack.link}
+              title={currentTrack.title}
+            />
             <button
               onClick={() => setIsLoopingOne(!isLoopingOne)}
               className="p-2 rounded-full transition-colors duration-300 hover:bg-[var(--background-tertiary)]"
@@ -269,14 +223,17 @@ export default function SoognamePlayer({ playlist }) {
           </div>
         </div>
       </div>
-
       <div style={{ direction: "ltr" }} className="px-4 sm:px-5 pb-4 sm:pb-5">
         <div className="mt-2">
           <div
             ref={progressBarRef}
-            // اصلاح رنگ پراگرس بار با متغیرهای CSS
             className="music-progress-container relative h-1.5 w-full bg-[var(--background-tertiary)] rounded-full cursor-pointer group"
-            onClick={handleProgressSeek}
+            onClick={(e) => {
+              if (!duration) return;
+              audioRef.current.currentTime =
+                (e.nativeEvent.offsetX / e.currentTarget.offsetWidth) *
+                duration;
+            }}
           >
             <div
               className="music-progress-bar absolute h-full bg-[var(--accent-crystal-highlight)] rounded-full group-hover:bg-[var(--accent-primary)] transition-all"
@@ -289,19 +246,15 @@ export default function SoognamePlayer({ playlist }) {
           </div>
         </div>
         <div className="flex items-center justify-center gap-4 mt-3">
-          {/* منطق این دکمه‌ها صحیح است و دست نخورده باقی می‌ماند */}
           <button
-            onClick={handleNext}
-            className="p-3 rounded-full transition-colors duration-300 hover:bg-[var(--background-tertiary)] disabled:opacity-50"
-            disabled={isLoading}
+            onClick={handlePrev}
+            className="p-3 rounded-full transition-colors duration-300 hover:bg-[var(--background-tertiary)]"
           >
             <SkipBack fill="currentColor" size={22} />
           </button>
-
           <button
             onClick={handlePlayPause}
-            // اصلاح رنگ دکمه پلی و شادو با متغیرهای CSS
-            className="w-16 h-16 flex items-center justify-center bg-[var(--accent-crystal-highlight)] text-black rounded-full shadow-lg shadow-[var(--accent-crystal-highlight)]/30 transition-transform hover:scale-105"
+            className="w-16 h-16 flex items-center justify-center bg-[var(--accent-crystal-highlight)] text-black rounded-full shadow-lg transition-transform hover:scale-105"
           >
             {isLoading ? (
               <AudioWaveLoader />
@@ -311,29 +264,21 @@ export default function SoognamePlayer({ playlist }) {
               <Play fill="currentColor" size={30} className="ml-1" />
             )}
           </button>
-
           <button
-            onClick={handlePrev}
-            className="p-3 rounded-full transition-colors duration-300 hover:bg-[var(--background-tertiary)] disabled:opacity-50"
-            disabled={isLoading}
+            onClick={handleNext}
+            className="p-3 rounded-full transition-colors duration-300 hover:bg-[var(--background-tertiary)]"
           >
             <SkipForward fill="currentColor" size={22} />
           </button>
         </div>
       </div>
-
-      {/* ★★★ اصلاح رنگ لیست پخش با متغیرهای CSS ★★★ */}
       <div className="bg-black/30 p-2 max-h-60 overflow-y-auto">
         <ul className="space-y-1">
           {playlist.map((track, index) => (
             <li key={track.ID}>
               <button
                 onClick={() => setCurrentTrackIndex(index)}
-                className={`w-full text-right p-3 rounded-lg transition-colors duration-200 flex items-center gap-4 text-sm ${
-                  currentTrackIndex === index
-                    ? "bg-[var(--accent-crystal-highlight)]/20 text-[var(--accent-crystal-highlight)]"
-                    : "hover:bg-[var(--background-tertiary)]"
-                }`}
+                className={`w-full text-right p-3 rounded-lg transition-colors duration-200 flex items-center gap-4 text-sm ${currentTrackIndex === index ? "bg-[var(--accent-crystal-highlight)]/20 text-[var(--accent-crystal-highlight)]" : "hover:bg-[var(--background-tertiary)]"}`}
               >
                 <span className="font-mono text-[var(--foreground-muted)]">
                   {String(index + 1).padStart(2, "0")}

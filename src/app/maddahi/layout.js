@@ -2,22 +2,15 @@
 
 import "./globals.css";
 import TopLoader from "./components/topLoader";
-import { Geist, Geist_Mono } from "next/font/google";
 import { vazir } from "./font";
 import Header from "@/app/maddahi/components/Header";
 import AuthWrapper from "@/app/maddahi/components/AuthWrapper";
 // ۱. کامپوننت Script را از next/script وارد کنید
 import Script from "next/script";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+
+
 
 export const metadata = {
   title: "به سوی تو-مداحی",
@@ -42,7 +35,7 @@ export default function RootLayout({ children }) {
       suppressHydrationWarning
     >
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={` antialiased`}
       >
         <TopLoader />
         <AuthWrapper />

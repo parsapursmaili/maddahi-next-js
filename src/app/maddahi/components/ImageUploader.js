@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import MediaLibraryModal from "./MediaLibraryModal";
-import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl"; // ۱. وارد کردن تابع کمکی
 
 export default function ImageUploader({
   title,
@@ -17,10 +16,7 @@ export default function ImageUploader({
 
   useEffect(() => {
     // ۲. استفاده از تابع کمکی برای تنظیم پیش‌نمایش اولیه
-    const apiImageUrl = createApiImageUrl(imageUrl, {
-      size: "150x150",
-      bustCache: true,
-    });
+    const apiImageUrl = imageUrl
     setPreview(apiImageUrl);
   }, [imageUrl]);
 
@@ -49,17 +45,14 @@ export default function ImageUploader({
 
     if (result.success && result.relativePath) {
       // ۳. استفاده از تابع کمکی برای نمایش تصویر آپلود شده
-      const newApiImageUrl = createApiImageUrl(result.relativePath, {
-        size: "150x150",
-        bustCache: true,
-      });
+      const newApiImageUrl = result.relativePath
       setPreview(newApiImageUrl);
       onImageChange(result.relativePath);
     } else {
       alert(result.message || "خطا در آپلود");
       // در صورت خطا به تصویر قبلی بازگرد
       setPreview(
-        createApiImageUrl(imageUrl, { size: "150x150", bustCache: true })
+       imageUrl
       );
     }
     handleBusy(false);
@@ -72,10 +65,7 @@ export default function ImageUploader({
 
   const handleSelectFromLibrary = (relativePath) => {
     // ۴. استفاده از تابع کمکی برای نمایش تصویر انتخاب شده از کتابخانه
-    const selectedApiImageUrl = createApiImageUrl(relativePath, {
-      size: "150",
-      bustCache: true,
-    });
+    const selectedApiImageUrl = relativePath
     setPreview(selectedApiImageUrl);
     onImageChange(relativePath);
     setIsLibraryOpen(false);

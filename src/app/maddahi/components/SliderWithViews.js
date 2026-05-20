@@ -5,7 +5,6 @@ import { Navigation } from "swiper/modules";
 import Image from "next/image";
 import Link from "next/link";
 import { FaChevronLeft, FaChevronRight, FaEye } from "react-icons/fa";
-import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl"; // ۱. وارد کردن تابع کمکی
 import "./SliderConcept.css";
 import "swiper/css";
 import "swiper/css/navigation";
@@ -35,9 +34,7 @@ const SliderWithViews = ({ slides, sliderId }) => {
       >
         {slides.map((post) => {
           // ۲. فراخوانی تابع کمکی برای ساخت URL
-          const imageUrl = createApiImageUrl(post.thumbnail, {
-            size: "560",
-          }); // انتخاب سایز مناسب‌تر برای این اسلایدر
+          const imageUrl = post.thumbnail
 
           return (
             <SwiperSlide key={post.ID}>

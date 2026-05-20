@@ -9,7 +9,6 @@ import CommentThread from "../components/comments/CommentThread";
 import ServerViewCounter from "@/app/maddahi/components/incview";
 import Link from "next/link";
 import ScriptEmbed from "@/app/maddahi/components/ScriptEmbed";
-import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl";
 import { generatePostSchemas } from "./schema";
 import {
   BookOpen,
@@ -46,10 +45,6 @@ export async function generateMetadata({ params }) {
     post.content?.substring(0, 150) ||
     "محتوای این صفحه را مشاهده کنید.";
   const imageUrl = post.thumbnail
-    ? `${siteUrl}${createApiImageUrl(post.thumbnail, {
-        size: "560x560",
-      })}`
-    : `${siteUrl}/favicon.webp`;
   const finalTitle = `${post.title} - به سوی تو`;
 
   return {
@@ -95,7 +90,7 @@ export default async function ProductPage({ params }) {
   const postSchemas = generatePostSchemas(post, maddah, canonicalUrl);
   const schemaString = JSON.stringify(postSchemas);
 
-  const fullThumbnailUrl = createApiImageUrl(post.thumbnail, { size: "560" });
+  const fullThumbnailUrl = post.thumbnail
   const similarOccasionLink =
     monasebat.length > 0
       ? `/maddahi/home/?monasebatha=${monasebat[0].ID}`
@@ -105,7 +100,7 @@ export default async function ProductPage({ params }) {
   const thumbnail2 = JSON.parse(post.extra_metadata);
   const secondThumbnailPath = thumbnail2?.second_thumbnail;
   const fullSecondThumbnailUrl = secondThumbnailPath
-    ? createApiImageUrl(secondThumbnailPath, { size: "300" })
+    ? secondThumbnailPath
     : null;
 
   return (
@@ -190,7 +185,12 @@ export default async function ProductPage({ params }) {
         )}
         {post.link && (
           <section className="px-5 flex justify-center items-center py-6">
-            <MusicPlayer audioSrc={post.link} />
+           <MusicPlayer 
+              audioSrc={post.link} 
+              title={post.title} 
+              artist={maddah[0]?.name} 
+              image={fullThumbnailUrl} 
+            />
           </section>
         )}
         {post.video_link && (

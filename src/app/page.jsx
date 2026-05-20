@@ -3,7 +3,6 @@ import Image from "next/image";
 import { FiArrowLeft, FiGrid } from "react-icons/fi";
 import Slider from "@/app/maddahi/components/Slider2";
 import { db } from "@/app/maddahi/lib/db/mysql";
-import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl";
 
 export const revalidate = 60;
 
@@ -101,7 +100,7 @@ const MaddahHorizontalCard = ({ name, slug, imageUrl, priority = false }) => {
 
   // استفاده از تابع کمکی برای ساخت URL نهایی
   const finalImageUrl =
-    createApiImageUrl(imageUrl, { size: "560" }) || "/default-maddah-image.jpg";
+    imageUrl
 
   return (
     <Link href={`/maddahi/category/${slug}`} className="group block w-full">
@@ -162,6 +161,7 @@ export default async function PrestigeLandingPageV3() {
         <section className="container mx-auto px-4 pb-20 md:pb-24">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {featuredMaddahs.map((maddah, index) => (
+
               <MaddahHorizontalCard
                 key={maddah.ID}
                 name={maddah.name}
@@ -170,7 +170,8 @@ export default async function PrestigeLandingPageV3() {
                 // فقط به اولین کارت (که بزرگترین عنصر صفحه است) اولویت بالا می‌دهیم
                 priority={index === 0}
               />
-            ))}
+              
+          ))}
           </div>
         </section>
 

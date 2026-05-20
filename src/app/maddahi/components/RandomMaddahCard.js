@@ -2,7 +2,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { FiMic, FiChevronsLeft } from "react-icons/fi";
 import { getTopMaddahs } from "@/app/maddahi/actions/getTopMaddahs";
-import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl"; // ۱. وارد کردن تابع کمکی
 import { unstable_noStore as noStore } from "next/cache";
 
 export default async function RandomMaddahCard() {
@@ -15,7 +14,7 @@ export default async function RandomMaddahCard() {
 
   const maddah = topMaddahs[Math.floor(Math.random() * topMaddahs.length)];
   // ۲. فراخوانی تابع کمکی برای ساخت URL
-  const finalImageUrl = createApiImageUrl(maddah.imageUrl, { size: "300" });
+  const finalImageUrl = maddah.imageUrl
 
   return (
     <section className="container mx-auto px-4 my-12">

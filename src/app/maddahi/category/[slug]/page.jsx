@@ -7,7 +7,6 @@ import { db } from "@/app/maddahi/lib/db/mysql";
 import getPosts from "@/app/maddahi/actions/getPost";
 import { FiMic, FiHeadphones, FiChevronLeft } from "react-icons/fi";
 import { notFound } from "next/navigation";
-import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl";
 // =================================================================
 // ★★ کامپوننت‌های نهایی - بازطراحی شده بر اساس استایل شما ★★
 // =================================================================
@@ -45,7 +44,7 @@ export async function generateMetadata({ params }) {
 
   // ساخت URL کامل برای تصویر
   const imageUrl = maddah.image_url
-    ? createApiImageUrl(maddah.image_url, { size: "300" })
+    ? maddah.image_url
     : ``; // یک تصویر پیش‌فرض برای زمانی که تصویری وجود ندارد
 
   return {
@@ -163,7 +162,7 @@ export default async function MaddahCategoryPage({ params }) {
   const MADDAS_ID = maddah.ID;
 
   const fullImageUrl = maddah.image_url
-    ? createApiImageUrl(maddah.image_url, { size: "300" })
+    ? maddah.image_url
     : null;
   const eulogistBiographyHtml = maddah.biography || null;
 

@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import { getSoognamePageData } from "./actions";
 import SoognamePlayer from "./SoognamePlayer";
-import { createApiImageUrl } from "@/app/maddahi/lib/utils/imageUrl";
 import CommentForm from "@/app/maddahi/components/comments/CommentForm";
 import CommentThread from "@/app/maddahi/components/comments/CommentThread";
 import SoognameViewCounter from "./ViewCounter";
@@ -52,10 +51,6 @@ export async function generateMetadata({ params }) {
     ? soogname.content.replace(/<[^>]*>/g, "").substring(0, 160)
     : `مجموعه صوتی ${soogname.title}`;
   const imageUrl = soogname.thumbnail
-    ? `https://besooyeto.ir${createApiImageUrl(soogname.thumbnail, {
-        size: "560x560",
-      })}`
-    : "https://besooyeto.ir/default-og-image.jpg";
 
   return {
     title: `مجموعه سوگنامه ${soogname.title} - به سوی تو`,
@@ -93,8 +88,6 @@ export default async function SoognamePage({ params }) {
   if (!soogname) notFound();
 
   const fullThumbnailUrl = soogname.thumbnail
-    ? createApiImageUrl(soogname.thumbnail, { size: "560" })
-    : null;
   const imageAltText = soogname.title.substring(0, 70);
 
   // ★★★ افزودن لینک‌های "مشاهده بیشتر" برای اسلایدرها ★★★
@@ -163,7 +156,11 @@ export default async function SoognamePage({ params }) {
         </header>
 
         <section className="px-4 sm:px-8 md:px-12 pb-8">
-          <SoognamePlayer playlist={playlist} />
+          <SoognamePlayer 
+            playlist={playlist} 
+            artistName={maddah[0]?.name} 
+            mainImage={fullThumbnailUrl} 
+          />        
         </section>
 
         {/* ★★★ شروع بخش اسلایدر "آخرین از همین مداح" ★★★ */}
