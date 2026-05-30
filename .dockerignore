@@ -1,0 +1,23 @@
+# سیستم و گیت
+.git
+.gitignore
+README.md
+.vscode
+*.py
+*.sql
+# پکیج‌ها و کدهای محیط توسعه (بسیار حیاتی)
+node_modules
+npm-debug.log
+
+# خروجی‌های بیلد محلی لپ‌تاپ (تا با بیلد داکر قاطی نشوند)
+.next
+out
+build
+
+# فایل‌های کش و داکر
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+# فایل‌های داینامیک یا حجیم سرور (مثل استوریج محلی)
+storage

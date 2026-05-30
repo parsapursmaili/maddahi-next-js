@@ -10,20 +10,21 @@ RUN npm run build
 # Stage 2: Run
 FROM node:20-alpine
 WORKDIR /app
-ENV NODE_ENV production
+ENV NODE_ENV=production
 
-# استفاده از یوزر آماده node با آیدی 1000
-RUN mkdir -p .next/static public storage && chown -R node:node /app
+# ۱. ساخت پوشه کش و ساختار اولیه با دسترسی کاربر node
+RUN mkdir -p .next/cache && chown -R node:node /app
 
-# کپی کردن فقط خروجی‌های ضروری (بسیار سبک و سریع)
+# ۲. کپی کردن هسته سرور نکست‌جی
 COPY --from=builder --chown=node:node /app/.next/standalone ./
+
+# ۳. کپی کردن ظاهر سایت و عکس‌ها (که در standalone نبودند)
 COPY --from=builder --chown=node:node /app/.next/static ./.next/static
 COPY --from=builder --chown=node:node /app/public ./public
-COPY --from=builder --chown=node:node /app/storage ./storage
 COPY --chown=node:node .env* ./ 
 
 USER node
 EXPOSE 3000
-ENV PORT 3000
-# اجرای مستقیم با خودِ Node (بسیار پایدارتر از npm start)
+ENV PORT=3000
+
 CMD ["node", "server.js"]
